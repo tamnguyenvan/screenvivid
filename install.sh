@@ -32,6 +32,7 @@ create_startup_script() {
     cat > "$HOME/.local/bin/screenvivid" << EOL
 #!/bin/bash
 source "$HOME/.local/screenvivid_env/bin/activate"
+cd $HOME/.local/screenvivid_env/screenvivid
 python -m screenvivid.main
 EOL
     chmod +x "$HOME/.local/bin/screenvivid"
