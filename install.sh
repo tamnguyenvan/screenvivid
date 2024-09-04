@@ -23,7 +23,8 @@ create_virtual_environment() {
 
 install_app() {
     echo "Installing ScreenVivid..."
-    pip install git+https://github.com/tamnguyenvan/screenvivid.git
+    git clone https://github.com/tamnguyenvan/screenvivid.git $HOME/.local/screenvivid_env/screenvivid
+    cd $HOME/.local/screenvivid_env/screenvivid && pip install -r requirements.txt
 }
 
 create_startup_script() {
