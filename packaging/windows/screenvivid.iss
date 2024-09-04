@@ -2,8 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "ScreenVivid"
-#define MyAppVersion "1.0.0"
-#define MyAppPublisher "SupaBolt Labs"
+#define MyAppVersion "X.X.X"
+#define MyAppPublisher "Black Photon"
 #define MyAppURL "https://www.screenvivid.com/"
 #define MyAppExeName "screenvivid.exe"
 #define MyAppAssocName MyAppName + " File"

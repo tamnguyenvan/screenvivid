@@ -9,7 +9,7 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 - [Features](#features)
 - [Installation Guide](#installation-guide)
   - [System Requirements](#system-requirements)
-  - [Ubuntu/Debian Installation](#ubuntudebian-installation)
+  - [Linux Installation](#linux-installation)
   - [Windows Installation](#windows-installation)
   - [Troubleshooting Installation](#troubleshooting-installation)
 - [Usage](#usage)
@@ -31,28 +31,27 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 ### System Requirements
 
 - **Ubuntu/Debian**:
-  - Ubuntu 20.04 or later
-  - Debian 10 or later
+  - The app is based on PySide6, which requires glibc-2.28+. It supports Ubuntu 20.04 or later, and Debian 10 or later.
   - 4GB RAM (8GB recommended)
 - **Windows**:
   - Windows 10 or later
   - 4GB RAM (8GB recommended)
 
-### Ubuntu/Debian Installation
+### Linux Installation
 
-1. Download the latest .deb package from our official website:
-   ```
-   wget https://screenvivid.com/downloads/screen.deb
+1. Install system dependecies if needed:
+   ```bash
+   # Ubuntu/Debian
+   sudo apt install curl git python3-tk python3-dev libxcb-cursor-dev -y
+
+   # Fedora/CentOS
+   sudo yum install
    ```
 
-2. Install the package using dpkg:
-   ```
-   sudo dpkg -i screenvivid_latest.deb
-   ```
+2. Install:
 
-3. If you encounter any dependency issues, run:
-   ```
-   sudo apt-get install -f
+   ```bash
+   curl -sL https://github.com/tamnguyenvan/screenvivid/raw/main/install.sh | bash
    ```
 
 ### Windows Installation
@@ -64,7 +63,7 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 3. Follow the installation wizard:
    - Choose installation directory
    - Select start menu folder
-   - Choose additional tasks (create desktop shortcut, add to PATH, etc.)
+   - Choose additional tasks (create desktop shortcut, etc.)
 
 4. Click "Install" and wait for the process to complete.
 
@@ -95,6 +94,7 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 ## Advantages
 
 - Easy to use
+- Cross-platform
 - Intuitive and simple interface
 - Completely free
 - Lightweight and fast
@@ -127,4 +127,4 @@ ScreenVivid is released under the MIT License. See the LICENSE file for more det
 
 ---
 
-Thank you for choosing ScreenVivid for your screen recording needs!
+Thank you for choosing ScreenVivid for your screen recording needs! If you find our software helpful, please consider donating to support its development and help us add more amazing features! 💖
