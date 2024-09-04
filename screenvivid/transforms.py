@@ -9,7 +9,6 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-import cairo
 import pyautogui
 from PIL import Image, ImageDraw, ImageFilter
 from PySide6.QtCore import QFile, QIODevice
@@ -284,32 +283,22 @@ class BorderShadow(BaseTransform):
     def create_rounded_rectangle(self, background_size, foreground_size, x_offset, y_offset):
         width, height = background_size
         rectangle_width, rectangle_height = foreground_size
-        surface = cairo.ImageSurface(cairo.FORMAT_RGB24, width, height)
-        ctx = cairo.Context(surface)
+        radius = self.radius
 
-        ctx.set_source_rgb(0, 0, 0)
-        ctx.paint()
-
-        ctx.set_source_rgb(1, 1, 1)
+        # Tạo nền đen
+        image = np.zeros((height, width, 3), dtype=np.uint8)
 
         x = x_offset
         y = y_offset
 
-        corner_radius = self.radius
-        ctx.new_sub_path()
-        ctx.arc(x + rectangle_width - corner_radius, y + corner_radius, corner_radius, -np.pi/2, 0)
-        ctx.arc(x + rectangle_width - corner_radius, y + rectangle_height - corner_radius, corner_radius, 0, np.pi/2)
-        ctx.arc(x + corner_radius, y + rectangle_height - corner_radius, corner_radius, np.pi/2, np.pi)
-        ctx.arc(x + corner_radius, y + corner_radius, corner_radius, np.pi, 3*np.pi/2)
-        ctx.close_path()
+        cv2.rectangle(image, (x + radius, y), (x + rectangle_width - radius, y + rectangle_height), (255, 255, 255), -1, cv2.LINE_AA)
+        cv2.rectangle(image, (x, y + radius), (x + rectangle_width, y + rectangle_height - radius), (255, 255, 255), -1, cv2.LINE_AA)
+        cv2.circle(image, (x + radius, y + radius), radius, (255, 255, 255), -1, cv2.LINE_AA)
+        cv2.circle(image, (x + rectangle_width - radius, y + radius), radius, (255, 255, 255), -1, cv2.LINE_AA)
+        cv2.circle(image, (x + radius, y + rectangle_height - radius), radius, (255, 255, 255), -1, cv2.LINE_AA)
+        cv2.circle(image, (x + rectangle_width - radius, y + rectangle_height - radius), radius, (255, 255, 255), -1, cv2.LINE_AA)
 
-        ctx.fill()
-
-        buf = surface.get_data()
-
-        arr = np.ndarray(shape=(height, width, 4), dtype=np.uint8, buffer=buf)
-
-        return arr
+        return image
 
     @lru_cache(maxsize=100)
     def create_rounded_mask(self, size):
