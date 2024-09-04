@@ -1,6 +1,6 @@
 #!/bin/bash
 
-total_steps=5
+total_steps=6
 
 log_step() {
     step=$1
@@ -45,7 +45,7 @@ install_app() {
 
 create_startup_script() {
     log_step 4 "Creating startup script"
-    mkdir -p $HOME/.local/bin/screenvivid
+    mkdir -p $HOME/.local/bin
     cat > "$HOME/.local/bin/screenvivid" << EOL
 #!/bin/bash
 source "$HOME/.local/screenvivid_env/bin/activate"
@@ -55,8 +55,17 @@ EOL
     chmod +x "$HOME/.local/bin/screenvivid" || handle_error "Failed to make the startup script executable."
 }
 
+add_local_bin_to_path() {
+    log_step 5 "Adding ~/.local/bin to PATH"
+    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+        source "$HOME/.bashrc" || handle_error "Failed to reload .bashrc"
+    fi
+}
+
 create_desktop_file() {
-    log_step 5 "Creating desktop entry"
+    log_step 6 "Creating desktop entry"
+    mkdir -p $HOME/.local/share/applications
     cat > "$HOME/.local/share/applications/screenvivid.desktop" << EOL
 [Desktop Entry]
 Name=ScreenVivid
@@ -80,6 +89,7 @@ check_python_version
 create_virtual_environment
 install_app
 create_startup_script
+add_local_bin_to_path
 create_desktop_file
 download_icon
 
