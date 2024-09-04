@@ -1,0 +1,12 @@
+<svg viewBox="0 0 210 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs></defs>
+  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+  <circle style="fill: rgb(84, 94, 238);" transform="matrix(0.078176, 0.000061, 0, 0.078176, -16.807842, -19.439854)" cx="522" cy="555.5" r="307"></circle>
+  <g id="g-1" stroke-width="0" transform="matrix(1, 0, 0, 1, 26.402794, -3.000001)"></g>
+  <g id="g-2" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1, 0, 0, 1, 26.402794, -3.000001)"></g>
+  <g id="SVGRepo_iconCarrier" transform="matrix(2, 0, 0, 2, -24, -30)">
+    <path d="M28 20C25 20.1296 19 21.0889 19 23.8889C19 27.3889 29 26.6111 29 30.1111C29 32.9111 22.3333 33.8704 19 34" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+  </g>
+  <text style="fill: rgb(66, 80, 102); font-family: Arial, sans-serif; font-size: 38px; white-space: pre;" x="48" y="41.399">creenBolt</text>
+</svg>

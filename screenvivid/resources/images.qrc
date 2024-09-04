@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../resources/images/cursor/linux/cursor.png</file>
+        <file>../resources/images/cursor/linux/pointinghand.png</file>
+        <file>../resources/images/cursor/windows/cursor.png</file>
+        <file>../resources/images/cursor/windows/pointinghand.png</file>
+        <file>../resources/images/cursor/macos/cursor.png</file>
+        <file>../resources/images/cursor/macos/pointinghand.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0001.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0002.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0003.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0004.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0005.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0006.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0007.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0008.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0009.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0010.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0011.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0012.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0013.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0014.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0015.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0016.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0017.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0018.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0019.png</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0020.png</file>
+    </qresource>
+</RCC>
