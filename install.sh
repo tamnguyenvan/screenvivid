@@ -23,7 +23,7 @@ create_virtual_environment() {
 
 install_app() {
     echo "Installing ScreenVivid..."
-    pip install git+https://github.com/tamnguyenvan/screenbolt.git
+    pip install git+https://github.com/tamnguyenvan/screenvivid.git
 }
 
 create_startup_script() {
