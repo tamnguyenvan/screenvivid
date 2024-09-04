@@ -37,7 +37,7 @@ create_virtual_environment() {
 install_app() {
     log_step 3 "Installing ScreenVivid"
     if [ ! -d $HOME/.local/screenvivid_env/screenvivid ]; then
-        git clone https://github.com/tamnguyenvan/screenvivid.git $HOME/.local/screenvivid_env/screenvivid || handle_error "Failed to clone the repository."
+        git clone --quiet https://github.com/tamnguyenvan/screenvivid.git $HOME/.local/screenvivid_env/screenvivid || handle_error "Failed to clone the repository."
     fi
     cd $HOME/.local/screenvivid_env/screenvivid || handle_error "Failed to navigate to the ScreenVivid directory."
     pip install -r requirements.txt -q -q -q --exists-action i || handle_error "Failed to install required packages."
@@ -45,6 +45,7 @@ install_app() {
 
 create_startup_script() {
     log_step 4 "Creating startup script"
+    mkdir -p $HOME/.local/bin/screenvivid
     cat > "$HOME/.local/bin/screenvivid" << EOL
 #!/bin/bash
 source "$HOME/.local/screenvivid_env/bin/activate"
