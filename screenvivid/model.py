@@ -501,6 +501,14 @@ class VideoController(QObject):
     def total_frames(self):
         return self.video_processor.total_frames
 
+    @Property(int)
+    def start_frame(self):
+        return self.video_processor.start_frame
+
+    @Property(int)
+    def end_frame(self):
+        return self.video_processor.end_frame
+
     @Property(float)
     def video_len(self):
         return self.video_processor.video_len

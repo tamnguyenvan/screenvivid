@@ -45,39 +45,59 @@ FocusScope {
 
             ColumnLayout {
                 anchors.fill: parent
-                Layout.alignment: Qt.AlignHCenter
-                Layout.margins: 4
-                RowLayout {
+                spacing: 2
+
+                // First row
+                Item {
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignHCenter
-                    Image {
-                        source: "qrc:/resources/icons/clip.svg"
-                    }
-                    Label {
-                        text: qsTr("Clip")
+                    Layout.preferredHeight: parent.height / 2 - 1
+                    clip: true
+
+                    RowLayout {
+                        anchors.centerIn: parent
+                        width: Math.min(parent.width, implicitWidth)
+                        spacing: 4
+
+                        Image {
+                            source: "qrc:/resources/icons/clip.svg"
+                            Layout.preferredWidth: 16
+                            Layout.preferredHeight: 16
+                        }
+                        Label {
+                            text: qsTr("Clip")
+                            elide: Text.ElideRight
+                        }
                     }
                 }
 
-                RowLayout {
+                // Second row
+                Item {
                     Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: 10
+                    Layout.preferredHeight: parent.height / 2 - 1
+                    clip: true
 
                     RowLayout {
+                        anchors.centerIn: parent
+                        width: Math.min(parent.width, implicitWidth)
+                        spacing: 4
+
                         Image {
                             source: "qrc:/resources/icons/zoom.svg"
+                            Layout.preferredWidth: 16
+                            Layout.preferredHeight: 16
                         }
-
                         Label {
                             text: clipLen.toFixed(1) + "s"
+                            elide: Text.ElideRight
                         }
-
                         Image {
                             source: "qrc:/resources/icons/clock.svg"
+                            Layout.preferredWidth: 16
+                            Layout.preferredHeight: 16
                         }
-
                         Label {
                             text: qsTr("1x")
+                            elide: Text.ElideRight
                         }
                     }
                 }

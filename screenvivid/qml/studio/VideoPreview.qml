@@ -120,7 +120,7 @@ Item {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 12
                             onMoved: {
-                                var currentFrame = parseInt(value * videoController.total_frames * 0.01)
+                                var currentFrame = parseInt(value * videoController.end_frame * 0.01)
                                 videoController.jump_to_frame(currentFrame)
                             }
                         }
@@ -218,7 +218,7 @@ Item {
         Connections {
             target: videoController
             function onCurrentFrameChanged(currentFrame) {
-                var progress = 100 * currentFrame / videoController.total_frames
+                var progress = 100.0 * currentFrame / (videoController.end_frame - videoController.start_frame)
                 fullScreenTimeSlider.value = progress
 
                  // Update elapsed time
@@ -226,7 +226,8 @@ Item {
                 elapsedTime.text = formatTime(elapsedSeconds)
 
                 // Update total time
-                var totalSeconds = videoController.total_frames / videoController.fps
+                var totalSeconds = parseFloat(videoController.end_frame - videoController.start_frame) / videoController.fps
+                totalSeconds = Math.ceil(totalSeconds)
                 totalTime.text = formatTime(totalSeconds)
             }
 
