@@ -95,15 +95,11 @@ brew install curl git python3 tcl-tk
 ## Current Limitations
 
 - Advanced features like zoom, audio capture, and webcam integration are not yet available.
-- Limited to Ubuntu/Debian and Windows platforms (more Linux distributions and potentially MacOS support coming soon).
 
 ## Roadmap
 
 We're constantly working to improve ScreenVivid. Here are some features we're planning to add in the future:
-
-- Support for more Linux distributions
-- Advanced editing features (zoom, audio, webcam integration)
-- Cloud storage integration
+- [ ] Advanced editing features (zoom, audio, webcam integration)
 
 ## Support
 
