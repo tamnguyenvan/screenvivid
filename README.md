@@ -107,7 +107,7 @@ If you encounter any issues or have questions, please:
 
 1. Check our [FAQ](#faqs)
 2. Visit our [community forums](https://discord.gg/NKtmBnR6nE)
-3. Contact us at tamn.work@gmail.com
+3. Contact us at tamnnv.work@gmail.com
 
 ## License
 
