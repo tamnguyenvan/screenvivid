@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
-import QtQuick.Controls.Material
 
 Item {
     id: root
@@ -10,59 +9,86 @@ Item {
     Layout.fillHeight: true
 
     property var gradientColors: ["#4A249D", "#009FBD"]
-    property string gradientType: "LinearGradient"
     property real gradientAngle: 0
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 4
+        spacing: 20
 
-        // Preview
         Rectangle {
             id: gradientPreview
             Layout.fillWidth: true
-            Layout.preferredHeight: 50
-            radius: 4
+            Layout.preferredHeight: 100
+            radius: 8
 
-            Gradient {
-                id: linearGradient
+            gradient: Gradient {
                 orientation: (gradientAngle / 360 + 1)
-                GradientStop {
-                    position: 0.0
-                    color: gradientColors[0]
-                }
-                GradientStop {
-                    position: 1.0
-                    color: gradientColors[1]
-                }
+                GradientStop { position: 0.0; color: gradientColors[0] }
+                GradientStop { position: 1.0; color: gradientColors[1] }
             }
-            gradient: gradientType === "LinearGradient" ? linearGradient : null
         }
 
-        // Options
         GridLayout {
             columns: 2
             Layout.fillWidth: true
-            Layout.preferredHeight: 30
+            rowSpacing: 15
+            columnSpacing: 10
 
             Label {
                 text: "Angle:"
+                color: "#AAAAAA"
             }
 
-            SpinBox {
+            RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 30
-                from: 0
-                to: 360
-                value: gradientAngle
-                stepSize: 1
-                editable: true
+                spacing: 10
 
-                onValueChanged: gradientAngle = value
+                Slider {
+                    id: angleSlider
+                    Layout.fillWidth: true
+                    from: 0
+                    to: 360
+                    value: gradientAngle
+                    stepSize: 1
+
+                    background: Rectangle {
+                        x: angleSlider.leftPadding
+                        y: angleSlider.topPadding + angleSlider.availableHeight / 2 - height / 2
+                        width: angleSlider.availableWidth
+                        height: 4
+                        radius: 2
+                        color: "#2A2E32"
+
+                        Rectangle {
+                            width: angleSlider.visualPosition * parent.width
+                            height: parent.height
+                            color: "#3A7BED"
+                            radius: 2
+                        }
+                    }
+
+                    handle: Rectangle {
+                        x: angleSlider.leftPadding + angleSlider.visualPosition * (angleSlider.availableWidth - width)
+                        y: angleSlider.topPadding + angleSlider.availableHeight / 2 - height / 2
+                        width: 16
+                        height: 16
+                        radius: 8
+                        color: angleSlider.pressed ? "#FFFFFF" : "#DDDDDD"
+                    }
+
+                    onValueChanged: gradientAngle = value
+                }
+
+                Label {
+                    text: gradientAngle.toFixed(0) + "°"
+                    color: "#FFFFFF"
+                    font.pixelSize: 14
+                }
             }
 
             Label {
                 text: "Start Color:"
+                color: "#AAAAAA"
             }
             Rectangle {
                 width: 50
@@ -72,11 +98,13 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: colorDialog1.open()
+                    cursorShape: Qt.PointingHandCursor
                 }
             }
 
             Label {
                 text: "End Color:"
+                color: "#AAAAAA"
             }
             Rectangle {
                 width: 50
@@ -86,47 +114,43 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: colorDialog2.open()
+                    cursorShape: Qt.PointingHandCursor
                 }
             }
         }
 
-        // Apply
-        Item {
-            Layout.fillWidth: true
+        Button {
+            text: qsTr("Apply")
+            Layout.alignment: Qt.AlignCenter
+            implicitWidth: 120
+            implicitHeight: 40
 
-            Button {
-                anchors.centerIn: parent
-                text: qsTr("Apply")
-                Layout.alignment: Qt.AlignCenter
-                Material.background: studioWindow.accentColor
+            contentItem: Text {
+                text: parent.text
+                font: parent.font
+                color: "#FFFFFF"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
 
-                // onClicked: {
-                //     videoController.background = {
-                //         "type": "gradient",
-                //         "value": {
-                //             "colors": gradientColors,
-                //             "angle": gradientAngle
-                //         }
-                //     }
-                //     if (!isPlaying) {
-                //         videoController.get_current_frame()
-                //     }
-                // }
+            background: Rectangle {
+                color: parent.down ? "#2A5CA8" : "#3A7BED"
+                radius: 8
+            }
 
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: {
-                        videoController.background = {
-                            "type": "gradient",
-                            "value": {
-                                "colors": gradientColors,
-                                "angle": gradientAngle
-                            }
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    videoController.background = {
+                        "type": "gradient",
+                        "value": {
+                            "colors": gradientColors,
+                            "angle": gradientAngle
                         }
-                        if (!isPlaying) {
-                            videoController.get_current_frame()
-                        }
+                    }
+                    if (!isPlaying) {
+                        videoController.get_current_frame()
                     }
                 }
             }
@@ -137,8 +161,7 @@ Item {
         id: colorDialog1
         title: "Choose first color"
         onAccepted: {
-            gradientColors = [colorToHexString(
-                                  selectedColor), gradientColors[1]]
+            gradientColors = [colorToHexString(selectedColor), gradientColors[1]]
         }
     }
 
@@ -146,13 +169,11 @@ Item {
         id: colorDialog2
         title: "Choose second color"
         onAccepted: {
-            gradientColors = [gradientColors[0], colorToHexString(
-                                  selectedColor)]
+            gradientColors = [gradientColors[0], colorToHexString(selectedColor)]
         }
     }
 
     function colorToHexString(color) {
-        return "#" + Qt.rgba(color.r, color.g, color.b,
-                             1).toString().substr(1, 6)
+        return "#" + Qt.rgba(color.r, color.g, color.b, 1).toString().substr(1, 6)
     }
 }

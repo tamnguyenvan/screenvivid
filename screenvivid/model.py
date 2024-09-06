@@ -563,6 +563,14 @@ class VideoController(QObject):
     def background(self, value):
         self.video_processor.background = value
 
+    @Property(float)
+    def cursor_scale(self):
+        return self.video_processor.cursor_scale
+
+    @cursor_scale.setter
+    def cursor_scale(self, value):
+        self.video_processor.cursor_scale = value
+
     @Property(list, notify=outputSizeChanged)
     def output_size(self):
         return self.video_processor.output_size
@@ -700,8 +708,12 @@ class VideoProcessor(QObject):
         self._inset = 0
         self._border_radius = 14
         self._background = {"type": "wallpaper", "value": 1}
+        self._cursor_scale = 1.5
         self._transforms = None
         self._mouse_events = []
+        self._region = None
+        self._x_offset = None
+        self._y_offset = None
 
     @property
     def aspect_ratio(self):
@@ -747,6 +759,21 @@ class VideoProcessor(QObject):
     def background(self, value):
         self._background = value
         self._transforms["background"] = transforms.Background(background=value)
+
+    @property
+    def cursor_scale(self):
+        return self._cursor_scale
+
+    @cursor_scale.setter
+    def cursor_scale(self, value):
+        self._current_scale = value
+
+        self._transforms["cursor"] = transforms.Cursor(
+            move_data=self._mouse_events,
+            cursors_map=self._cursors_map,
+            offsets=(self._x_offset, self._y_offset),
+            scale=value
+        )
 
     @property
     def total_frames(self):
@@ -840,11 +867,13 @@ class VideoProcessor(QObject):
 
             self._mouse_events = metadata.get("mouse_events", {}).get("move", {}) if metadata else {}
             self._cursors_map = metadata.get("mouse_events", {}).get("cursors_map", {}) if metadata else {}
-            region = metadata.get("region", []) if metadata else []
-            if region:
-                x_offset, y_offset = region[:2]
+            self._region = metadata.get("region", []) if metadata else []
+            if self._region:
+                x_offset, y_offset = self._region[:2]
             else:
                 x_offset, y_offset = None, None
+            self._x_offset = x_offset
+            self._y_offset = y_offset
             self._transforms = transforms.Compose({
                 "aspect_ratio": transforms.AspectRatio(self._aspect_ratio),
                 "cursor": transforms.Cursor(move_data=self._mouse_events, cursors_map=self._cursors_map, offsets=(x_offset, y_offset)),

@@ -119,6 +119,32 @@ Item {
                             value: 0
                             Layout.fillWidth: true
                             Layout.preferredHeight: 12
+
+                            background: Rectangle {
+                                x: fullScreenTimeSlider.leftPadding
+                                y: fullScreenTimeSlider.topPadding + fullScreenTimeSlider.availableHeight / 2 - height / 2
+                                width: fullScreenTimeSlider.availableWidth
+                                height: 6
+                                radius: 2
+                                color: "#2A2E32"
+
+                                Rectangle {
+                                    width: fullScreenTimeSlider.visualPosition * parent.width
+                                    height: parent.height
+                                    color: "#545EEE"
+                                    radius: 2
+                                }
+                            }
+
+                            handle: Rectangle {
+                                x: fullScreenTimeSlider.leftPadding + fullScreenTimeSlider.visualPosition * (fullScreenTimeSlider.availableWidth - width)
+                                y: fullScreenTimeSlider.topPadding + fullScreenTimeSlider.availableHeight / 2 - height / 2
+                                width: 16
+                                height: 16
+                                radius: 8
+                                color: fullScreenTimeSlider.pressed ? "#FFFFFF" : "#DDDDDD"
+                            }
+
                             onMoved: {
                                 var currentFrame = parseInt(value * videoController.end_frame * 0.01)
                                 videoController.jump_to_frame(currentFrame)

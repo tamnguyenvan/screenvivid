@@ -1,51 +1,76 @@
 import QtQuick
-import QtQuick.Controls.Material
+import QtQuick.Controls
 import QtQuick.Layouts
 
-ColumnLayout {
-    id: backgroundSettings
+Item {
+    id: root
     Layout.fillWidth: true
-    Layout.fillHeight: true
-    spacing: 10
+    Layout.preferredHeight: 400
 
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: 8
-        Image {
-            source: "qrc:/resources/icons/background.svg"
-            sourceSize: Qt.size(24, 24)
-            Layout.alignment: Qt.AlignVCenter
-        }
+    ColumnLayout {
+        anchors.fill: parent
+        spacing: 20
 
-        Label {
-            text: qsTr("Background")
-            font.pixelSize: 16
-        }
-    }
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 12
 
-    TabBar {
-        id: backgroundSettingsBar
-        Layout.fillWidth: true
-        Layout.preferredHeight: 50
+            Image {
+                source: "qrc:/resources/icons/background.svg"
+                sourceSize: Qt.size(24, 24)
+                Layout.alignment: Qt.AlignVCenter
+            }
 
-        Repeater {
-            model: ["Wallpaper", "Gradient", "Color", "Image"]
-
-            TabButton {
-                text: modelData
-                Layout.fillWidth: true
+            Label {
+                text: qsTr("Background")
+                font.pixelSize: 18
+                font.weight: Font.Medium
+                color: "#FFFFFF"
             }
         }
-    }
 
-    StackLayout {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        currentIndex: backgroundSettingsBar.currentIndex
+        TabBar {
+            id: backgroundSettingsBar
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            background: Rectangle {
+                color: "#2A2E32"
+                radius: 8
+            }
 
-        WallpaperPage {}
-        GradientPage {}
-        ColorPage {}
-        ImagePage {}
+            Repeater {
+                model: ["Wallpaper", "Gradient", "Color", "Image"]
+                TabButton {
+                    text: modelData
+                    // width: Math.max(100, backgroundSettingsBar.width / 4)
+                    Layout.fillWidth: true
+                    height: 40
+
+                    contentItem: Text {
+                        text: parent.text
+                        font: parent.font
+                        color: parent.checked ? "#FFFFFF" : "#AAAAAA"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        color: parent.checked ? "#3A7BED" : "transparent"
+                        radius: 8
+                    }
+                }
+            }
+        }
+
+        StackLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            currentIndex: backgroundSettingsBar.currentIndex
+
+            WallpaperPage {}
+            GradientPage {}
+            ColorPage {}
+            ImagePage {}
+        }
     }
 }

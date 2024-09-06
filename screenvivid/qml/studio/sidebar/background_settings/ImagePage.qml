@@ -19,7 +19,7 @@ Item {
             color: "transparent"
             border.width: 2
             border.color: "gray"
-            radius: 4
+            radius: 8
 
             DropArea {
                 anchors.fill: parent

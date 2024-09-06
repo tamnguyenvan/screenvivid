@@ -22,8 +22,9 @@
         <file>../qml/studio/sidebar/background_settings/GradientPage.qml</file>
         <file>../qml/studio/sidebar/background_settings/ColorPage.qml</file>
         <file>../qml/studio/sidebar/background_settings/ImagePage.qml</file>
-
         <file>../qml/studio/sidebar/shape_settings/ShapeSettings.qml</file>
+        <file>../qml/studio/sidebar/cursor_settings/CursorSettings.qml</file>
+
         <file>../qml/studio/Studio.qml</file>
         <file>../qml/studio/TopBar.qml</file>
         <file>../qml/studio/ControlButtons.qml</file>

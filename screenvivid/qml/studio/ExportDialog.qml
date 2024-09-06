@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Controls.Material
 
 Dialog {
-    id: exportDialog
+    id: root
     title: "Export"
     width: Screen.width * 0.4
     height: Screen.height * 0.5
@@ -16,6 +16,8 @@ Dialog {
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
+    property color accentColor: "#545EEE"
+    property color backgroundColor: "#808080"
     property var outputSize
     property string currentSize: "1080p"
     property var sizeMap: {
@@ -249,6 +251,22 @@ Dialog {
                         text: "Export to file"
                         highlighted: true
                         enabled: !isExporting
+
+                        background: Rectangle {
+                            color: parent.pressed ? Qt.darker(root.accentColor, 1.2) :
+                                parent.hovered ? Qt.lighter(root.accentColor, 1.1) : root.accentColor
+                            radius: 8
+                            Behavior on color {
+                                ColorAnimation { duration: 150 }
+                            }
+                        }
+
+                        contentItem: Text {
+                            text: parent.text
+                            color: "#FFFFFF"
+                            Layout.alignment: Qt.AlignVCenter
+                        }
+
                         onClicked: {
                             isExporting = true
                             startTime = new Date().getTime()
@@ -294,9 +312,18 @@ Dialog {
                     // }
                     Button {
                         text: "Cancel"
+
+                        background: Rectangle {
+                            color: parent.pressed ? Qt.darker(root.backgroundColor, 1.2) :
+                                parent.hovered ? Qt.lighter(root.backgroundColor, 1.1) : root.backgroundColor
+                            radius: 8
+                            Behavior on color {
+                                ColorAnimation { duration: 150 }
+                            }
+                        }
                         onClicked: {
                             videoController.cancel_export()
-                            exportDialog.close()
+                            root.close()
                         }
                     }
                 }
@@ -322,11 +349,21 @@ Dialog {
                     id: cancelExportButton
                     text: "Cancel Export"
                     visible: isExporting
+
+                    background: Rectangle {
+                        color: parent.pressed ? Qt.darker(root.backgroundColor, 1.2) :
+                            parent.hovered ? Qt.lighter(root.backgroundColor, 1.1) : root.backgroundColor
+                        radius: 8
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+
                     onClicked: {
                         videoController.cancel_export()
                         exportProgressBar.visible = false
                         cancelExportButton.visible = false
-                        exportDialog.close()
+                        root.close()
                     }
                 }
 
@@ -363,7 +400,17 @@ Dialog {
                 Button {
                     text: "Close"
                     Layout.alignment: Qt.AlignHCenter
-                    onClicked: exportDialog.close()
+
+                    background: Rectangle {
+                        color: parent.pressed ? Qt.darker(root.backgroundColor, 1.2) :
+                            parent.hovered ? Qt.lighter(root.backgroundColor, 1.1) : root.backgroundColor
+                        radius: 8
+                        Behavior on color {
+                            ColorAnimation { duration: 150 }
+                        }
+                    }
+
+                    onClicked: root.close()
                 }
             }
         }

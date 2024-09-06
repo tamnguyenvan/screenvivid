@@ -186,10 +186,11 @@ class Inset(BaseTransform):
         return kwargs
 
 class Cursor(BaseTransform):
-    def __init__(self, move_data, cursors_map, offsets, size=64):
+    def __init__(self, move_data, cursors_map, offsets, size=32, scale=1.5):
         super().__init__()
 
         self.size = size
+        self.scale = scale
         self.offsets = offsets
         self.move_data = move_data
         self.cursors_map = cursors_map
@@ -201,12 +202,11 @@ class Cursor(BaseTransform):
         arrow_image = self._load_image(f":/resources/images/cursor/{sub_folder}/cursor.png")
         arrow_image = cv2.cvtColor(arrow_image, cv2.COLOR_RGBA2BGRA)
         height, width = arrow_image.shape[:2]
-        if height > width:
-            new_height = self.size
-            new_width = int(self.size * width / height)
-        else:
-            new_width = self.size
-            new_height = int(self.size * height / width)
+        target_size = int(self.size * self.scale)
+
+        ratio = min(target_size / height, target_size / width)
+        new_width = int(width * ratio)
+        new_height = int(height * ratio)
 
         arrow_image = cv2.resize(arrow_image, (new_width, new_height))
 
