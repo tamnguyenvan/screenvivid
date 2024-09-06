@@ -82,7 +82,7 @@ Window {
 
                         SideBar {
                             id: sidebar
-                            Layout.preferredWidth: 400
+                            Layout.preferredWidth: 450
                             Layout.fillHeight: true
                         }
 

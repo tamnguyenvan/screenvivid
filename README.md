@@ -12,7 +12,6 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
   - [Linux Installation](#linux-installation)
   - [Windows Installation](#windows-installation)
   - [Troubleshooting Installation](#troubleshooting-installation)
-- [Usage](#usage)
 - [Advantages](#advantages)
 - [Current Limitations](#current-limitations)
 - [Roadmap](#roadmap)
@@ -31,7 +30,7 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 ### System Requirements
 
 - **Ubuntu/Debian**:
-  - The app is based on PySide6, which requires glibc-2.28+. It supports Ubuntu 20.04 or later, and Debian 10 or later.
+  - The app is based on PySide6, which requires glibc-2.28+. It supports Ubuntu 20.04 or later, Debian 10 or later, and other distributions with glibc 2.28+ such as Fedora 29+, CentOS 8+, and OpenSUSE Leap 15.1+.
   - 4GB RAM (8GB recommended)
 - **Windows**:
   - Windows 10 or later
@@ -41,18 +40,20 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 
 1. Install system dependecies if needed:
    ```bash
-   # Ubuntu/Debian
-   sudo apt install curl git python3-tk python3-dev libxcb-cursor-dev -y
+   # Debian/Ubuntu-based (e.g., Ubuntu, Linux Mint)
+   sudo apt-get install curl git python3-tk python3-dev python3-venv libxcb-cursor0 -y
 
-   # Fedora/CentOS
-   sudo yum install
+   # Fedora/CentOS 8 and later (Red Hat-based)
+   sudo dnf install curl git python3-tkinter python3-devel python3-venv xcb-util-cursor -y
    ```
 
-2. Install:
+2. Install ScreenVivid:
 
    ```bash
-   curl -sL https://github.com/tamnguyenvan/screenvivid/raw/main/install.sh | bash
+   curl -sL https://github.com/tamnguyenvan/screenvivid/raw/main/scripts/install-linux.sh | bash
    ```
+
+After the installation finished, you can search `ScreenVivid` in Appplication menu and use it. You can also run `screenvivid` on a new terminal.
 
 ### Windows Installation
 
@@ -69,27 +70,18 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 
 5. Launch ScreenVivid from the Start menu or desktop shortcut.
 
-### Troubleshooting Installation
+### MacOS Installation
+1. Install system dependecies if needed:
+```bash
+brew install curl git python3 tcl-tk
+```
+2. Install ScreenVivid:
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
 
-- **Ubuntu/Debian**:
-  - If you see "dependency problems", try:
-    ```
-    sudo apt-get install -f
-    ```
-  - For "permission denied" errors, ensure you're using `sudo`.
+## FAQs
 
-- **Windows**:
-  - If the installer doesn't run, right-click and select "Run as administrator".
-  - For "Windows protected your PC" message, click "More info" then "Run anyway".
-
-- For any other issues, please check our [FAQ](https://screenvivid.com/faq) or [contact support](#support).
-
-## Usage
-
-1. Launch ScreenVivid from your applications menu or start menu.
-2. Click the "Record" button to start capturing your screen.
-3. Use the editing tools to enhance your recording after capture.
-4. Save your edited video in your preferred format.
 
 ## Advantages
 
@@ -109,7 +101,6 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 We're constantly working to improve ScreenVivid. Here are some features we're planning to add in the future:
 
 - Support for more Linux distributions
-- MacOS compatibility
 - Advanced editing features (zoom, audio, webcam integration)
 - Cloud storage integration
 
@@ -117,9 +108,9 @@ We're constantly working to improve ScreenVivid. Here are some features we're pl
 
 If you encounter any issues or have questions, please:
 
-1. Check our [FAQ](https://screenvivid.com/faq)
-2. Visit our [community forums](https://community.screenvivid.com)
-3. Contact us at support@screenvivid.com
+1. Check our [FAQ](#faqs)
+2. Visit our [community forums](https://discord.gg/NKtmBnR6nE)
+3. Contact us at tamn.work@gmail.com
 
 ## License
 
