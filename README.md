@@ -11,6 +11,7 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
   - [System Requirements](#system-requirements)
   - [Linux Installation](#linux-installation)
   - [Windows Installation](#windows-installation)
+  - [MacOS Installation](#macos-installation)
   - [Troubleshooting Installation](#troubleshooting-installation)
 - [Advantages](#advantages)
 - [Current Limitations](#current-limitations)
