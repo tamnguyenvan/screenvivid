@@ -81,7 +81,7 @@ Window {
         id: minimizedBar
         visible: recording
         height: 60
-        width: Math.max(100, parent.width / 2)
+        width: Math.max(100, parent.width * 0.67)
         anchors.centerIn: parent
         radius: 10
         color: "#2e2e2e"
@@ -104,14 +104,14 @@ Window {
             anchors.topMargin: 4
             anchors.bottomMargin: 4
 
-            RowLayout {
+            Item {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                spacing: 10
 
                 Button {
-                    Layout.fillHeight: true
-                    Layout.fillWidth: true
+                    anchors.centerIn: parent
+                    width: Math.max(120, parent.width - 20)
+                    height: parent.height
 
                     background: Rectangle {
                         color: parent.hovered ? Qt.lighter("red", 1.2) : "red"
@@ -119,9 +119,7 @@ Window {
                     }
 
                     contentItem: RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 8
+                        anchors.centerIn: parent
                         spacing: 4
 
                         Image {

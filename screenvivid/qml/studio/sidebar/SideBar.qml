@@ -22,7 +22,8 @@ Rectangle {
         ColumnLayout {
             id: contentColumn
             width: parent.width
-            spacing: 20
+            spacing: 30
+
             anchors {
                 left: parent.left
                 right: parent.right

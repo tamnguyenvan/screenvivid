@@ -7,7 +7,7 @@ Item {
     Layout.fillWidth: true
     Layout.preferredHeight: 60
 
-    property color accentColor: "#545EEE"
+    readonly property color accentColor: "#545EEE"
     signal exportClicked()
 
     RowLayout {

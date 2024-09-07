@@ -6,43 +6,64 @@ import QtQuick.Dialogs
 Item {
     id: root
     Layout.fillWidth: true
-    Layout.fillHeight: true
+    Layout.preferredHeight: 200
 
     property var gradientColors: ["#4A249D", "#009FBD"]
     property real gradientAngle: 0
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 20
+        spacing: 15
 
-        Rectangle {
-            id: gradientPreview
+        RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 100
-            radius: 8
+            Layout.fillHeight: true
+            spacing: 20
 
-            gradient: Gradient {
-                orientation: (gradientAngle / 360 + 1)
-                GradientStop { position: 0.0; color: gradientColors[0] }
-                GradientStop { position: 1.0; color: gradientColors[1] }
-            }
-        }
+            // Left column: Color controls
+            GridLayout {
+                Layout.preferredWidth: parent.width * 0.6
+                columns: 2
 
-        GridLayout {
-            columns: 2
-            Layout.fillWidth: true
-            rowSpacing: 15
-            columnSpacing: 10
+                // Start Color
+                Label {
+                    text: "Start Color:"
+                    color: "#AAAAAA"
+                }
+                Rectangle {
+                    width: 50
+                    height: 25
+                    color: gradientColors[0]
+                    radius: 4
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: colorDialog1.open()
+                        cursorShape: Qt.PointingHandCursor
+                    }
+                }
 
-            Label {
-                text: "Angle:"
-                color: "#AAAAAA"
-            }
+                // End Color
+                Label {
+                    text: "End Color:"
+                    color: "#AAAAAA"
+                }
+                Rectangle {
+                    width: 50
+                    height: 25
+                    color: gradientColors[1]
+                    radius: 4
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: colorDialog2.open()
+                        cursorShape: Qt.PointingHandCursor
+                    }
+                }
 
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 10
-
+                // Angle Slider
+                Label {
+                    text: "Angle: " + gradientAngle.toFixed(0) + "°"
+                    color: "#AAAAAA"
+                }
                 Slider {
                     id: angleSlider
                     Layout.fillWidth: true
@@ -50,80 +71,31 @@ Item {
                     to: 360
                     value: gradientAngle
                     stepSize: 1
-
-                    background: Rectangle {
-                        x: angleSlider.leftPadding
-                        y: angleSlider.topPadding + angleSlider.availableHeight / 2 - height / 2
-                        width: angleSlider.availableWidth
-                        height: 4
-                        radius: 2
-                        color: "#2A2E32"
-
-                        Rectangle {
-                            width: angleSlider.visualPosition * parent.width
-                            height: parent.height
-                            color: "#3A7BED"
-                            radius: 2
-                        }
-                    }
-
-                    handle: Rectangle {
-                        x: angleSlider.leftPadding + angleSlider.visualPosition * (angleSlider.availableWidth - width)
-                        y: angleSlider.topPadding + angleSlider.availableHeight / 2 - height / 2
-                        width: 16
-                        height: 16
-                        radius: 8
-                        color: angleSlider.pressed ? "#FFFFFF" : "#DDDDDD"
-                    }
-
                     onValueChanged: gradientAngle = value
                 }
-
-                Label {
-                    text: gradientAngle.toFixed(0) + "°"
-                    color: "#FFFFFF"
-                    font.pixelSize: 14
-                }
             }
 
-            Label {
-                text: "Start Color:"
-                color: "#AAAAAA"
-            }
+            // Right column: Gradient Preview
             Rectangle {
-                width: 50
-                height: 30
-                color: gradientColors[0]
-                radius: 4
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: colorDialog1.open()
-                    cursorShape: Qt.PointingHandCursor
-                }
-            }
+                id: gradientPreview
+                Layout.preferredWidth: parent.width * 0.3
+                Layout.preferredHeight: width
+                radius: 8
 
-            Label {
-                text: "End Color:"
-                color: "#AAAAAA"
-            }
-            Rectangle {
-                width: 50
-                height: 30
-                color: gradientColors[1]
-                radius: 4
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: colorDialog2.open()
-                    cursorShape: Qt.PointingHandCursor
+                gradient: Gradient {
+                    orientation: (gradientAngle / 360 + 1)
+                    GradientStop { position: 0.0; color: gradientColors[0] }
+                    GradientStop { position: 1.0; color: gradientColors[1] }
                 }
             }
         }
 
+        // Apply Button
         Button {
             text: qsTr("Apply")
-            Layout.alignment: Qt.AlignCenter
-            implicitWidth: 120
-            implicitHeight: 40
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: 120
+            Layout.preferredHeight: 50
 
             contentItem: Text {
                 text: parent.text
@@ -159,7 +131,7 @@ Item {
 
     ColorDialog {
         id: colorDialog1
-        title: "Choose first color"
+        title: "Choose start color"
         onAccepted: {
             gradientColors = [colorToHexString(selectedColor), gradientColors[1]]
         }
@@ -167,7 +139,7 @@ Item {
 
     ColorDialog {
         id: colorDialog2
-        title: "Choose second color"
+        title: "Choose end color"
         onAccepted: {
             gradientColors = [gradientColors[0], colorToHexString(selectedColor)]
         }

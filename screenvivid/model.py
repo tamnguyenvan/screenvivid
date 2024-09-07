@@ -706,7 +706,7 @@ class VideoProcessor(QObject):
         self._aspect_ratio = "Auto"
         self._padding = 100
         self._inset = 0
-        self._border_radius = 14
+        self._border_radius = 8
         self._background = {"type": "wallpaper", "value": 1}
         self._cursor_scale = 1.5
         self._transforms = None

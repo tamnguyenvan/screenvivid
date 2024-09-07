@@ -5,22 +5,21 @@ import QtQuick.Layouts
 Item {
     id: root
     Layout.fillWidth: true
-    Layout.preferredHeight: 400
+    Layout.preferredHeight: 500
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 20
+        spacing: 10
 
         RowLayout {
             Layout.fillWidth: true
+            Layout.preferredHeight: 40
             spacing: 12
-
             Image {
                 source: "qrc:/resources/icons/background.svg"
                 sourceSize: Qt.size(24, 24)
                 Layout.alignment: Qt.AlignVCenter
             }
-
             Label {
                 text: qsTr("Background")
                 font.pixelSize: 18
@@ -37,15 +36,12 @@ Item {
                 color: "#2A2E32"
                 radius: 8
             }
-
             Repeater {
                 model: ["Wallpaper", "Gradient", "Color", "Image"]
                 TabButton {
                     text: modelData
-                    // width: Math.max(100, backgroundSettingsBar.width / 4)
                     Layout.fillWidth: true
                     height: 40
-
                     contentItem: Text {
                         text: parent.text
                         font: parent.font
@@ -53,7 +49,6 @@ Item {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                     }
-
                     background: Rectangle {
                         color: parent.checked ? "#3A7BED" : "transparent"
                         radius: 8
@@ -62,15 +57,21 @@ Item {
             }
         }
 
-        StackLayout {
+        ScrollView {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            currentIndex: backgroundSettingsBar.currentIndex
+            clip: true
+            ScrollBar.vertical.policy: ScrollBar.AsNeeded
 
-            WallpaperPage {}
-            GradientPage {}
-            ColorPage {}
-            ImagePage {}
+            StackLayout {
+                width: root.width
+                currentIndex: backgroundSettingsBar.currentIndex
+
+                WallpaperPage {}
+                GradientPage {}
+                ColorPage {}
+                ImagePage {}
+            }
         }
     }
 }

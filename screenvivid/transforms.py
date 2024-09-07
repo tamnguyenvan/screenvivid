@@ -285,7 +285,6 @@ class BorderShadow(BaseTransform):
         rectangle_width, rectangle_height = foreground_size
         radius = self.radius
 
-        # Tạo nền đen
         image = np.zeros((height, width, 3), dtype=np.uint8)
 
         x = x_offset

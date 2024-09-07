@@ -31,7 +31,6 @@ Item {
 
         ColumnLayout {
             Layout.fillWidth: true
-            Layout.leftMargin: 10
             spacing: 40
 
             // Padding
@@ -142,7 +141,7 @@ Item {
                     id: roundnessSlider
                     from: 0
                     to: 100
-                    value: 14
+                    value: 8
                     Layout.fillWidth: true
 
                     background: Rectangle {

@@ -52,26 +52,6 @@ Dialog {
     }
     property string outputPath: ""
 
-    // property string currentCompression: "Studio"
-    // property var compressionInfo: {
-    //     "Studio": {
-    //         "description": "Highest quality, best for further editing. Compression is almost impossible to notice.",
-    //         "impact": "Quality setting does not impact export speed."
-    //     },
-    //     "Social Media": {
-    //         "description": "High quality, optimized for social media platforms. Slight compression, barely noticeable.",
-    //         "impact": "Quality setting may slightly reduce export time."
-    //     },
-    //     "Web": {
-    //         "description": "Good quality, balanced for web viewing. Moderate compression, some loss in detail.",
-    //         "impact": "Quality setting reduces export time and file size."
-    //     },
-    //     "Web (Low)": {
-    //         "description": "Lower quality, optimized for fast loading. Higher compression, noticeable loss in quality.",
-    //         "impact": "Quality setting significantly reduces export time and file size."
-    //     }
-    // }
-
     property string exportFormat: "MP4"
     property int exportFps: 30
     property string exportCompression: "Studio"
@@ -165,19 +145,6 @@ Dialog {
                         }
                     }
 
-                    // RowLayout {
-                    //     Text {
-                    //         text: "Frame rate"
-                    //         color: "white"
-                    //     }
-                    //     ComboBox {
-                    //         id: fpsComboBox
-                    //         model: ["25 FPS", "60 FPS", "120 FPS"]
-                    //         currentIndex: 0
-                    //         onCurrentTextChanged: exportFps = parseInt(
-                    //                                   currentText.split(" ")[0])
-                    //     }
-                    // }
                 }
 
                 RowLayout {
@@ -213,36 +180,6 @@ Dialog {
                     text: outputSize ? outputSize[0] + "px x " + outputSize[1] + "px" : ""
                     color: "gray"
                 }
-
-                // RowLayout {
-                //     Text {
-                //         text: "Quality (Compression level)"
-                //         color: "white"
-                //     }
-                //     ComboBox {
-                //         id: compressionComboBox
-                //         model: ["Studio", "Social Media", "Web", "Web (Low)"]
-                //         currentIndex: 0
-                //         onCurrentTextChanged: {
-                //             currentCompression = currentText
-                //             exportCompression = currentText
-                //         }
-                //     }
-                // }
-                // Text {
-                //     text: compressionInfo[currentCompression].description
-                //     color: "gray"
-                //     wrapMode: Text.WordWrap
-                //     Layout.fillWidth: true
-                // }
-                // Text {
-                //     text: compressionInfo[currentCompression].impact
-                //     color: "gray"
-                // }
-
-                // Item {
-                //     Layout.fillHeight: true
-                // }
 
                 RowLayout {
                     Layout.alignment: Qt.AlignRight
@@ -303,13 +240,7 @@ Dialog {
                             estimatedTimeText.visible = true
                         }
                     }
-                    // Button {
-                    //     text: "Copy to clipboard"
-                    //     onClicked: {
 
-                    //         // Handle copy logic
-                    //     }
-                    // }
                     Button {
                         text: "Cancel"
 
