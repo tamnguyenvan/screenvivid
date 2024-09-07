@@ -100,14 +100,6 @@ Window {
             }
         }
 
-        // MessageDialog {
-        //     id: errorDialog
-        //     title: "Error"
-        //     text: "Unable to load video. Please check the file and try again."
-        //     buttons: MessageDialog.Ok
-        //     modality: Qt.ApplicationModal
-        // }
-
         Keys.onPressed: event => {
                             if (event.key === Qt.Key_Escape) {
                                 Qt.quit()
