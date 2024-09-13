@@ -1,5 +1,5 @@
-import QtQuick
-import QtQuick.Layouts
+import QtQuick 6.7
+import QtQuick.Layouts 6.7
 
 Item {
     id: root

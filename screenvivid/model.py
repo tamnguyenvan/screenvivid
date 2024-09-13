@@ -145,7 +145,7 @@ class ClipTrackModel(QAbstractListModel):
     def delete_clip(self, index):
         self.reset_cut_clip_data()
 
-        if self._clips and len(self._clips) > 1 and index == 0 or index == len(self._clips) - 1:
+        if self._clips and len(self._clips) > 1 and index < 1 or index == len(self._clips) - 1:
             deleted_clip = self._clips[index]
             def do_delete():
                 self._clips.pop(index)
@@ -579,11 +579,11 @@ class VideoController(QObject):
     def trim_left(self, start_frame):
         def do_trim_left():
             self.video_processor.append_start_frame(start_frame)
-            self.video_processor.jump_to_frame(0)
+            # self.video_processor.jump_to_frame(0)
 
         def undo_trim_left():
             self.video_processor.pop_start_frame()
-            self.video_processor.jump_to_frame(0)
+            # self.video_processor.jump_to_frame(0)
 
         self.undo_redo_manager.do_action(do_trim_left, (do_trim_left, undo_trim_left))
 
@@ -591,7 +591,7 @@ class VideoController(QObject):
     def trim_right(self, end_frame):
         def do_trim_right():
             self.video_processor.append_end_frame(end_frame)
-            self.video_processor.jump_to_frame(max(0, end_frame - 5))
+            # self.video_processor.jump_to_frame(max(0, end_frame - 5))
 
         def undo_trim_right():
             self.video_processor.pop_end_frame()
@@ -884,7 +884,6 @@ class VideoProcessor(QObject):
             })
 
             # Get first frame
-            # self.get_frame()
             self.jump_to_frame(0)
             return True
         except VideoLoadingError:
@@ -892,7 +891,7 @@ class VideoProcessor(QObject):
 
     def get_frame(self):
         try:
-
+            print('ssss', self.start_frame, 'curr', self.current_frame, 'end', self.end_frame)
             if self.start_frame + self.current_frame >= self.end_frame - 1:
                 self.pause()
                 return
@@ -949,8 +948,8 @@ class VideoProcessor(QObject):
 
     # @Slot(int)
     def jump_to_frame(self, target_frame):
-        internal_target_frame = self.start_frame + target_frame
-        if self.video.isOpened() and self.start_frame <= internal_target_frame < self.end_frame:
+        internal_target_frame = min(self.start_frame + target_frame, self.end_frame)
+        if self.video.isOpened() and self.start_frame <= internal_target_frame <= self.end_frame:
             self.video.set(cv2.CAP_PROP_POS_FRAMES, internal_target_frame)
             ret, frame = self.video.read()
             if ret:
@@ -961,7 +960,7 @@ class VideoProcessor(QObject):
     # @Slot()
     def get_current_frame(self):
         if self.video is not None and self.video.isOpened():
-            current_position = int(self.video.get(cv2.CAP_PROP_POS_FRAMES))
+            current_position = self.current_frame
             if current_position >= self.total_frames:
                 current_position -= 1
                 self.video.set(cv2.CAP_PROP_POS_FRAMES, current_position)
@@ -974,7 +973,6 @@ class VideoProcessor(QObject):
                 self.video.set(cv2.CAP_PROP_POS_FRAMES, current_position)
                 self.frameProcessed.emit(processed_frame)
                 self.current_frame = current_position
-                current_position = int(self.video.get(cv2.CAP_PROP_POS_FRAMES))
 
     def process_next_frame(self):
         # if self.video.isOpened():

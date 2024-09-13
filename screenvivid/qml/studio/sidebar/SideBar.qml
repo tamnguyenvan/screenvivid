@@ -1,6 +1,6 @@
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick 6.7
+import QtQuick.Layouts 6.7
+import QtQuick.Controls 6.7
 import "./background_settings"
 import "./shape_settings"
 import "./cursor_settings"

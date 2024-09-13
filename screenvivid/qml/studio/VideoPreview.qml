@@ -1,8 +1,8 @@
-import QtQuick
-import QtQuick.Window
-import QtQuick.Dialogs
-import QtQuick.Controls.Material
-import QtQuick.Layouts
+import QtQuick 6.7
+import QtQuick.Window 6.7
+import QtQuick.Dialogs 6.7
+import QtQuick.Controls.Material 6.7
+import QtQuick.Layouts 6.7
 
 Item {
     id: root
@@ -202,7 +202,7 @@ Item {
 
                             ToolButton {
                                 anchors.right: parent.right
-                                icon.source: "qrc:/resources/icons/full_screen_exit.svg"
+                                icon.source: "qrc:/resources/icons/exit_full_screen.svg"
                                 icon.color: "#e8eaed"
                                 onClicked: {
                                     fullScreenWindow.hide()

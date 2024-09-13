@@ -29,7 +29,7 @@
         <file>../resources/icons/window.svg</file>
         <file>../resources/icons/zoom.svg</file>
         <file>../resources/icons/full_screen.svg</file>
-        <file>../resources/icons/full_screen_exit.svg</file>
+        <file>../resources/icons/exit_full_screen.svg</file>
         <file>../resources/icons/screenvivid.svg</file>
     </qresource>
 </RCC>

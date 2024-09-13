@@ -1,7 +1,7 @@
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Dialogs
+import QtQuick 6.7
+import QtQuick.Layouts 6.7
+import QtQuick.Controls 6.7
+import QtQuick.Dialogs 6.7
 
 Item {
     id: root

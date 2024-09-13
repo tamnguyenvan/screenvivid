@@ -1,8 +1,8 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Controls.Material
-import QtQuick.Dialogs
+import QtQuick 6.7
+import QtQuick.Controls 6.7
+import QtQuick.Layouts 6.7
+import QtQuick.Controls.Material 6.7
+import QtQuick.Dialogs 6.7
 
 Item {
     id: imagePage
@@ -18,7 +18,7 @@ Item {
             Layout.preferredHeight: Math.min(parent.height * 0.7, 300)
             color: "transparent"
             border.width: 2
-            border.color: dropArea.containsDrag ? Material.accent : "gray"
+            border.color: dropArea.containsDrag ? Material.accent : "lightgray"
             radius: 8
 
             DropArea {
@@ -30,6 +30,7 @@ Item {
                 Image {
                     id: imagePreview
                     anchors.fill: parent
+                    anchors.margins: 4
                     fillMode: Image.PreserveAspectFit
                     visible: source.toString() !== ""
                     opacity: dropArea.containsDrag ? 0.7 : 1
@@ -68,16 +69,16 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             visible: imagePreview.source.toString() !== ""
-            spacing: 10
+            spacing: 2
 
-            Button {
-                text: "Change Image"
+            ToolButton {
+                icon.source: "qrc:/resources/icons/upload.svg"
                 onClicked: fileDialog.open()
-                Material.background: Material.primary
             }
 
-            Button {
-                text: "Remove Image"
+            ToolButton {
+                icon.source: "qrc:/resources/icons/trash.svg"
+
                 onClicked: {
                     imagePreview.source = ""
                     videoController.background = { "type": "color", "value": "#000000" }
@@ -85,7 +86,6 @@ Item {
                         videoController.get_current_frame()
                     }
                 }
-                Material.background: Material.accent
             }
         }
 

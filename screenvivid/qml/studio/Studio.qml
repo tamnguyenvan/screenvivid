@@ -1,8 +1,8 @@
-import QtQuick
-import QtQuick.Window
-import QtQuick.Layouts
-import QtQuick.Controls
-import QtQuick.Controls.Material
+import QtQuick 6.7
+import QtQuick.Window 6.7
+import QtQuick.Layouts 6.7
+import QtQuick.Controls 6.7
+import QtQuick.Controls.Material 6.7
 import "./sidebar"
 
 Window {

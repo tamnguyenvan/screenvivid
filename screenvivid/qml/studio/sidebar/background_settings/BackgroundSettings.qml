@@ -1,6 +1,6 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 6.7
+import QtQuick.Controls.Material 6.7
+import QtQuick.Layouts 6.7
 
 Item {
     id: root
@@ -50,7 +50,7 @@ Item {
                         verticalAlignment: Text.AlignVCenter
                     }
                     background: Rectangle {
-                        color: parent.checked ? "#3A7BED" : "transparent"
+                        color: parent.checked ? Material.primary : "transparent"
                         radius: 8
                     }
                 }

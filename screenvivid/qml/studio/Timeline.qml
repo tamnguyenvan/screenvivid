@@ -1,6 +1,6 @@
-import QtQuick
-import QtQuick.Controls.Material
-import QtQuick.Layouts
+import QtQuick 6.7
+import QtQuick.Controls.Material 6.7
+import QtQuick.Layouts 6.7
 
 // Timeline
 Repeater {

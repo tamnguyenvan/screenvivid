@@ -1,6 +1,6 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 6.7
+import QtQuick.Controls 6.7
+import QtQuick.Layouts 6.7
 
 Item {
     id: root
@@ -44,15 +44,19 @@ Item {
                 Text {
                     text: exportButton.text
                     color: "#FFFFFF"
-                    font.pixelSize: 16
                     Layout.alignment: Qt.AlignVCenter
                 }
             }
 
-            onClicked: {
-                console.log('click')
-                videoController.pause()
-                exportDialog.open()
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+
+                onPressed: {
+                    videoController.pause()
+                    exportDialog.open()
+                }
             }
         }
     }

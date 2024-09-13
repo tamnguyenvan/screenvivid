@@ -1,6 +1,6 @@
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
+import QtQuick 6.7
+import QtQuick.Layouts 6.7
+import QtQuick.Controls 6.7
 
 FocusScope {
     id: clipTrack
@@ -157,10 +157,13 @@ FocusScope {
                     if (index === 0) {
                         var startFrame = parseInt(clipTrackModel.get_clip(index).width / studioWindow.pixelsPerFrame)
                         videoController.trim_left(startFrame)
+                        videoController.jump_to_frame(0)
                     } else if (index === clipTrackModel.rowCount() - 1) {
                         const clipTrack = clipTrackModel.get_clip(index)
-                        var endFrame = clipTrack.x / studioWindow.pixelsPerFrame
+                        var relativeEndFrame = clipTrack.x / studioWindow.pixelsPerFrame
+                        var endFrame = videoController.start_frame + relativeEndFrame
                         videoController.trim_right(endFrame)
+                        videoController.jump_to_frame(relativeEndFrame - 5)
                     }
                     clipTrackModel.delete_clip(index)
                 }
