@@ -3,11 +3,11 @@
 
 #define MyAppName "ScreenVivid"
 #define MyAppVersion "X.X.X"
-#define MyAppPublisher "Black Photon"
+#define MyAppPublisher "Dark Photon"
 #define MyAppURL "https://www.screenvivid.com/"
 #define MyAppExeName "screenvivid.exe"
 #define MyAppAssocName MyAppName + " File"
-#define MyAppAssocExt ".myp"
+#define MyAppAssocExt ".mp4"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
 
 [Setup]
@@ -55,7 +55,7 @@ Root: HKA; Subkey: "Software\Classes\{#MyAppAssocExt}\OpenWithProgids"; ValueTyp
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}"; ValueType: string; ValueName: ""; ValueData: "{#MyAppAssocName}"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"
 Root: HKA; Subkey: "Software\Classes\{#MyAppAssocKey}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
-Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".myp"; ValueData: ""
+Root: HKA; Subkey: "Software\Classes\Applications\{#MyAppExeName}\SupportedTypes"; ValueType: string; ValueName: ".mp4"; ValueData: ""
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
