@@ -10,7 +10,7 @@ Window {
     height: Math.max(Screen.height / 3, 400)
     x: (Screen.desktopAvailableWidth - width) / 2
     y: (Screen.desktopAvailableHeight - height) / 2
-    flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+    flags: Qt.WindowStaysOnTopHint
     color: "transparent"
 
     readonly property int countdownTime: 3
