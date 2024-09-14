@@ -52,13 +52,19 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
    sudo dnf install curl git python3-tkinter python3-devel python3-venv xcb-util-cursor -y
    ```
 
-2. Install ScreenVivid:
+2. Install the app:
 
    ```bash
-   curl -sL https://github.com/tamnguyenvan/screenvivid/raw/main/scripts/install-linux.sh | bash
+   curl -fsSL https://github.com/tamnguyenvan/screenvivid/raw/main/scripts/install-linux.sh | bash
    ```
 
-After the installation finished, you can search `ScreenVivid` in Appplication menu and use it. You can also run `screenvivid` on a new terminal.
+After the installation finished, you can search `ScreenVivid` in Appplication menu and use it. You can also run `screenvivid` command in terminal to start the app.
+
+Uninstall the app:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/main/scripts/uninstall-linux.sh | bash
+```
 
 ### Windows Installation
 
@@ -66,14 +72,24 @@ After the installation finished, you can search `ScreenVivid` in Appplication me
 2. Run the file to install ScreenVivid.
 3. Launch the program from your Start Menu or that new Desktop shortcut.
 
+
 ### MacOS Installation
 1. Install system dependecies if needed:
 ```bash
+# Install Homebrew if not installed
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install dependencies
 brew install curl git python3 tcl-tk
 ```
-2. Install ScreenVivid:
+2. Install the app:
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+curl -fsSL https://github.com/tamnguyenvan/screenvivid/raw/main/scripts/install-macos.sh | bash
+```
+
+Uninstall the app:
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/main/scripts/uninstall-macos.sh)"
 ```
 
 ## FAQs
