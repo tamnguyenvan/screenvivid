@@ -4,13 +4,13 @@ import QtQuick.Layouts
 import Qt.labs.platform
 
 Window {
-    id: countdownWindow
+    id: root
     visible: true
     width: Math.max(Screen.height / 3, 400)
     height: Math.max(Screen.height / 3, 400)
     x: (Screen.desktopAvailableWidth - width) / 2
     y: (Screen.desktopAvailableHeight - height) / 2
-    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+    flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     color: "transparent"
 
     readonly property int countdownTime: 3
@@ -34,7 +34,7 @@ Window {
             id: countdown
             anchors.fill: parent
             color: "#303030"
-            radius: countdownWindow.width / 2
+            radius: root.width / 2
             opacity: 0.9
             Timer {
                 id: timer
@@ -50,7 +50,7 @@ Window {
                         videoRecorder.start_recording()
                         recordingTimer.start()
                         tray.visible = true
-                        countdownWindow.showMinimized()
+                        root.showMinimized()
                     }
                 }
             }
@@ -59,7 +59,7 @@ Window {
         // Border
         Rectangle {
             anchors.fill: parent
-            radius: countdownWindow.width / 2
+            radius: root.width / 2
             color: "transparent"
             border.width: 3
             border.color: "#c4c4c4"
@@ -144,7 +144,7 @@ Window {
                         onClicked: {
                             videoRecorder.stop_recording()
                             recordingTimer.stop()
-                            countdownWindow.hide()
+                            root.hide()
                             tray.hide()
                             // Load and show studio here
                             var metadata = {
@@ -202,7 +202,7 @@ Window {
                 text: qsTr("Stop")
                 onTriggered: {
                     videoRecorder.stop_recording()
-                    countdownWindow.hide()
+                    root.hide()
                     var metadata = {
                         'mouse_events': videoRecorder.mouse_events,
                         'region': videoRecorder.region,
