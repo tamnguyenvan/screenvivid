@@ -27,9 +27,7 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 - User-friendly interface
 - Cross-platform support (Ubuntu/Debian and Windows)
 
-<div align="center">
-  <img src="./assets/showcase.png" alt="ScreenVivid UI" width="70%">
-</div>
+![ScreenVivid UI](./assets/showcase.png)
 
 ## Installation Guide
 
