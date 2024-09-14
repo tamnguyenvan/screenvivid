@@ -4,6 +4,7 @@
 <br>
 
 ScreenVivid is a powerful and user-friendly screen recording application that allows you to capture your screen and enhance your recordings with intuitive editing features.
+
 ## Table of Contents
 
 - [Features](#features)
@@ -25,6 +26,10 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 - Video enhancement tools (backgrounds, padding, etc.)
 - User-friendly interface
 - Cross-platform support (Ubuntu/Debian and Windows)
+
+<div align="center">
+  <img src="./assets/showcase.png" alt="ScreenVivid UI" width="70%">
+</div>
 
 ## Installation Guide
 
@@ -59,18 +64,9 @@ After the installation finished, you can search `ScreenVivid` in Appplication me
 
 ### Windows Installation
 
-1. Download the latest .exe installer from our official website.
-
-2. Right-click the downloaded file and select "Run as administrator".
-
-3. Follow the installation wizard:
-   - Choose installation directory
-   - Select start menu folder
-   - Choose additional tasks (create desktop shortcut, etc.)
-
-4. Click "Install" and wait for the process to complete.
-
-5. Launch ScreenVivid from the Start menu or desktop shortcut.
+1. Grab the latest .exe installer from our Releases page.
+2. Run the file to install ScreenVivid.
+3. Launch the program from your Start Menu or that new Desktop shortcut.
 
 ### MacOS Installation
 1. Install system dependecies if needed:
