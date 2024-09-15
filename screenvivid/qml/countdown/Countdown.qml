@@ -1,6 +1,6 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
+import QtQuick 6.7
+import QtQuick.Controls 6.7
+import QtQuick.Layouts 6.7
 import Qt.labs.platform
 
 Window {
@@ -10,7 +10,7 @@ Window {
     height: Math.max(Screen.height / 3, 400)
     x: (Screen.desktopAvailableWidth - width) / 2
     y: (Screen.desktopAvailableHeight - height) / 2
-    flags: Qt.WindowStaysOnTopHint
+    flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     color: "transparent"
 
     readonly property int countdownTime: 3
@@ -49,8 +49,11 @@ Window {
                         recording = true
                         videoRecorder.start_recording()
                         recordingTimer.start()
-                        tray.visible = true
-                        root.showMinimized()
+                        if (Qt.platform.os === "linux" || Qt.platform.os === "osx") {
+                            root.showMinimized()
+                        } else if (Qt.platform.os === "windows") {
+                            root.hide()
+                        }
                     }
                 }
             }
@@ -195,7 +198,7 @@ Window {
 
     SystemTrayIcon {
         id: tray
-        visible: false
+        visible: true
         icon.source: "qrc:/resources/icons/screenvivid.svg"
         menu: Menu {
             MenuItem {

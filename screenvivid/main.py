@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 
-from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtGui import QIcon
 from PySide6.QtQml import QQmlApplicationEngine
 
@@ -15,7 +15,7 @@ from screenvivid.image_provider import FrameImageProvider
 
 
 def main():
-    app = QApplication(sys.argv)
+    app = QGuiApplication(sys.argv)
 
     # Determine the path to the icon
     if getattr(sys, 'frozen', False):
