@@ -24,7 +24,7 @@ jobs:
         venv\Scripts\activate
         python -m pip install --upgrade pip
         pip install pyinstaller
-        pip install pywin32>=306,<308
+        pip install "pywin32>=306,<308"
         pip install -r requirements.txt
       shell: pwsh
 
