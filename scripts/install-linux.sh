@@ -59,6 +59,7 @@ install_app() {
         git clone --quiet https://github.com/tamnguyenvan/screenvivid.git $HOME/.local/screenvivid_env/screenvivid || handle_error "Failed to clone the repository."
     fi
     cd $HOME/.local/screenvivid_env/screenvivid || handle_error "Failed to navigate to the ScreenVivid directory."
+    pip install "python-xlib>=0.33,<1.0" -q -q -q --exists-action i || handle_error "Failed to install required packages."
     pip install -r requirements.txt -q -q -q --exists-action i || handle_error "Failed to install required packages."
     log_success "ScreenVivid installed successfully"
 }
