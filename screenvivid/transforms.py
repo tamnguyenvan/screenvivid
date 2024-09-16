@@ -35,7 +35,6 @@ class Compose(BaseTransform):
         input = kwargs
         for _, t in self.transforms.items():
             input = t(**input)
-
         return input
 
     def __getitem__(self, key):
@@ -299,9 +298,11 @@ class BorderShadow(BaseTransform):
         return image
 
     @lru_cache(maxsize=100)
-    def create_rounded_mask(self, size):
+    def create_rounded_mask(self, size, return_float=False):
         rect = self.create_rounded_rectangle(size, size, 0, 0)
         mask = rect[:, :, [2, 1, 0]]
+        if return_float:
+            mask = mask.astype(np.float32) / 255.0
         return mask
 
     @lru_cache(maxsize=100)
@@ -328,38 +329,35 @@ class BorderShadow(BaseTransform):
         foreground_size = foreground.shape[1], foreground.shape[0]
         background_size = background.shape[1], background.shape[0]
 
-        # Create mask
+        # Create mask and shadow
         # tt = time.time()
         # t0 = time.time()
-        mask_float = self.create_rounded_mask(foreground_size).astype(np.float32) / 255.0
+        mask_float = self.create_rounded_mask(foreground_size, return_float=True)
         # print('mask', time.time() - t0)
 
-        # Create shadow
         # t0 = time.time()
         shadow = self.create_shadow(background_size, foreground_size, x_offset, y_offset)
-        background = background.astype(np.float32) / 255.0
-        # print('shadow', time.time() - t0)
+        background_float = background.astype(np.float32) / 255.0
+        # print('mask and shadow', time.time() - tt)
 
         # Vectorized shadow overlay
         # t0 = time.time()
-        result = np.multiply(shadow, background)
+        result = shadow * background_float
         # print('overlay', time.time() - t0)
 
         # Optimized blending
         # t0 = time.time()
-        roi = result[y_offset:y_offset+foreground_size[1], x_offset:x_offset+foreground_size[0]]
-
+        roi = result[y_offset:y_offset + foreground_size[1], x_offset:x_offset + foreground_size[0]]
         foreground_float = foreground.astype(np.float32) / 255.0
 
         # Blend roi and foreground based on mask
         inv_mask = 1.0 - mask_float
-
         pad = self.radius // 3
 
-        blended_roi_top = np.multiply(foreground_float[:pad, ...], mask_float[:pad, ...]) + np.multiply(roi[:pad, ...], inv_mask[:pad, ...])
-        blended_roi_left = np.multiply(foreground_float[pad:-pad, :pad], mask_float[pad:-pad, :pad]) + np.multiply(roi[pad:-pad, :pad], inv_mask[pad:-pad, :pad])
-        blended_roi_bottom= np.multiply(foreground_float[-pad:, ...], mask_float[-pad:, ...]) + np.multiply(roi[-pad:, ...], inv_mask[-pad:, ...])
-        blended_roi_right = np.multiply(foreground_float[pad:-pad, -pad:], mask_float[pad:-pad, -pad:]) + np.multiply(roi[pad:-pad, -pad:], inv_mask[pad:-pad, -pad:])
+        blended_roi_top = foreground_float[:pad, ...] * mask_float[:pad, ...] + roi[:pad, ...] * inv_mask[:pad, ...]
+        blended_roi_left = foreground_float[pad:-pad, :pad] * mask_float[pad:-pad, :pad] + roi[pad:-pad, :pad] * inv_mask[pad:-pad, :pad]
+        blended_roi_bottom = foreground_float[-pad:, ...] * mask_float[-pad:, ...] + roi[-pad:, ...] * inv_mask[-pad:, ...]
+        blended_roi_right = foreground_float[pad:-pad, -pad:] * mask_float[pad:-pad, -pad:] + roi[pad:-pad, -pad:] * inv_mask[pad:-pad, -pad:]
 
         roi[:pad, ...] = blended_roi_top
         roi[pad:-pad, :pad] = blended_roi_left
@@ -367,10 +365,10 @@ class BorderShadow(BaseTransform):
         roi[pad:-pad, -pad:] = blended_roi_right
         roi[pad:-pad, pad:-pad] = foreground_float[pad:-pad, pad:-pad]
 
-        result[y_offset:y_offset+foreground_size[1], x_offset:x_offset+foreground_size[0]] = roi
-        # print('final', time.time() - t0)
-
+        result[y_offset:y_offset + foreground_size[1], x_offset:x_offset + foreground_size[0]] = roi
+        # print('blending', time.time() - t0)
         # print('total', time.time() - tt)
+
         return (result * 255).astype(np.uint8)
 
     def __call__(self, **kwargs):
