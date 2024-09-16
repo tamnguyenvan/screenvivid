@@ -1,10 +1,19 @@
 <RCC>
     <qresource prefix="/">
-        <file>../resources/images/cursor/linux/cursor.png</file>
+        <file>../resources/images/cursor/linux/cursor-1x.png</file>
+        <file>../resources/images/cursor/linux/cursor-1.5x.png</file>
+        <file>../resources/images/cursor/linux/cursor-2x.png</file>
+        <file>../resources/images/cursor/linux/cursor-3x.png</file>
         <file>../resources/images/cursor/linux/pointinghand.png</file>
-        <file>../resources/images/cursor/windows/cursor.png</file>
+        <file>../resources/images/cursor/windows/cursor-1x.png</file>
+        <file>../resources/images/cursor/windows/cursor-1.5x.png</file>
+        <file>../resources/images/cursor/windows/cursor-2x.png</file>
+        <file>../resources/images/cursor/windows/cursor-3x.png</file>
         <file>../resources/images/cursor/windows/pointinghand.png</file>
-        <file>../resources/images/cursor/macos/cursor.png</file>
+        <file>../resources/images/cursor/macos/cursor-1x.png</file>
+        <file>../resources/images/cursor/macos/cursor-1.5x.png</file>
+        <file>../resources/images/cursor/macos/cursor-2x.png</file>
+        <file>../resources/images/cursor/macos/cursor-3x.png</file>
         <file>../resources/images/cursor/macos/pointinghand.png</file>
         <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0001.png</file>
         <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0002.png</file>

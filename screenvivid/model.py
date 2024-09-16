@@ -909,7 +909,7 @@ class VideoProcessor(QObject):
         self.get_frame()
 
     def process_frame(self, frame):
-        transformed_result = self._transforms(input=frame, start_frame=self.current_frame)
+        transformed_result = self._transforms(input=frame, start_frame=self.start_frame + self.current_frame)
         output_frame = transformed_result["input"]
 
         output_frame = cv2.cvtColor(output_frame, cv2.COLOR_BGR2RGB)

@@ -198,16 +198,9 @@ class Cursor(BaseTransform):
 
     def _load(self):
         sub_folder = get_os_name()
-        arrow_image = self._load_image(f":/resources/images/cursor/{sub_folder}/cursor.png")
+        scale_str = f"{int(self.scale)}" if self.scale.is_integer() else f"{self.scale:.1f}"
+        arrow_image = self._load_image(f":/resources/images/cursor/{sub_folder}/cursor-{scale_str}x.png")
         arrow_image = cv2.cvtColor(arrow_image, cv2.COLOR_RGBA2BGRA)
-        height, width = arrow_image.shape[:2]
-        target_size = int(self.size * self.scale)
-
-        ratio = min(target_size / height, target_size / width)
-        new_width = int(width * ratio)
-        new_height = int(height * ratio)
-
-        arrow_image = cv2.resize(arrow_image, (new_width, new_height))
 
         pointing_hand = self._load_image(f':/resources/images/cursor/linux/pointinghand.png')
         pointing_hand = cv2.cvtColor(pointing_hand, cv2.COLOR_RGBA2BGRA)
@@ -229,11 +222,12 @@ class Cursor(BaseTransform):
 
     def blend(self, image, x, y, cursor_id):
         # Get cursor image
+        cursor_id = None
         if cursor_id in self.cursors_map:
             cursor_image = self.cursors_map.get(cursor_id)
         else:
             cursor_image = self.default_cursors["arrow"]
-        cursor_image = cv2.resize(cursor_image, None, fx=self.scale, fy=self.scale, interpolation=cv2.INTER_LANCZOS4)
+
         cursor_height, cursor_width = cursor_image.shape[:2]
         image_height, image_width = image.shape[:2]
 
@@ -257,10 +251,11 @@ class Cursor(BaseTransform):
         x2, y2 = min(image_width, x2), min(image_height, y2)
         fg_roi = image[y1:y2, x1:x2]
 
-        fg_cursor = cv2.bitwise_and(cropped_cursor_rgb, cropped_cursor_rgb, mask=mask)
-        fg = cv2.bitwise_and(fg_roi, fg_roi, mask=cv2.bitwise_not(mask))
-        blended = cv2.add(fg_cursor, fg)
-        image[y1:y2, x1:x2] = blended
+        mask_float = mask.astype(np.float32) / 255.0
+        fg_cursor = cropped_cursor_rgb * mask_float[:, :, np.newaxis]
+        fg = fg_roi * (1 - mask_float[:, :, np.newaxis])
+        blended = fg_cursor + fg
+        image[y1:y2, x1:x2] = blended.astype(np.uint8)
         return image
 
     def __call__(self, **kwargs):
