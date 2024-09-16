@@ -17,10 +17,14 @@ def get_cursor_image_windows():
     hcursor = win32gui.GetCursorInfo()[1]
     hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
     hbmp = win32ui.CreateBitmap()
-    hbmp.CreateCompatibleBitmap(hdc, 32, 32)
+
+    # Get the default cursor size
+    default_size = win32gui.GetSystemMetrics(win32gui.SM_CXCURSOR)
+
+    hbmp.CreateCompatibleBitmap(hdc, default_size, default_size)
     hdc = hdc.CreateCompatibleDC()
     hdc.SelectObject(hbmp)
-    windll.user32.DrawIconEx(hdc.GetHandleOutput(), 0, 0, hcursor, 32, 32, 0, None, 0x0003)
+    windll.user32.DrawIconEx(hdc.GetHandleOutput(), 0, 0, hcursor, default_size, default_size, 0, None, 0x0003)
 
     # Convert to numpy array
     bmpinfo = hbmp.GetInfo()
@@ -43,10 +47,6 @@ def get_cursor_image_linux():
         return
 
     xfixes_version = d.xfixes_query_version()
-    # print('Found XFIXES version {}.{}'.format(
-    #     xfixes_version.major_version,
-    #     xfixes_version.minor_version
-    # ))
 
     root = d.screen().root
 

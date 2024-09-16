@@ -234,8 +234,7 @@ class Cursor(BaseTransform):
             cursor_image = self.cursors_map.get(cursor_id)
         else:
             cursor_image = self.default_cursors["arrow"]
-        scale = 1
-        cursor_image = cv2.resize(cursor_image, None, fx=scale, fy=scale, interpolation=cv2.INTER_LANCZOS4)
+        cursor_image = cv2.resize(cursor_image, None, fx=self.scale, fy=self.scale, interpolation=cv2.INTER_LANCZOS4)
         cursor_height, cursor_width = cursor_image.shape[:2]
         image_height, image_width = image.shape[:2]
 

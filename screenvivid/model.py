@@ -1,6 +1,5 @@
 import os
 import time
-import queue
 import hashlib
 from threading import Thread, Event
 
@@ -13,12 +12,12 @@ from PySide6.QtCore import (
     QModelIndex
 )
 from PySide6.QtGui import QImage, QGuiApplication
-from PySide6.QtWidgets import QFileDialog
 from PIL import Image
 
 from screenvivid import config
 from screenvivid import transforms
 from screenvivid.utils.general import generate_video_path
+from screenvivid.utils.cursor import get_cursor_image
 
 class UndoRedoManager:
     def __init__(self):
@@ -301,9 +300,6 @@ class VideoRecordingThread:
         self._maximum_fps = 200
         self._monitor = {}
 
-        # self._frame_queue = queue.Queue(maxsize=300)
-        # self._processing_thread = None
-
     @property
     def mouse_events(self):
         return self._mouse_events
@@ -316,16 +312,10 @@ class VideoRecordingThread:
         self._record_thread = Thread(target=self._recording)
         self._record_thread.start()
 
-        # self._mouse_track_thread = Thread(target=self._mouse_track)
-        # self._mouse_track_thread.start()
-
     def stop_recording(self):
         self._is_stopped.set()
         if self._record_thread is not None:
             self._record_thread.join()
-
-        # if self._mouse_track_thread is not None:
-        #     self._mouse_track_thread.join()
 
     def cancel_recording(self):
         self.stop_recording()
@@ -354,20 +344,11 @@ class VideoRecordingThread:
                     "height": self._region[3],
                 }
 
-            # Start process_thread
-            # self._processing_thread = Thread(target=self._process_frames)
-            # self._processing_thread.start()
-
             while not self._is_stopped.is_set():
                 t0 = time.time()
                 frame = np.array(stream.grab(self._monitor))
                 if frame is None:
                     break
-
-                # try:
-                #     self._frame_queue.put(frame, block=False)
-                # except queue.Full:
-                #     pass
 
                 frame = np.array(frame)
                 frame = frame[:, :, :3]
@@ -389,9 +370,6 @@ class VideoRecordingThread:
                 read_time = t1 - t0
                 sleep_duration = max(0.001, interval - read_time)
                 time.sleep(sleep_duration)
-
-            # self._frame_queue.put(None)
-            # self._processing_thread.join()
         except Exception as e:
             print(f"An error occurred: {e}")
         finally:
@@ -412,54 +390,16 @@ class VideoRecordingThread:
             relative_y = (y - self._monitor["top"]) / self._frame_height
 
             # cursor shape
-            # cursor_id = self._get_cursor()
-            cursor_id = ''
+            cursor_id = self._get_cursor()
 
             self._mouse_events["move"][self._frame_index] = (relative_x, relative_y, self._frame_index, cursor_id)
 
-    # def _get_cursor(self):
-    #     cursor_image = get_cursor_image()
-    #     t0 = time.time()
-    #     cursor_id = hashlib.sha256(cursor_image.tobytes()).hexdigest()
-    #     if cursor_id not in self._mouse_events["cursors_map"]:
-    #         self._mouse_events["cursors_map"][cursor_id] = cursor_image
-    #     return cursor_id
-
-    # def _mouse_track(self):
-    #     while not self._is_stopped.is_set():
-    #         x, y = pyautogui.position()
-    #         if (
-    #             self._frame_width
-    #             and self._frame_height
-    #             and self._monitor
-    #             and self._monitor["left"] <= x < self._monitor["left"] + self._monitor["width"]
-    #             and self._monitor["top"] <= y < self._monitor["top"] + self._monitor["height"]
-    #         ):
-    #             relative_x = (x - self._monitor["left"]) / self._frame_width
-    #             relative_y = (y - self._monitor["top"]) / self._frame_height
-    #             self._mouse_events["move"][self._frame_index] = (relative_x, relative_y, self._frame_index)
-    #         time.sleep(0.5 / self._fps)
-
-    # def _process_frames(self):
-    #     while not self._is_stopped.is_set():
-    #         frame = self._frame_queue.get()
-    #         if frame is None:
-    #             break
-
-    #         frame = np.array(frame)
-    #         frame = frame[:, :, :3]
-    #         frame_height, frame_width = frame.shape[:2]
-
-    #         if self._writer is None:
-    #             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    #             self._writer = cv2.VideoWriter(self._output_path, fourcc, self._fps, (frame_width, frame_height))
-    #             self._frame_width = frame_width
-    #             self._frame_height = frame_height
-
-    #         self._get_mouse_data()
-
-    #         self._frame_index += 1
-    #         self._writer.write(frame)
+    def _get_cursor(self):
+        cursor_image = get_cursor_image()
+        cursor_id = hashlib.sha256(cursor_image.tobytes()).hexdigest()
+        if cursor_id not in self._mouse_events["cursors_map"]:
+            self._mouse_events["cursors_map"][cursor_id] = cursor_image
+        return cursor_id
 
     def set_region(self, region):
         self._region = region
@@ -891,7 +831,6 @@ class VideoProcessor(QObject):
 
     def get_frame(self):
         try:
-            print('ssss', self.start_frame, 'curr', self.current_frame, 'end', self.end_frame)
             if self.start_frame + self.current_frame >= self.end_frame - 1:
                 self.pause()
                 return
@@ -927,12 +866,6 @@ class VideoProcessor(QObject):
     @Slot()
     def next_frame(self):
         self.pause()
-        # if self.video.isOpened():
-        #     ret, frame = self.video.read()
-        #     if ret:
-        #         processed_frame = self.process_frame(frame)
-        #         self.frameProcessed.emit(processed_frame)
-        #         self.current_frame += 1
         self.get_frame()
 
     @Slot()
@@ -946,7 +879,6 @@ class VideoProcessor(QObject):
                 processed_frame = self.process_frame(frame)
                 self.frameProcessed.emit(processed_frame)
 
-    # @Slot(int)
     def jump_to_frame(self, target_frame):
         internal_target_frame = min(self.start_frame + target_frame, self.end_frame)
         if self.video.isOpened() and self.start_frame <= internal_target_frame <= self.end_frame:
@@ -957,7 +889,6 @@ class VideoProcessor(QObject):
                 self.current_frame = target_frame
                 self.frameProcessed.emit(processed_frame)
 
-    # @Slot()
     def get_current_frame(self):
         if self.video is not None and self.video.isOpened():
             current_position = self.current_frame
@@ -975,14 +906,6 @@ class VideoProcessor(QObject):
                 self.current_frame = current_position
 
     def process_next_frame(self):
-        # if self.video.isOpened():
-        #     ret, frame = self.video.read()
-        #     if ret:
-        #         processed_frame = self.process_frame(frame)
-        #         self.frameProcessed.emit(processed_frame)
-        #         self.current_frame += 1
-        #     else:
-        #         self.pause()
         self.get_frame()
 
     def process_frame(self, frame):
