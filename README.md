@@ -55,7 +55,7 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 2. Install the app:
 
    ```bash
-   curl -fsSL https://github.com/tamnguyenvan/screenvivid/raw/main/scripts/install-linux.sh | bash
+   curl -fsSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/main/scripts/install-linux.sh | bash
    ```
 
 After the installation finished, you can search `ScreenVivid` in Appplication menu and use it. You can also run `screenvivid` command in terminal to start the app.
