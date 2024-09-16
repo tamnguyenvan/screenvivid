@@ -185,7 +185,7 @@ class Inset(BaseTransform):
         return kwargs
 
 class Cursor(BaseTransform):
-    def __init__(self, move_data, cursors_map, offsets, size=32, scale=1.5):
+    def __init__(self, move_data, cursors_map, offsets, size=32, scale=1.0):
         super().__init__()
 
         self.size = size

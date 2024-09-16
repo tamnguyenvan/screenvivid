@@ -648,7 +648,7 @@ class VideoProcessor(QObject):
         self._inset = 0
         self._border_radius = 8
         self._background = {"type": "wallpaper", "value": 1}
-        self._cursor_scale = 1.5
+        self._cursor_scale = 1.0
         self._transforms = None
         self._mouse_events = []
         self._region = None
@@ -816,7 +816,7 @@ class VideoProcessor(QObject):
             self._y_offset = y_offset
             self._transforms = transforms.Compose({
                 "aspect_ratio": transforms.AspectRatio(self._aspect_ratio),
-                "cursor": transforms.Cursor(move_data=self._mouse_events, cursors_map=self._cursors_map, offsets=(x_offset, y_offset)),
+                "cursor": transforms.Cursor(move_data=self._mouse_events, cursors_map=self._cursors_map, offsets=(x_offset, y_offset), scale=self._cursor_scale),
                 "padding": transforms.Padding(padding=self.padding),
                 "inset": transforms.Inset(inset=self.inset, color=(0, 0, 0)),
                 "border_shadow": transforms.BorderShadow(radius=self.border_radius),

@@ -5,6 +5,7 @@ def get_cursor_image_windows():
     import win32gui
     import win32ui
     from ctypes import windll, Structure, c_long, byref
+    from win32con import SM_CXCURSOR, SM_CYCURSOR
 
     class POINT(Structure):
         _fields_ = [("x", c_long), ("y", c_long)]
@@ -15,16 +16,19 @@ def get_cursor_image_windows():
 
     # Get the cursor bitmap
     hcursor = win32gui.GetCursorInfo()[1]
+
+    # Get default cursor size (width and height)
+    cursor_width = windll.user32.GetSystemMetrics(SM_CXCURSOR)
+    cursor_height = windll.user32.GetSystemMetrics(SM_CYCURSOR)
+
     hdc = win32ui.CreateDCFromHandle(win32gui.GetDC(0))
     hbmp = win32ui.CreateBitmap()
 
-    # Get the default cursor size
-    default_size = win32gui.GetSystemMetrics(win32gui.SM_CXCURSOR)
-
-    hbmp.CreateCompatibleBitmap(hdc, default_size, default_size)
+    # Use the system's default cursor size instead of a fixed 32x32 size
+    hbmp.CreateCompatibleBitmap(hdc, cursor_width, cursor_height)
     hdc = hdc.CreateCompatibleDC()
     hdc.SelectObject(hbmp)
-    windll.user32.DrawIconEx(hdc.GetHandleOutput(), 0, 0, hcursor, default_size, default_size, 0, None, 0x0003)
+    windll.user32.DrawIconEx(hdc.GetHandleOutput(), 0, 0, hcursor, cursor_width, cursor_height, 0, None, 0x0003)
 
     # Convert to numpy array
     bmpinfo = hbmp.GetInfo()

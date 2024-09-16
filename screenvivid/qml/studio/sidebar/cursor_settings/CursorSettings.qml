@@ -7,7 +7,7 @@ Item {
     Layout.fillWidth: true
     Layout.preferredHeight: 120
 
-    property int selectedSize: 1
+    property int selectedSize: 0
 
     ColumnLayout {
         anchors.fill: parent
