@@ -24,9 +24,9 @@ Version: $VERSION
 Section: utils
 Priority: optional
 Architecture: $ARCH
-Maintainer: Tam Nguyen <tamnvhustcc@gmail.com>
+Maintainer: Dark Photon <tamnvhustcc@gmail.com>
 Description: Screen recording and editing application
- ${DISPLAY_NAME} is a desktop application for screen recording
+ ${DISPLAY_NAME} is a cross-platform desktop application for screen recording
  and video editing, featuring options like background replacement and padding.
 EOF
 

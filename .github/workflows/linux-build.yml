@@ -1,4 +1,4 @@
-name: Build and Package Linux
+name: Build and Package for Linux
 on:
   push:
     tags:

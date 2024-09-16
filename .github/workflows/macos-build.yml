@@ -1,0 +1,64 @@
+name: Build and Package for MacOS
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          venv\Scripts\activate
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install "pywin32>=306,<308"
+          pip install -r requirements.txt
+        shell: pwsh
+
+      - name: Compile resources
+        run: |
+          venv\Scripts\activate
+          cd screenvivid
+          python compile_resources.py
+
+      - name: Build with PyInstaller
+        run: |
+          venv\Scripts\activate
+          cd packaging/windows
+          pyinstaller --clean --noconfirm screenvivid.spec
+
+      - name: Install create-dmg
+        run: |
+          brew install create-dmg
+
+      - name: Create DMG
+        run: |
+          create-dmg \
+            --volname "ScreenVivid" \
+            --volicon "../../resources/icons/screenvivid.icns" \
+            --window-pos 0 0 \
+            --icon-size 100 \
+            --icon "ScreenVivid.app" 175 120 \
+            --hide-extension "ScreenVivid.app" \
+            --app-drop-link 425 120 \
+            "ScreenVivid.dmg" \
+            "dist/ScreenVivid.app"
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v2
+        with:
+          name: ScreenVivid.dmg
+          path: ScreenVivid.dmg
