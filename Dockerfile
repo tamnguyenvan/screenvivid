@@ -47,8 +47,8 @@ COPY requirements.txt .
 
 RUN pip install -U pip \
     && pip install pyinstaller \
-    && pip install "python-xlib>=0.33,<1.0" \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install "python-xlib>=0.33,<1.0"
 
 WORKDIR /app
 COPY . .
