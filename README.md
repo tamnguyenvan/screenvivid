@@ -40,30 +40,18 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 - **Windows**:
   - Windows 10 or later
   - 4GB RAM (8GB recommended)
+- **MacOS**:
+  - MacOS 10.15 or later
+  - 4GB RAM (8GB recommended)
 
 ### Linux Installation
-
-1. Install system dependecies if needed:
-   ```bash
-   # Debian/Ubuntu-based (e.g., Ubuntu, Linux Mint)
-   sudo apt-get install curl git python3-tk python3-dev python3-venv libxcb-cursor0 -y
-
-   # Fedora/CentOS 8 and later (Red Hat-based)
-   sudo dnf install curl git python3-tkinter python3-devel python3-venv xcb-util-cursor -y
-   ```
-
-2. Install the app:
-
-   ```bash
-   curl -fsSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/main/scripts/install-linux.sh | bash
-   ```
-
-After the installation finished, you can search `ScreenVivid` in Appplication menu and use it. You can also run `screenvivid` command in terminal to start the app.
-
-Uninstall the app:
-
+Download the latest .deb package or .rpm package from our Releases page.
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/main/scripts/uninstall-linux.sh | bash
+# Debian/Ubuntu
+sudo dpkg -i screenvivid-x.x.x-linux-amd64.deb
+
+# Fedora/CentOS
+sudo rpm -i screenvivid-x.x.x-linux-amd64.rpm
 ```
 
 ### Windows Installation
@@ -74,22 +62,33 @@ curl -fsSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/main/scrip
 
 
 ### MacOS Installation
-1. Install system dependecies if needed:
-```bash
-# Install Homebrew if not installed
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Install dependencies
-brew install curl git python3 tcl-tk
-```
-2. Install the app:
+Download the latest .dmg package from our Releases page.
+
+1. Open the DMG file and drag the ScreenVivid icon to the Applications folder.
+2. Run the app from your Applications folder.
+
+
+### From source
+
+1. Clone the repository
 ```bash
-curl -fsSL https://github.com/tamnguyenvan/screenvivid/raw/main/scripts/install-macos.sh | bash
+git clone https://github.com/tamnguyenvan/screenvivid.git
+```
+2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+3. Compile resources if needed
+```bash
+cd screenvivid
+python compile_resources.py
 ```
 
-Uninstall the app:
+4. Run the app
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/main/scripts/uninstall-macos.sh)"
+# Assume you're in the root of the repo
+python -m screenvivid.main
 ```
 
 ## FAQs
