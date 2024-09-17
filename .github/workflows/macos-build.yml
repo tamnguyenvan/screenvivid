@@ -57,7 +57,7 @@ jobs:
             "dist/ScreenVivid.app"
 
       - name: Upload DMG
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ScreenVivid.dmg
           path: ScreenVivid.dmg
