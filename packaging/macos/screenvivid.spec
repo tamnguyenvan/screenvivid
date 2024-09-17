@@ -55,7 +55,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name="ScreenVivid.app",
-    icon="../../resources/icons/screenvivid.icns",
+    icon="../../screenvivid/resources/icons/screenvivid.icns",
     bundle_identifier="com.darkphoton.ScreenVivid",
     bundle_description="ScreenVivid is a cross-platform desktop application for screen recording and video editing, featuring options like background replacement and padding.",
 )
