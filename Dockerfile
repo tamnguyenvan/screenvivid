@@ -9,28 +9,9 @@ RUN apt-get update && apt-get install -y \
     python3.9-venv \
     python3.9-dev \
     python3-pip \
-    libfontconfig1-dev \
-    libfreetype6-dev \
-    libx11-dev \
-    libx11-xcb-dev \
-    libxext-dev \
-    libxfixes-dev \
-    libxi-dev \
-    libxrender-dev \
-    libxkbcommon-dev \
-    libxkbcommon0 \
-    libxkbcommon-x11-dev \
-    libatspi2.0-dev \
-    '^libxcb.*-dev' \
-    libxcb-cursor-dev \
-    libxcb-xinerama0 \
-    libglib2.0-0 \
     python3-tk \
-    libkrb5-3 \
-    libdbus-1-3 \
     curl \
-    libcairo2-dev \
-    libgl1-mesa-glx \
+    qt6-base-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
