@@ -21,23 +21,22 @@ jobs:
       - name: Install dependencies
         run: |
           python -m venv venv
-          venv\Scripts\activate
+          source venv/bin/activate
           python -m pip install --upgrade pip
           pip install pyinstaller
-          pip install "pywin32>=306,<308"
+          pip install "pyobjc-framework-Quartz>=10.3.1,<10.4"
           pip install -r requirements.txt
-        shell: pwsh
 
       - name: Compile resources
         run: |
-          venv\Scripts\activate
+          source venv/bin/activate
           cd screenvivid
           python compile_resources.py
 
       - name: Build with PyInstaller
         run: |
-          venv\Scripts\activate
-          cd packaging/windows
+          source venv/bin/activate
+          cd packaging/macos
           pyinstaller --clean --noconfirm screenvivid.spec
 
       - name: Install create-dmg

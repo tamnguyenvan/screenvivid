@@ -70,7 +70,7 @@ def get_cursor_image_linux():
 
 def get_cursor_image_macos():
     import Quartz
-    import CoreGraphics
+    from Quartz import CoreGraphics
 
     # Get cursor image
     cursor = Quartz.NSCursor.currentSystemCursor()
