@@ -56,12 +56,13 @@ jobs:
             --app-drop-link 425 120 \
             "ScreenVivid-${{ github.ref_name }}.dmg" \
             "dist/ScreenVivid.app"
+          mv ScreenVivid-${{ github.ref_name }}.dmg ../..
 
       - name: Upload DMG
         uses: actions/upload-artifact@v3
         with:
           name: ScreenVivid-${{ github.ref_name }}.dmg
-          path: ScreenVivid-${{ github.ref_name }}.dmg
+          path: ./ScreenVivid-${{ github.ref_name }}.dmg
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
