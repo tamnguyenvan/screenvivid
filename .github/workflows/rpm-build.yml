@@ -1,4 +1,4 @@
-name: Build and Package for Linux
+name: Build and Package for Fedora
 on:
   push:
     tags:
@@ -14,29 +14,29 @@ jobs:
       uses: docker/setup-buildx-action@v1
 
     - name: Build Docker image
-      run: docker build -t screenvivid-build .
+      run: docker build -t screenvivid-rpm-build -f Dockerfile.rpm .
 
-    - name: Package as .deb
+    - name: Package as .rpm
       run: |
-        docker run --rm -v ${PWD}:/app screenvivid-build bash -c "
+        docker run --rm -v ${PWD}:/app screenvivid-rpm-build bash -c "
         cd screenvivid && python3 compile_resources.py && cd .. &&
         cd packaging/linux &&
         pyinstaller --clean --noconfirm screenvivid.spec &&
         rm dist/ScreenVivid/_internal/libstdc++.so.6 &&
-        chmod +x build-deb.sh &&
-        ./build-deb.sh '${GITHUB_REF_NAME}' &&
-        mv screenvivid*.deb /app/
+        chmod +x build-rpm.sh &&
+        ./build-rpm.sh '${GITHUB_REF_NAME}' &&
+        mv screenvivid*.rpm /app/
         "
 
-    - name: Upload Debian package as artifact
+    - name: Upload Fedora package as artifact
       uses: actions/upload-artifact@v3
       with:
-        name: screenvivid-${{ github.ref_name }}.deb
-        path: ./screenvivid*.deb
+        name: screenvivid-${{ github.ref_name }}.rpm
+        path: ./screenvivid*.rpm
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        files: screenvivid*.deb
+        files: screenvivid*.rpm
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

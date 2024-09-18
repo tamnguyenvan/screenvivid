@@ -52,13 +52,13 @@ jobs:
       uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
       with:
         path: packaging/windows/screenvivid.iss
-        options: /O+ /F"ScreenVivid-Setup-${{ github.ref_name }}"
+        options: /O+ /F"ScreenVivid-${{ github.ref_name }}-Setup"
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ScreenVivid-Setup-${{ github.ref_name }}.exe
-        path: D:\a\screenvivid\screenvivid\packaging\windows\Output\ScreenVivid-Setup-*.exe
+        name: ScreenVivid-${{ github.ref_name }}-Setup.exe
+        path: D:\a\screenvivid\screenvivid\packaging\windows\Output\ScreenVivid-${{ github.ref_name }}-Setup.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -66,6 +66,6 @@ jobs:
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        files: "**/Output/ScreenVivid-Setup-${{ github.ref_name }}.exe"
+        files: "**/Output/ScreenVivid-${{ github.ref_name }}-Setup.exe"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

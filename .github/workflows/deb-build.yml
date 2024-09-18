@@ -1,0 +1,42 @@
+name: Build and Package for Debian
+on:
+  push:
+    tags:
+      - '*.*.*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build Docker image
+      run: docker build -t screenvivid-deb-build -f Dockerfile.deb .
+
+    - name: Package as .deb
+      run: |
+        docker run --rm -v ${PWD}:/app screenvivid-deb-build bash -c "
+        cd screenvivid && python3 compile_resources.py && cd .. &&
+        cd packaging/linux &&
+        pyinstaller --clean --noconfirm screenvivid.spec &&
+        rm dist/ScreenVivid/_internal/libstdc++.so.6 &&
+        chmod +x build-deb.sh &&
+        ./build-deb.sh '${GITHUB_REF_NAME}' &&
+        mv screenvivid*.deb /app/
+        "
+
+    - name: Upload Debian package as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: screenvivid-${{ github.ref_name }}.deb
+        path: ./screenvivid*.deb
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: screenvivid*.deb
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
