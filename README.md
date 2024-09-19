@@ -47,10 +47,10 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 ### Linux Installation
 Download the latest .deb package or .rpm package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
 ```bash
-# Debian/Ubuntu
+# Debian/Ubuntu (apt-get)
 sudo dpkg -i screenvivid_x.x.x_amd64.deb
 
-# Fedora/CentOS
+# Fedora/RHEL/CentOS (yum)
 sudo rpm -i screenvivid_x.x.x_amd64.rpm
 ```
 

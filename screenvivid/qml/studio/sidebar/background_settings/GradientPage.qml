@@ -8,7 +8,7 @@ Item {
     Layout.fillWidth: true
     Layout.preferredHeight: 200
 
-    property var gradientColors: ["#4A249D", "#009FBD"]
+    property var gradientColors: ["#8B5CF6", "#545EEE"]
     property real gradientAngle: 0
 
     ColumnLayout {
