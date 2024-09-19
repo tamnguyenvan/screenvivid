@@ -14,7 +14,7 @@ jobs:
       uses: docker/setup-buildx-action@v1
 
     - name: Build Docker image
-      run: docker build -t screenvivid-deb-build -f Dockerfile.deb .
+      run: docker build -t screenvivid-deb-build -f dockerfiles/Dockerfile.deb .
 
     - name: Package as .deb
       run: |

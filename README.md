@@ -34,7 +34,7 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 ### System Requirements
 
 - **Ubuntu/Debian**:
-  - The app is based on PySide6, which requires glibc-2.28+. It supports Ubuntu 20.04 or later, Debian 10 or later, and other distributions with glibc 2.28+ such as Fedora 29+, CentOS 8+, and OpenSUSE Leap 15.1+.
+  - The app is based on PySide6, which requires glibc-2.28+. It supports Ubuntu 20.04 or later, Debian 10 or later.
   - 4GB RAM (8GB recommended)
   - **ScreenVivid uses [python-mss](https://github.com/BoboTiG/python-mss) to capture the screen, making it compatible only with operating systems that use X11.**
 - **Windows**:
@@ -49,9 +49,6 @@ Download the latest .deb package or .rpm package from our [Releases page](https:
 ```bash
 # Debian/Ubuntu (apt-get)
 sudo dpkg -i screenvivid_x.x.x_amd64.deb
-
-# Fedora/RHEL/CentOS (yum)
-sudo rpm -i screenvivid_x.x.x_amd64.rpm
 ```
 
 ### Windows Installation

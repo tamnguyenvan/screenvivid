@@ -42,7 +42,7 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3.10 get-pi
 RUN update-alternatives --install /usr/bin/pip pip /usr/local/bin/pip3.10 1
 RUN update-alternatives --set pip /usr/local/bin/pip3.10
 
-COPY requirements.txt .
+COPY ../requirements.txt .
 
 RUN pip install -U pip \
     && pip install pyinstaller \
@@ -50,6 +50,6 @@ RUN pip install -U pip \
     && pip install "python-xlib>=0.33,<1.0"
 
 WORKDIR /app
-COPY . .
+COPY .. .
 
 CMD ["/bin/bash"]
