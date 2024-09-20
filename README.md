@@ -3,7 +3,7 @@
 <br>
 <br>
 
-**Welcome to ScreenVivid**
+## Overview
 
 ScreenVivid is a powerful and user-friendly screen recording application designed to help you capture your screen and enhance your recordings with intuitive editing features. Whether you're creating tutorials, recording meetings, or capturing gameplay, ScreenVivid is the perfect tool for you.
 

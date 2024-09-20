@@ -11,14 +11,14 @@ VERSION=${1:-"1.0.0"}
 ARCH="amd64"
 
 # Create directory structure for the .deb package
-mkdir -p ${PKG_NAME}_${VERSION}_${ARCH}/DEBIAN
-mkdir -p ${PKG_NAME}_${VERSION}_${ARCH}/opt/${PKG_NAME}
-mkdir -p ${PKG_NAME}_${VERSION}_${ARCH}/usr/share/applications
-mkdir -p ${PKG_NAME}_${VERSION}_${ARCH}/usr/share/icons/hicolor/256x256/apps
-mkdir -p ${PKG_NAME}_${VERSION}_${ARCH}/usr/bin
+mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/DEBIAN
+mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}
+mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/applications
+mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/icons/hicolor/256x256/apps
+mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/usr/bin
 
 # Create the control file
-cat << EOF > ${PKG_NAME}_${VERSION}_${ARCH}/DEBIAN/control
+cat << EOF > ${PKG_NAME}-${VERSION}-${ARCH}/DEBIAN/control
 Package: ${PKG_NAME}
 Version: $VERSION
 Section: utils
@@ -31,13 +31,13 @@ Description: Screen recording and editing application
 EOF
 
 # Copy the entire application directory
-cp -R dist/${DISPLAY_NAME}/* ${PKG_NAME}_${VERSION}_${ARCH}/opt/${PKG_NAME}/
+cp -R dist/${DISPLAY_NAME}/* ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}/
 
 # Create a soft link in /usr/bin
-ln -s /opt/${PKG_NAME}/${DISPLAY_NAME} ${PKG_NAME}_${VERSION}_${ARCH}/usr/bin/${PKG_NAME}
+ln -s /opt/${PKG_NAME}/${DISPLAY_NAME} ${PKG_NAME}-${VERSION}-${ARCH}/usr/bin/${PKG_NAME}
 
 # Create the .desktop file
-cat << EOF > ${PKG_NAME}_${VERSION}_${ARCH}/usr/share/applications/${PKG_NAME}.desktop
+cat << EOF > ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/applications/${PKG_NAME}.desktop
 [Desktop Entry]
 Name=${DISPLAY_NAME}
 Exec=/usr/bin/${PKG_NAME}
@@ -47,12 +47,12 @@ Categories=Utility;
 EOF
 
 # Copy the icon
-cp ../../screenvivid/resources/icons/screenvivid.png ${PKG_NAME}_${VERSION}_${ARCH}/usr/share/icons/hicolor/256x256/apps/${PKG_NAME}.png
+cp ../../screenvivid/resources/icons/screenvivid.png ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/icons/hicolor/256x256/apps/${PKG_NAME}.png
 
 # Build the .deb package
-dpkg-deb --build ${PKG_NAME}_${VERSION}_${ARCH}
+dpkg-deb --build ${PKG_NAME}-${VERSION}-${ARCH}
 
 # Clean up
-rm -rf ${PKG_NAME}_${VERSION}_${ARCH}
+rm -rf ${PKG_NAME}-${VERSION}-${ARCH}
 
-echo "Debian package created: ${PKG_NAME}_${VERSION}_${ARCH}.deb"
+echo "Debian package created: ${PKG_NAME}-${VERSION}-${ARCH}.deb"
