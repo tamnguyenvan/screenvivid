@@ -1,9 +1,11 @@
-![ScreenVivid](./assets/banner.svg)
+![ScreenVivid Banner](./assets/banner.svg)
 
 <br>
 <br>
 
-ScreenVivid is a powerful and user-friendly screen recording application that allows you to capture your screen and enhance your recordings with intuitive editing features.
+**Welcome to ScreenVivid**
+
+ScreenVivid is a powerful and user-friendly screen recording application designed to help you capture your screen and enhance your recordings with intuitive editing features. Whether you're creating tutorials, recording meetings, or capturing gameplay, ScreenVivid is the perfect tool for you.
 
 ## Table of Contents
 
@@ -21,13 +23,13 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 
 ## Features
 
-- Cross-platform support (MacOS, Windows, and Ubuntu/Debian)
-- Screen recording with high quality output
-- Free and open-source
-- Video enhancement tools (backgrounds, padding, etc.)
-- Intuitive and simple interface
+- **Cross-platform support**: ScreenVivid is available on MacOS, Windows, and Ubuntu/Debian, ensuring you can record your screen regardless of your operating system.
+- **High-quality screen recording**: Capture your screen with high-quality output, perfect for creating professional-looking videos.
+- **Free and open-source**: ScreenVivid is completely free to use and open-source, allowing the community to contribute and improve the application.
+- **Video enhancement tools**: Enhance your recordings with backgrounds, padding, and other intuitive editing features.
+- **Intuitive and simple interface**: ScreenVivid's user-friendly interface makes it easy to start recording and editing your screen captures.
 
-![ScreenVivid UI](./assets/showcase.png)
+![ScreenVivid UI Showcase](./assets/showcase.png)
 
 ## Installation Guide
 
@@ -35,14 +37,14 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 
 - **Ubuntu/Debian**:
   - **Minimum Requirements:** Ubuntu 20.04 or later, Debian 10 or later, 4GB RAM (8GB recommended)
-  - **Compatibility Note:** ScreenVivid is designed to work with X11-based systems, ensuring seamless integration with Ubuntu and Debian.
+  - **Compatibility Note:** ScreenVivid is designed to work seamlessly with X11-based systems, ensuring a smooth experience on Ubuntu and Debian.
 - **Windows**:
   - **Minimum Requirements:** Windows 10 or later, 4GB RAM (8GB recommended)
 - **MacOS**:
   - **Minimum Requirements:** MacOS 10.15 or later, 4GB RAM (8GB recommended)
 
 ### Linux Installation
-Download the latest .deb package package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
+Download the latest .deb package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
 ```bash
 # Debian/Ubuntu (apt-get)
 sudo dpkg -i screenvivid_x.x.x_amd64.deb
@@ -50,13 +52,13 @@ sudo dpkg -i screenvivid_x.x.x_amd64.deb
 
 ### Windows Installation
 
-1. Grab the latest .exe installer from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
-2. When downloading, Windows may display a warning. Click "Keep anyway" to proceed with the download.
-3. Run the installer. You may see a SmartScreen warning. Click "More info" and then "Run anyway" to continue.
+1. Download the latest .exe installer from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
+2. If Windows displays a warning during download, click "Keep anyway" to proceed.
+3. Run the installer. If you see a SmartScreen warning, click "More info" and then "Run anyway" to continue.
 4. Follow the installation prompts to complete the setup.
 5. Launch the program from your Start Menu or the newly created Desktop shortcut.
 
-🚨 **Note**: Due to current budget constraints, our application is not code-signed. This may trigger Windows security warnings, but rest assured that our software is safe to use. We're working on obtaining a code signing certificate in the future to eliminate these warnings.
+🚨 **Important Note**: Due to current budget constraints, our application is not code-signed. This may trigger Windows security warnings, but rest assured that our software is safe to use. We're working on obtaining a code signing certificate in the future to eliminate these warnings.
 
 
 ### MacOS Installation
@@ -65,7 +67,7 @@ Download the latest .dmg package from our [Releases page](https://github.com/tam
 1. Open the DMG file and drag the ScreenVivid icon to the Applications folder.
 2. Run the app from your Applications folder.
 
-🚨 **Note:** As the app is not notarized, Gatekeeper may display a warning. To proceed, go to System `Settings > Privacy & Security > Security`, select "Open Anyway", and confirm with your login password. For more information, please refer to [this guide](https://support.apple.com/en-vn/guide/mac-help/mchleab3a043/mac).
+🚨 **Important Note:** As the app is not notarized, Gatekeeper may display a warning. To proceed, go to System `Settings > Privacy & Security > Security`, select "Open Anyway", and confirm with your login password. For more information, please refer to [this guide](https://support.apple.com/en-vn/guide/mac-help/mchleab3a043/mac).
 
 ### Running from Source
 
@@ -101,20 +103,20 @@ python -m screenvivid.main
 
 ## Advantages
 
-- Easy to use
-- Cross-platform
-- Intuitive and simple interface
-- Completely free
-- Lightweight and fast
+- **Easy to use**: ScreenVivid's intuitive interface makes it easy to start recording and editing your screen captures.
+- **Cross-platform**: Available on MacOS, Windows, and Ubuntu/Debian, ensuring you can record your screen regardless of your operating system.
+- **Intuitive and simple interface**: ScreenVivid's user-friendly interface makes it easy to start recording and editing your screen captures.
+- **Completely free**: ScreenVivid is completely free to use and open-source, allowing the community to contribute and improve the application.
+- **Lightweight and fast**: ScreenVivid is designed to be lightweight and fast, ensuring a smooth recording experience.
 
 ## Current Limitations
 
-- Advanced features like zoom, audio capture, and webcam integration are not yet available.
+- **Advanced features**: Advanced features like zoom, audio capture, and webcam integration are not yet available.
 
 ## Roadmap
 
 We're constantly working to improve ScreenVivid. Here are some features we're planning to add in the future:
-- [ ] Advanced editing features (zoom, audio, webcam integration)
+- [ ] **Advanced editing features**: Zoom, audio capture, and webcam integration.
 
 ## Support
 
