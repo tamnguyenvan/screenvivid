@@ -13,7 +13,6 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
   - [Linux Installation](#linux-installation)
   - [Windows Installation](#windows-installation)
   - [MacOS Installation](#macos-installation)
-  - [Troubleshooting Installation](#troubleshooting-installation)
 - [Advantages](#advantages)
 - [Current Limitations](#current-limitations)
 - [Roadmap](#roadmap)
@@ -22,10 +21,11 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 
 ## Features
 
+- Cross-platform support (MacOS, Windows, and Ubuntu/Debian)
 - Screen recording with high quality output
+- Free and open-source
 - Video enhancement tools (backgrounds, padding, etc.)
-- User-friendly interface
-- Cross-platform support (Ubuntu/Debian and Windows)
+- Intuitive and simple interface
 
 ![ScreenVivid UI](./assets/showcase.png)
 
@@ -34,18 +34,15 @@ ScreenVivid is a powerful and user-friendly screen recording application that al
 ### System Requirements
 
 - **Ubuntu/Debian**:
-  - The app is based on PySide6, which requires glibc-2.28+. It supports Ubuntu 20.04 or later, Debian 10 or later.
-  - 4GB RAM (8GB recommended)
-  - **ScreenVivid uses [python-mss](https://github.com/BoboTiG/python-mss) to capture the screen, making it compatible only with operating systems that use X11.**
+  - **Minimum Requirements:** Ubuntu 20.04 or later, Debian 10 or later, 4GB RAM (8GB recommended)
+  - **Compatibility Note:** ScreenVivid is designed to work with X11-based systems, ensuring seamless integration with Ubuntu and Debian.
 - **Windows**:
-  - Windows 10 or later
-  - 4GB RAM (8GB recommended)
+  - **Minimum Requirements:** Windows 10 or later, 4GB RAM (8GB recommended)
 - **MacOS**:
-  - MacOS 10.15 or later
-  - 4GB RAM (8GB recommended)
+  - **Minimum Requirements:** MacOS 10.15 or later, 4GB RAM (8GB recommended)
 
 ### Linux Installation
-Download the latest .deb package or .rpm package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
+Download the latest .deb package package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
 ```bash
 # Debian/Ubuntu (apt-get)
 sudo dpkg -i screenvivid_x.x.x_amd64.deb
@@ -59,18 +56,20 @@ sudo dpkg -i screenvivid_x.x.x_amd64.deb
 4. Follow the installation prompts to complete the setup.
 5. Launch the program from your Start Menu or the newly created Desktop shortcut.
 
-Note: Due to current budget constraints, our application is not code-signed. This may trigger Windows security warnings, but rest assured that our software is safe to use. We're working on obtaining a code signing certificate in the future to eliminate these warnings.
+🚨 **Note**: Due to current budget constraints, our application is not code-signed. This may trigger Windows security warnings, but rest assured that our software is safe to use. We're working on obtaining a code signing certificate in the future to eliminate these warnings.
 
 
 ### MacOS Installation
-
 Download the latest .dmg package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
 
 1. Open the DMG file and drag the ScreenVivid icon to the Applications folder.
 2. Run the app from your Applications folder.
 
+🚨 **Note:** As the app is not notarized, Gatekeeper may display a warning. To proceed, go to System `Settings > Privacy & Security > Security`, select "Open Anyway", and confirm with your login password. For more information, please refer to [this guide](https://support.apple.com/en-vn/guide/mac-help/mchleab3a043/mac).
 
-### From source
+### Running from Source
+
+For systems without installation file support, ScreenVivid can be run using Python by following these steps:
 
 1. Clone the repository
 ```bash
@@ -88,7 +87,12 @@ python compile_resources.py
 
 4. Run the app
 ```bash
-# Assume you're in the root of the repo
+# Ubuntu/Debian
+sudo apt-get install python3-tk libxcb-cursor0
+
+# MacOS
+
+# Assuming you're in the root of the repository
 python -m screenvivid.main
 ```
 
