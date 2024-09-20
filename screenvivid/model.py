@@ -1,6 +1,7 @@
 import os
 import time
 import hashlib
+import queue
 from threading import Thread, Event
 
 import cv2
@@ -299,6 +300,7 @@ class VideoRecordingThread:
         self._fps = config.DEFAULT_FPS or 30
         self._maximum_fps = 200
         self._monitor = {}
+        self._frame_queue = queue.Queue()
 
     @property
     def mouse_events(self):
@@ -311,11 +313,15 @@ class VideoRecordingThread:
         self._is_stopped.clear()
         self._record_thread = Thread(target=self._recording)
         self._record_thread.start()
+        self._write_thread = Thread(target=self._write_frames)
+        self._write_thread.start()
 
     def stop_recording(self):
         self._is_stopped.set()
         if self._record_thread is not None:
             self._record_thread.join()
+        if self._write_thread is not None:
+            self._write_thread.join()
 
     def cancel_recording(self):
         self.stop_recording()
@@ -346,30 +352,36 @@ class VideoRecordingThread:
 
             while not self._is_stopped.is_set():
                 t0 = time.time()
-                frame = np.array(stream.grab(self._monitor))
+                frame = stream.grab(self._monitor)
                 if frame is None:
                     break
+                self._frame_index += 1
 
                 frame = np.array(frame)
                 frame = frame[:, :, :3]
-                frame_height, frame_width = frame.shape[:2]
-
-                if self._writer is None:
-                    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-                    self._writer = cv2.VideoWriter(self._output_path, fourcc, self._fps, (frame_width, frame_height))
-                    self._frame_width = frame_width
-                    self._frame_height = frame_height
+                self._frame_height, self._frame_width = frame.shape[:2]
 
                 self._get_mouse_data()
 
-                self._frame_index += 1
-                self._writer.write(frame)
+                self._frame_queue.put((frame, self._frame_width, self._frame_height))
+                convert_time = time.time() - t0
 
-                t1 = time.time()
-
-                read_time = t1 - t0
-                sleep_duration = max(0.001, interval - read_time)
+                sleep_duration = max(0.001, interval - convert_time)
                 time.sleep(sleep_duration)
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    def _write_frames(self):
+        try:
+            while not self._is_stopped.is_set():
+                try:
+                    frame, frame_width, frame_height = self._frame_queue.get(block=False)
+                    if self._writer is None:
+                        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+                        self._writer = cv2.VideoWriter(self._output_path, fourcc, self._fps, (frame_width, frame_height))
+                    self._writer.write(frame)
+                except queue.Empty:
+                    time.sleep(0.01)
         except Exception as e:
             print(f"An error occurred: {e}")
         finally:
@@ -403,7 +415,6 @@ class VideoRecordingThread:
 
     def set_region(self, region):
         self._region = region
-
 
 class VideoController(QObject):
     frameReady = Signal()

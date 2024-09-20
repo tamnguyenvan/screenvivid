@@ -109,6 +109,9 @@ Window {
         videoLen = videoController.video_len
         videoController.get_current_frame()
         videoController.aspect_ratio = "auto"
+
+        console.log("videoLen: ", videoLen)
+
     }
 
     onClosing: {
