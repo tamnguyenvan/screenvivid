@@ -30,7 +30,7 @@ ScreenVivid is a powerful and user-friendly screen recording application designe
 - **Video enhancement tools**: Enhance your recordings with backgrounds, padding, and other intuitive editing features.
 - **Intuitive and simple interface**: ScreenVivid's user-friendly interface makes it easy to start recording and editing your screen captures.
 
-![ScreenVivid UI Showcase](./assets/showcase.png)
+![ScreenVivid UI Showcase](./assets/hero.png)
 
 ## Installation Guide
 
