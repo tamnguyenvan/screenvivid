@@ -18,7 +18,7 @@ from PIL import Image
 from screenvivid import config
 from screenvivid import transforms
 from screenvivid.utils.general import generate_video_path
-from screenvivid.utils.cursor import get_cursor_image
+from screenvivid.utils.cursor import get_cursor_state
 
 class UndoRedoManager:
     def __init__(self):
@@ -407,10 +407,9 @@ class VideoRecordingThread:
             self._mouse_events["move"][self._frame_index] = (relative_x, relative_y, self._frame_index, cursor_id)
 
     def _get_cursor(self):
-        cursor_image = get_cursor_image()
-        cursor_id = hashlib.sha256(cursor_image.tobytes()).hexdigest()
+        cursor_id = get_cursor_state()
         if cursor_id not in self._mouse_events["cursors_map"]:
-            self._mouse_events["cursors_map"][cursor_id] = cursor_image
+            self._mouse_events["cursors_map"][cursor_id] = cursor_id
         return cursor_id
 
     def set_region(self, region):
@@ -854,7 +853,8 @@ class VideoProcessor(QObject):
             self.frameProcessed.emit(processed_frame)
             self.current_frame += 1
             return processed_frame
-        except:
+        except Exception as e:
+            print(e)
             return
 
     @Slot()

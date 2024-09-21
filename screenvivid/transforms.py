@@ -12,7 +12,6 @@ import numpy as np
 import pyautogui
 from PIL import Image, ImageDraw, ImageFilter
 from PySide6.QtCore import QFile, QIODevice
-from PySide6.QtGui import QCursor
 
 from screenvivid.utils.general import hex_to_rgb, create_gradient_image
 
@@ -192,21 +191,24 @@ class Cursor(BaseTransform):
         self.scale = scale
         self.offsets = offsets
         self.move_data = move_data
-        self.cursors_map = cursors_map
-        self.cursors = self._load()
-        self.default_cursors = self._load()
+        self.cursor_states = {
+            "windows": ["arrow", "ibeam", "wait", "cross", "uparrow", "sizenwse", "sizenesw", "sizewe", "sizens", "sizeall", "no", "hand", "appstarting", "help"],
+            "linux": ["arrow"],
+            "macos": ["arrow", "pointing_hand", "closed_hand", "open_hand", "resize_left", "resize_right", "resize_left_right", "resize_up", "resize_down", "resize_up_down", "disappearing_item", "contextual_menu", "drag_copy", "drag_link", "operation_not_allowed"],
+        }
+        self.os_name = get_os_name()
+        self.cursors_map = self._load()
 
     def _load(self):
-        sub_folder = get_os_name()
-        scale_str = f"{int(self.scale)}" if self.scale.is_integer() else f"{self.scale:.1f}"
-        arrow_image = self._load_image(f":/resources/images/cursor/{sub_folder}/cursor-{scale_str}x.png")
-        arrow_image = cv2.cvtColor(arrow_image, cv2.COLOR_RGBA2BGRA)
-
-        pointing_hand = self._load_image(f':/resources/images/cursor/linux/pointinghand.png')
-        pointing_hand = cv2.cvtColor(pointing_hand, cv2.COLOR_RGBA2BGRA)
-        pointing_hand = cv2.resize(pointing_hand, (self.size, self.size))
-
-        return {'arrow': arrow_image, 'pointing_hand': pointing_hand}
+        cursors_map = {}
+        scales = ["1x", "1.5x", "2x", "3x"]
+        for scale in scales:
+            cursors_map[scale] = {}
+            for cursor_state in self.cursor_states[self.os_name]:
+                cursor_image = self._load_image(f":/resources/images/cursor/{self.os_name}/{scale}/{cursor_state}.png")
+                cursor_image = cv2.cvtColor(cursor_image, cv2.COLOR_RGBA2BGRA)
+                cursors_map[scale][cursor_state] = cursor_image
+        return cursors_map
 
     def _load_image(self, resource: str):
         file = QFile(resource)
@@ -220,13 +222,10 @@ class Cursor(BaseTransform):
         image_arr = np.frombuffer(bytes_io.getvalue(), np.uint8)
         return cv2.imdecode(image_arr, cv2.IMREAD_UNCHANGED)
 
-    def blend(self, image, x, y, cursor_id):
+    def blend(self, image, x, y, cursor_state):
         # Get cursor image
-        cursor_id = None
-        if cursor_id in self.cursors_map:
-            cursor_image = self.cursors_map.get(cursor_id)
-        else:
-            cursor_image = self.default_cursors["arrow"]
+        scale_str = f"{int(self.scale)}x" if self.scale.is_integer() else f"{self.scale:.1f}"
+        cursor_image = self.cursors_map[scale_str][cursor_state]
 
         cursor_height, cursor_width = cursor_image.shape[:2]
         image_height, image_width = image.shape[:2]

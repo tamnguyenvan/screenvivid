@@ -22,7 +22,7 @@ jobs:
         cd screenvivid && python3 compile_resources.py && cd .. &&
         cd packaging/linux &&
         pyinstaller --clean --noconfirm screenvivid.spec &&
-        rm dist/ScreenVivid/_internal/libstdc++.so.6 &&
+        rm dist/ScreenVivid/_internal/libstdc++.so.6 dist/ScreenVivid/libQt6WebEngineCore.so.6 &&
         chmod +x build-deb.sh &&
         ./build-deb.sh '${GITHUB_REF_NAME}' &&
         mv screenvivid*.deb /app/

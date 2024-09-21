@@ -1,10 +1,9 @@
 <RCC>
     <qresource prefix="/">
-        <file>../resources/images/cursor/linux/cursor-1x.png</file>
-        <file>../resources/images/cursor/linux/cursor-1.5x.png</file>
-        <file>../resources/images/cursor/linux/cursor-2x.png</file>
-        <file>../resources/images/cursor/linux/cursor-3x.png</file>
-        <file>../resources/images/cursor/linux/pointinghand.png</file>
+        <file>../resources/images/cursor/linux/1x/arrow.png</file>
+        <file>../resources/images/cursor/linux/1.5x/arrow.png</file>
+        <file>../resources/images/cursor/linux/2x/arrow.png</file>
+        <file>../resources/images/cursor/linux/3x/arrow.png</file>
         <file>../resources/images/cursor/windows/cursor-1x.png</file>
         <file>../resources/images/cursor/windows/cursor-1.5x.png</file>
         <file>../resources/images/cursor/windows/cursor-2x.png</file>
