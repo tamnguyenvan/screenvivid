@@ -1,12 +1,12 @@
 import os
 import time
-import hashlib
 import queue
 from threading import Thread, Event
 
 import cv2
 import numpy as np
 import pyautogui
+from loguru import logger
 from mss import mss
 from PySide6.QtCore import (
     QObject, Qt, Property, Slot, Signal, QThread, QTimer, QPoint, QAbstractListModel,
@@ -17,8 +17,37 @@ from PIL import Image
 
 from screenvivid import config
 from screenvivid import transforms
-from screenvivid.utils.general import generate_video_path
-from screenvivid.utils.cursor import get_cursor_state
+from screenvivid.utils.general import generate_video_path, get_os_name
+from screenvivid.utils.cursor.cursor import get_cursor_state
+from screenvivid.utils.cursor.loader import LinuxCursorLoader
+
+class LoadCursorThread(QThread):
+    def __init__(self):
+        super().__init__()
+        self._cursor_loader = LinuxCursorLoader()
+        self._cursor_theme = None
+        self._base_size = 32
+        self._sizes = [24, 32, 48, 64, 96]
+
+    @Property(list)
+    def cursor_theme(self):
+        return self._cursor_theme
+
+    def get_cursor(self, name):
+        """A string of the cursor name (arrow, ibeam, etc)"""
+        cursor_theme = dict()
+        for size in self._sizes:
+            if name in self._cursor_theme[size]:
+                scale = size / self._base_size
+                scale_str = f"{int(scale)}x" if scale.is_integer() else f"{scale:.1f}"
+                cursor_theme[scale_str] = self._cursor_theme[size][name]
+        return cursor_theme
+
+    def run(self):
+        import time
+        t0 = time.time()
+        self._cursor_theme = self._cursor_loader.load_cursor_theme()
+        logger.info(f"Cursor theme loaded in {time.time() - t0} seconds")
 
 class UndoRedoManager:
     def __init__(self):
@@ -282,7 +311,6 @@ class VideoRecorder(QObject):
         if os.path.exists(self._output_path):
             os.remove(self._output_path)
 
-
 class VideoRecordingThread:
     def __init__(self, output_path: str = None, start_delay: float = 0.5):
         self._output_path = output_path
@@ -301,6 +329,11 @@ class VideoRecordingThread:
         self._maximum_fps = 200
         self._monitor = {}
         self._frame_queue = queue.Queue()
+        self._os_name = get_os_name()
+
+        self._load_cursor_thread = LoadCursorThread()
+        self._load_cursor_thread.start()
+        self._prev_cursor_anim_state = {}
 
     @property
     def mouse_events(self):
@@ -369,7 +402,7 @@ class VideoRecordingThread:
                 sleep_duration = max(0.001, interval - convert_time)
                 time.sleep(sleep_duration)
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.error(f"An error occurred: {e}")
 
     def _write_frames(self):
         try:
@@ -383,7 +416,7 @@ class VideoRecordingThread:
                 except queue.Empty:
                     time.sleep(0.01)
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.error(f"An error occurred: {e}")
         finally:
             if self._writer is not None:
                 self._writer.release()
@@ -402,15 +435,39 @@ class VideoRecordingThread:
             relative_y = (y - self._monitor["top"]) / self._frame_height
 
             # cursor shape
-            cursor_id = self._get_cursor()
+            cursor_state, anim_step = self._get_cursor()
 
-            self._mouse_events["move"][self._frame_index] = (relative_x, relative_y, self._frame_index, cursor_id)
+            self._mouse_events["move"][self._frame_index] = (
+                relative_x, relative_y, self._frame_index, cursor_state, anim_step
+            )
 
     def _get_cursor(self):
-        cursor_id = get_cursor_state()
-        if cursor_id not in self._mouse_events["cursors_map"]:
-            self._mouse_events["cursors_map"][cursor_id] = cursor_id
-        return cursor_id
+        cursor_theme = None
+        if self._os_name == "linux":
+            cursor_theme = self._load_cursor_thread.cursor_theme
+
+        cursor_state, anim_info = get_cursor_state(cursor_theme)
+        if self._os_name == "linux" and cursor_state not in self._mouse_events["cursors_map"]:
+            self._mouse_events["cursors_map"][cursor_state] = self._load_cursor_thread.get_cursor(cursor_state)
+
+        # Calculate anim step
+        anim_step = 0
+        if anim_info.get("is_anim", False):
+            n_steps = anim_info.get("n_steps", 1)
+            if cursor_state not in self._prev_cursor_anim_state:
+                self._prev_cursor_anim_state[cursor_state] = {"frame": -1, "anim_step": 0}
+
+            if self._prev_cursor_anim_state[cursor_state]["frame"] == self._frame_index - 1:
+                # The previous frame was the same cursor state
+                prev_anim_step = self._prev_cursor_anim_state[cursor_state]["anim_step"]
+                self._prev_cursor_anim_state[cursor_state]["anim_step"] = (prev_anim_step + 1) % n_steps
+            else:
+                # The previous frame was not the same cursor state. So reset the anim step
+                self._prev_cursor_anim_state[cursor_state]["anim_step"] = 0
+
+            self._prev_cursor_anim_state[cursor_state]["frame"] = self._frame_index
+            anim_step = self._prev_cursor_anim_state[cursor_state]["anim_step"]
+        return cursor_state, anim_step
 
     def set_region(self, region):
         self._region = region
@@ -664,6 +721,7 @@ class VideoProcessor(QObject):
         self._region = None
         self._x_offset = None
         self._y_offset = None
+        self._cursors_map = dict()
 
     @property
     def aspect_ratio(self):
@@ -829,7 +887,7 @@ class VideoProcessor(QObject):
                 "cursor": transforms.Cursor(move_data=self._mouse_events, cursors_map=self._cursors_map, offsets=(x_offset, y_offset), scale=self._cursor_scale),
                 "padding": transforms.Padding(padding=self.padding),
                 "inset": transforms.Inset(inset=self.inset, color=(0, 0, 0)),
-                "border_shadow": transforms.BorderShadow(radius=self.border_radius),
+                # "border_shadow": transforms.BorderShadow(radius=self.border_radius),
                 "background": transforms.Background(background=self._background),
             })
 
@@ -854,7 +912,7 @@ class VideoProcessor(QObject):
             self.current_frame += 1
             return processed_frame
         except Exception as e:
-            print(e)
+            logger.error(e)
             return
 
     @Slot()

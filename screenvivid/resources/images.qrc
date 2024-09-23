@@ -4,16 +4,7 @@
         <file>../resources/images/cursor/linux/1.5x/arrow.png</file>
         <file>../resources/images/cursor/linux/2x/arrow.png</file>
         <file>../resources/images/cursor/linux/3x/arrow.png</file>
-        <file>../resources/images/cursor/windows/cursor-1x.png</file>
-        <file>../resources/images/cursor/windows/cursor-1.5x.png</file>
-        <file>../resources/images/cursor/windows/cursor-2x.png</file>
-        <file>../resources/images/cursor/windows/cursor-3x.png</file>
-        <file>../resources/images/cursor/windows/pointinghand.png</file>
-        <file>../resources/images/cursor/macos/cursor-1x.png</file>
-        <file>../resources/images/cursor/macos/cursor-1.5x.png</file>
-        <file>../resources/images/cursor/macos/cursor-2x.png</file>
-        <file>../resources/images/cursor/macos/cursor-3x.png</file>
-        <file>../resources/images/cursor/macos/pointinghand.png</file>
+
         <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0001.jpg</file>
         <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0002.jpg</file>
         <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0003.jpg</file>

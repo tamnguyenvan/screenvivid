@@ -1,9 +1,8 @@
 import io
+import json
+import glob
 import os
 import sys
-import re
-import time
-import platform
 from functools import lru_cache
 from pathlib import Path
 
@@ -13,8 +12,7 @@ import pyautogui
 from PIL import Image, ImageDraw, ImageFilter
 from PySide6.QtCore import QFile, QIODevice
 
-from screenvivid.utils.general import hex_to_rgb, create_gradient_image
-
+from screenvivid.utils.general import hex_to_rgb, create_gradient_image, get_os_name
 
 class BaseTransform:
     def __init__(self):
@@ -192,22 +190,61 @@ class Cursor(BaseTransform):
         self.offsets = offsets
         self.move_data = move_data
         self.cursor_states = {
-            "windows": ["arrow", "ibeam", "wait", "cross", "uparrow", "sizenwse", "sizenesw", "sizewe", "sizens", "sizeall", "no", "hand", "appstarting", "help"],
-            "linux": ["arrow"],
-            "macos": ["arrow", "pointing_hand", "closed_hand", "open_hand", "resize_left", "resize_right", "resize_left_right", "resize_up", "resize_down", "resize_up_down", "disappearing_item", "contextual_menu", "drag_copy", "drag_link", "operation_not_allowed"],
+            "windows": [
+                "arrow", "ibeam", "wait", "cross", "uparrow", "sizenwse", "sizenesw",
+                "sizewe", "sizens", "sizeall", "no", "hand", "appstarting", "help"
+            ],
+            "linux": [
+                "arrow", "ibeam", "wait", "progress", "crosshair", "text", "vertical-text",
+                "alias", "copy", "move", "no-drop", "not-allowed", "grab",
+                "grabbing", "all-scroll", "col-resize", "row-resize", "n-resize",
+                "e-resize", "s-resize", "w-resize", "nw-resize", "se-resize",
+                "sw-resize", "ew-resize", "ns-resize", "nsew-resize", "nwse-resize",
+                "top_left_corner", "top_right_corner", "bottom_left_corner", "bottom_right_corner",
+                "zoom-in", "zoom-out", "pointer-move"
+            ],
+            "macos": [
+                "arrow", "pointing_hand", "closed_hand", "open_hand", "resize_left",
+                "resize_right", "resize_left_right", "resize_up", "resize_down",
+                "resize_up_down", "disappearing_item", "contextual_menu",
+                "drag_copy", "drag_link", "operation_not_allowed"
+            ],
         }
         self.os_name = get_os_name()
-        self.cursors_map = self._load()
+        if self.os_name == "linux":
+            self.cursors_map = cursors_map
+        else:
+            self.cursors_map = self._load()
 
     def _load(self):
+        # Load offsets data from json file
+        if getattr(sys, 'frozen', False):
+            # If running in a PyInstaller bundle
+            base_path = Path(sys._MEIPASS)
+        else:
+            # If running in a regular Python environment
+            base_path = Path(__file__).resolve().parent
+
+        offset_file = os.path.join(base_path, f"resources/images/cursor/{self.os_name}/offsets.json")
+        with open(offset_file, "r") as f:
+            offsets = json.load(f)
+
         cursors_map = {}
         scales = ["1x", "1.5x", "2x", "3x"]
-        for scale in scales:
-            cursors_map[scale] = {}
-            for cursor_state in self.cursor_states[self.os_name]:
-                cursor_image = self._load_image(f":/resources/images/cursor/{self.os_name}/{scale}/{cursor_state}.png")
-                cursor_image = cv2.cvtColor(cursor_image, cv2.COLOR_RGBA2BGRA)
-                cursors_map[scale][cursor_state] = cursor_image
+        for cursor_state in self.cursor_states[self.os_name]:
+            cursors_map[cursor_state] = {}
+            for scale in scales:
+                if scale not in cursors_map[cursor_state]:
+                    cursors_map[cursor_state][scale] = []
+                pattern = os.path.join(base_path, f"resources/images/cursor/{self.os_name}/{scale}/{cursor_state}*.png")
+                paths = sorted(glob.glob(pattern))
+                for i, path in enumerate(paths):
+                    cursor_image = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+                    # cursor_image = self._load_image(path)
+                    # cursor_image = cv2.cvtColor(cursor_image, cv2.COLOR_RGBA2BGRA)
+
+                    offset = offsets.get(cursor_state, {}).get(scale, (0, 0))
+                    cursors_map[cursor_state][scale].append({"image": cursor_image, "offset": offset})
         return cursors_map
 
     def _load_image(self, resource: str):
@@ -222,16 +259,18 @@ class Cursor(BaseTransform):
         image_arr = np.frombuffer(bytes_io.getvalue(), np.uint8)
         return cv2.imdecode(image_arr, cv2.IMREAD_UNCHANGED)
 
-    def blend(self, image, x, y, cursor_state):
+    def blend(self, image, x, y, cursor_state, anim_step):
         # Get cursor image
         scale_str = f"{int(self.scale)}x" if self.scale.is_integer() else f"{self.scale:.1f}"
-        cursor_image = self.cursors_map[scale_str][cursor_state]
+        cursor_info = self.cursors_map[cursor_state][scale_str][anim_step]
+        cursor_image = cursor_info["image"]
+        cursor_offset = cursor_info["offset"]
 
         cursor_height, cursor_width = cursor_image.shape[:2]
         image_height, image_width = image.shape[:2]
 
         # Calculate the position of the cursor on the image
-        x1, y1 = int(image_width * x), int(image_height * y)
+        x1, y1 = int(image_width * x) - cursor_offset[0], int(image_height * y) - cursor_offset[1]
         x2, y2 = x1 + cursor_width, y1 + cursor_height
 
         # The coordinates would be used to crop
@@ -261,8 +300,8 @@ class Cursor(BaseTransform):
         if "start_frame" in kwargs and kwargs["start_frame"] in self.move_data:
             start_frame = kwargs["start_frame"]
             input = kwargs["input"]
-            x, y, _, cursor_id = self.move_data[start_frame]
-            kwargs["input"] = self.blend(input, x, y, cursor_id)
+            x, y, _, cursor_state, anim_step = self.move_data[start_frame]
+            kwargs["input"] = self.blend(input, x, y, cursor_state, anim_step)
 
         return kwargs
 
@@ -448,15 +487,3 @@ class Background(BaseTransform):
 
         kwargs['input'] = output
         return kwargs
-
-
-def get_os_name():
-    system_code = platform.system().lower()
-    os_name = "unknown"
-    if system_code == "windows":
-        os_name = "windows"
-    elif system_code == "linux":
-        os_name = "linux"
-    elif system_code == "darwin":
-        os_name = "macos"
-    return os_name

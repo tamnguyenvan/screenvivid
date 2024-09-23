@@ -1,9 +1,8 @@
-import os
+import platform
 import tempfile
 from pathlib import Path
 from datetime import datetime
 
-import cv2
 import numpy as np
 
 
@@ -51,26 +50,13 @@ def create_gradient_image(width, height, first_color, second_color, angle):
 
     return gradient_image
 
-
-def find_largest_leq_sorted(arr, x):
-    if len(arr) == 0:
-        return -1
-
-    idx = np.searchsorted(arr, x, side="right") - 1
-
-    if idx >= 0 and arr[idx] <= x:
-        return idx
-    else:
-        return -1
-
-
-def find_smallest_geq_sorted(arr, x):
-    if len(arr) == 0:
-        return -1
-
-    idx = np.searchsorted(arr, x, side="left")
-
-    if idx < len(arr) and arr[idx] >= x:
-        return idx
-    else:
-        return -1
+def get_os_name():
+    system_code = platform.system().lower()
+    os_name = "unknown"
+    if system_code == "windows":
+        os_name = "windows"
+    elif system_code == "linux":
+        os_name = "linux"
+    elif system_code == "darwin":
+        os_name = "macos"
+    return os_name
