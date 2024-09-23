@@ -105,8 +105,6 @@ class LinuxCursorLoader:
 
         return cursor_theme
 
-
-
 class BaseParser(metaclass=ABCMeta):
     blob: bytes
 
