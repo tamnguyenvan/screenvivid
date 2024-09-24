@@ -24,10 +24,9 @@ if __name__ == "__main__":
     parser.add_argument("--output", type=str, default=".", help="Output path")
     args = parser.parse_args()
 
-    # "windows": [
-    #     "arrow", "ibeam", "wait", "cross", "uparrow", "sizenwse", "sizenesw",
-    #     "sizewe", "sizens", "sizeall", "no", "hand", "appstarting", "help"
-    # ],
+    # For .ani files, use read_hotspots.py to get the hotspot
+    # For .cur files, use this script to get the hotspot
+    # Windows
     cursors_map = {
         "aero_arrow_l.cur": "arrow",
         "beam_rl.cur": "ibeam",
@@ -41,6 +40,24 @@ if __name__ == "__main__":
         "aero_unavail_l.cur": "no",
         "aero_link_l.cur": "hand",
         "aero_helpsel_l.cur": "help"
+    }
+
+    # MacOS
+    # Get the files here: https://github.com/antiden/macOS-cursors-for-Windows
+    cursors_map = {
+        "Normal.cur": "arrow",
+        "Text.cur": "ibeam",
+        "Precision.cur": "crosshair",
+        "Closehand.cur": "closedHand",
+        "Pan.cur": "openHand",
+        "Link.cur": "pointingHand",
+        "Horizontal Resize.cur": "resizeLeft",
+        "Horizontal Resize.cur": "resizeRight",
+        "Horizontal Resize.cur": "resizeLeftRight",
+        "Vertical Resize.cur": "resizeUp",
+        "Vertical Resize.cur": "resizeDown",
+        "Vertical Resize.cur": "resizeUpDown",
+        "Unavailable.cur": "operationNotAllowed"
     }
 
     cur_dir = args.cursor_dir

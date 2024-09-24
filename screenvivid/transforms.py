@@ -195,23 +195,23 @@ class Cursor(BaseTransform):
                 "sizewe", "sizens", "sizeall", "no", "hand", "appstarting", "help"
             ],
             "linux": [
-                "arrow", "ibeam", "wait", "progress", "crosshair", "text", "vertical-text",
+                "arrow", "ibeam", "wait", "progress", "watch", "crosshair", "text", "vertical-text",
                 "alias", "copy", "move", "no-drop", "not-allowed", "grab",
                 "grabbing", "all-scroll", "col-resize", "row-resize", "n-resize",
                 "e-resize", "s-resize", "w-resize", "nw-resize", "se-resize",
                 "sw-resize", "ew-resize", "ns-resize", "nsew-resize", "nwse-resize",
                 "top_left_corner", "top_right_corner", "bottom_left_corner", "bottom_right_corner",
-                "zoom-in", "zoom-out", "pointer-move"
+                "zoom-in", "zoom-out", "pointer-move", "xterm"
             ],
             "macos": [
-                "arrow", "pointing_hand", "closed_hand", "open_hand", "resize_left",
-                "resize_right", "resize_left_right", "resize_up", "resize_down",
-                "resize_up_down", "disappearing_item", "contextual_menu",
-                "drag_copy", "drag_link", "operation_not_allowed"
+                "arrow", "ibeam", "crosshair", "closedHand", "openHand", "pointingHand",
+                "resizeLeft", "resizeRight", "resizeLeftRight", "resizeUp", "resizeDown",
+                "resizeUpDown", "operationNotAllowed"
             ],
         }
+        self.default_cursor = self._load_default_cursor()
         self.os_name = get_os_name()
-        if self.os_name == "linux":
+        if self.os_name in "linux":
             self.cursors_map = cursors_map
         else:
             self.cursors_map = self._load()
@@ -247,24 +247,62 @@ class Cursor(BaseTransform):
                     cursors_map[cursor_state][scale].append({"image": cursor_image, "offset": offset})
         return cursors_map
 
-    def _load_image(self, resource: str):
-        file = QFile(resource)
-        if not file.open(QIODevice.ReadOnly):  # Ensure the file is opened in read-only mode
-            raise IOError(f"Cannot open resource: {resource}")
+    # def _load_image(self, resource: str):
+    #     file = QFile(resource)
+    #     if not file.open(QIODevice.ReadOnly):  # Ensure the file is opened in read-only mode
+    #         raise IOError(f"Cannot open resource: {resource}")
 
-        byte_data = file.readAll().data()
-        file.close()
+    #     byte_data = file.readAll().data()
+    #     file.close()
 
-        bytes_io = io.BytesIO(byte_data)
-        image_arr = np.frombuffer(bytes_io.getvalue(), np.uint8)
-        return cv2.imdecode(image_arr, cv2.IMREAD_UNCHANGED)
+    #     bytes_io = io.BytesIO(byte_data)
+    #     image_arr = np.frombuffer(bytes_io.getvalue(), np.uint8)
+    #     return cv2.imdecode(image_arr, cv2.IMREAD_UNCHANGED)
+
+    def _load_default_cursor(self):
+        if getattr(sys, 'frozen', False):
+            # If running in a PyInstaller bundle
+            base_path = Path(sys._MEIPASS)
+        else:
+            # If running in a regular Python environment
+            base_path = Path(__file__).resolve().parent
+
+        default_cursor_dir = os.path.join(base_path, f"resources/images/cursor/default")
+        default_cursor = {}
+        for scale in os.listdir(default_cursor_dir):
+            scale_path = os.path.join(default_cursor_dir, scale)
+            for filename in os.listdir(scale_path):
+                cursor_state = filename.split(".")[0]
+                cursor_path = os.path.join(scale_path, filename)
+                cursor_image = cv2.imread(cursor_path, cv2.IMREAD_UNCHANGED)
+                default_cursor[cursor_state] = {scale: [{"image": cursor_image, "offset": (0, 0)}]}
+        return default_cursor
 
     def blend(self, image, x, y, cursor_state, anim_step):
         # Get cursor image
         scale_str = f"{int(self.scale)}x" if self.scale.is_integer() else f"{self.scale:.1f}"
-        cursor_info = self.cursors_map[cursor_state][scale_str][anim_step]
-        cursor_image = cursor_info["image"]
-        cursor_offset = cursor_info["offset"]
+        if (
+            self.cursors_map.get(cursor_state)
+            and self.cursors_map[cursor_state].get(scale_str)
+        ):
+            cursor_info = self.cursors_map[cursor_state][scale_str][anim_step]
+            cursor_image = cursor_info["image"]
+            cursor_offset = cursor_info["offset"]
+        else:
+            # Check if arrow cursor is available and the scale_str is available
+            if (
+                self.cursors_map.get("arrow")
+                and self.cursors_map["arrow"].get(scale_str)
+            ):
+                cursor_image = self.cursors_map["arrow"][scale_str][0]["image"]
+                cursor_offset = self.cursors_map["arrow"][scale_str][0]["offset"]
+            else:
+                if scale_str in self.default_cursor["arrow"]:
+                    cursor_image = self.default_cursor["arrow"][scale_str][0]["image"]
+                    cursor_offset = self.default_cursor["arrow"][scale_str][0]["offset"]
+                else:
+                    cursor_image = self.default_cursor["arrow"]["1x"][0]["image"]
+                    cursor_offset = self.default_cursor["arrow"]["1x"][0]["offset"]
 
         cursor_height, cursor_width = cursor_image.shape[:2]
         image_height, image_width = image.shape[:2]

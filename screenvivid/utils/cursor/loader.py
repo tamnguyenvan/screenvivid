@@ -1,24 +1,75 @@
 import os
 import struct
-import json
-import tempfile
 import subprocess
 from abc import ABCMeta, abstractmethod
 from typing import Tuple, Any, List
 
-import cv2
+from loguru import logger
 import numpy as np
+
+from screenvivid.utils.general import get_os_name
+
+class CursorLoader:
+    def __init__(self):
+        self.cursor_theme = None
+
+    def load_cursor_theme(self):
+        if get_os_name() == "macos":
+            return MacOSCursorLoader().load_cursor_theme()
+        elif get_os_name() == "linux":
+            return LinuxCursorLoader().load_cursor_theme()
+        else:
+            return None
+
+
+class MacOSCursorLoader:
+    def __init__(self):
+        self.cursor_theme = None
+        self.states = [
+            "arrow", "IBeam", "crosshair", "closedHand", "openHand", "pointingHand",
+            "resizeLeft", "resizeRight", "resizeLeftRight", "resizeUp", "resizeDown",
+            "resizeUpDown", "disappearingItem", "contextualMenu", "dragCopy",
+            "dragLink", "operationNotAllowed"
+        ]
+
+    def load_cursor_theme(self):
+        import AppKit
+        from Cocoa import NSBitmapImageRep, NSPNGFileType
+        import io
+        from PIL import Image
+        import numpy as np
+
+        cursor_theme = {}
+        for state in self.states:
+            cursor_method = getattr(AppKit.NSCursor, f"{state}Cursor")
+            cursor = cursor_method()
+            image = cursor.image()
+            size = image.size()
+            width, height = int(size.width), int(size.height)
+
+            bitmap_rep = NSBitmapImageRep.imageRepWithData_(image.TIFFRepresentation())
+
+            png_data = bitmap_rep.representationUsingType_properties_(NSPNGFileType, None)
+
+            buffer = io.BytesIO(png_data)
+            img_array = Image.open(buffer)
+            img_array = np.array(img_array)
+            cursor_theme.setdefault(width, {}).setdefault(state, []).append({
+                "image": img_array,
+                "offset": cursor.hotSpot()
+            })
+        return cursor_theme
 
 class LinuxCursorLoader:
     def __init__(self):
         self.states = [
-            "arrow", "ibeam", "wait", "progress", "crosshair", "text", "vertical-text",
+            "arrow", "ibeam", "wait", "progress", "watch", "crosshair", "text", "vertical-text",
             "alias", "copy", "move", "no-drop", "not-allowed", "grab",
             "grabbing", "all-scroll", "col-resize", "row-resize", "n-resize",
             "e-resize", "s-resize", "w-resize", "nw-resize", "se-resize",
             "sw-resize", "ew-resize", "ns-resize", "nsew-resize", "nwse-resize",
             "top_left_corner", "top_right_corner", "bottom_left_corner", "bottom_right_corner",
-            "zoom-in", "zoom-out", "pointer-move"
+            "zoom-in", "zoom-out", "pointer-move", "xterm"
         ]
 
     def get_active_cursor_theme(self):
@@ -81,7 +132,9 @@ class LinuxCursorLoader:
     def load_cursor_theme(self):
         AVAILABLE_SIZES = frozenset([24, 32, 48, 64, 96])
 
-        _, cursor_theme_dir = self.get_active_cursor_theme()
+        cursor_theme, cursor_theme_dir = self.get_active_cursor_theme()
+        logger.info(f"Cursor theme: {cursor_theme}, directory: {cursor_theme_dir}")
+
         cursor_theme = {}
         if cursor_theme_dir:
             for state in self.states:
@@ -98,6 +151,7 @@ class LinuxCursorLoader:
                     if width not in AVAILABLE_SIZES:
                         continue
 
+                    logger.debug(f"Cursor: {cursor_path}, size: {width}, state: {state}")
                     cursor_theme.setdefault(width, {}).setdefault(state, []).append({
                         "image": cursor_image,
                         "offset": cursor_offset

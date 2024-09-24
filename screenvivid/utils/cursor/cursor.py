@@ -68,7 +68,7 @@ def get_cursor_state_linux(cursor_theme):
     }
 
     # Match the rgba image with the 24x24 image in the cursor theme
-    AVAILABLE_ANIM_CURSORS = ["wait", "progress"]
+    AVAILABLE_ANIM_CURSORS = ["wait", "progress", "watch"]
     if width in cursor_theme:
         for name, cursors  in cursor_theme[width].items():
             total_cursors = len(cursors)
@@ -81,38 +81,46 @@ def get_cursor_state_linux(cursor_theme):
 
     return "arrow", anim_info
 
-def get_cursor_state_macos():
+def get_cursor_state_macos(cursor_theme):
+    import AppKit
     import Quartz
+    from Cocoa import NSBitmapImageRep, NSPNGFileType
+    import io
+    from PIL import Image
+    import numpy as np
 
     # Get current cursor
     cursor = Quartz.NSCursor.currentSystemCursor()
+    image = cursor.image()
+    size = image.size()
+    width, height = int(size.width), int(size.height)
+    bitmap_rep = NSBitmapImageRep.imageRepWithData_(image.TIFFRepresentation())
 
-    # Define a mapping of cursor names to states
-    cursor_states = {
-        "arrowCursor": "arrow",
-        "IBeamCursor": "ibeam",
-        "crosshairCursor": "cross",
-        "closedHandCursor": "closed_hand",
-        "openHandCursor": "open_hand",
-        "pointingHandCursor": "pointing_hand",
-        "resizeLeftCursor": "resize_left",
-        "resizeRightCursor": "resize_right",
-        "resizeLeftRightCursor": "resize_left_right",
-        "resizeUpCursor": "resize_up",
-        "resizeDownCursor": "resize_down",
-        "resizeUpDownCursor": "resize_up_down",
-        "disappearingItemCursor": "disappearing_item",
-        "contextualMenuCursor": "contextual_menu",
-        "dragCopyCursor": "drag_copy",
-        "dragLinkCursor": "drag_link",
-        "operationNotAllowedCursor": "operation_not_allowed"
+    png_data = bitmap_rep.representationUsingType_properties_(NSPNGFileType, None)
+
+    buffer = io.BytesIO(png_data)
+    img_array = Image.open(buffer)
+    rgba = np.array(img_array)
+    bgra = rgba[..., ::-1]
+
+    anim_info = {
+        "is_anim": False,
+        "n_steps": 1,
     }
 
-    # Get the cursor name
-    cursor_name = cursor.name()
+    AVAILABLE_ANIM_CURSORS = ["wait", "progress"]
 
-    # Return the corresponding state or "arrow" if not recognized
-    return cursor_states.get(cursor_name, "arrow")
+    if width in cursor_theme:
+        for name, cursors  in cursor_theme[width].items():
+            total_cursors = len(cursors)
+            for cursor_info in cursors:
+                if np.array_equal(bgra, cursor_info["image"]):
+                    if name in AVAILABLE_ANIM_CURSORS:
+                        anim_info["is_anim"] = True
+                        anim_info["n_steps"] = total_cursors
+                    return name, anim_info
+
+    return "arrow", anim_info
 
 def get_cursor_state(cursor_theme):
     current_platform = platform.system()
@@ -121,6 +129,6 @@ def get_cursor_state(cursor_theme):
     elif current_platform == "Linux":
         return get_cursor_state_linux(cursor_theme)
     elif current_platform == "Darwin":
-        return get_cursor_state_macos()
+        return get_cursor_state_macos(cursor_theme)
     else:
         raise NotImplementedError(f"Cursor image capture is not implemented for {current_platform}")

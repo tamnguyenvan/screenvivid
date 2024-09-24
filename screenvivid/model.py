@@ -19,12 +19,12 @@ from screenvivid import config
 from screenvivid import transforms
 from screenvivid.utils.general import generate_video_path, get_os_name
 from screenvivid.utils.cursor.cursor import get_cursor_state
-from screenvivid.utils.cursor.loader import LinuxCursorLoader
+from screenvivid.utils.cursor.loader import CursorLoader
 
 class LoadCursorThread(QThread):
     def __init__(self):
         super().__init__()
-        self._cursor_loader = LinuxCursorLoader()
+        self._cursor_loader = CursorLoader()
         self._cursor_theme = None
         self._base_size = 32
         self._sizes = [24, 32, 48, 64, 96]
@@ -37,10 +37,11 @@ class LoadCursorThread(QThread):
         """A string of the cursor name (arrow, ibeam, etc)"""
         cursor_theme = dict()
         for size in self._sizes:
-            if name in self._cursor_theme[size]:
+            cursor_theme_size = self._cursor_theme.get(size, {})
+            if name in cursor_theme_size:
                 scale = size / self._base_size
                 scale_str = f"{int(scale)}x" if scale.is_integer() else f"{scale:.1f}"
-                cursor_theme[scale_str] = self._cursor_theme[size][name]
+                cursor_theme[scale_str] = self._cursor_theme.get(size, {}).get(name, [])
         return cursor_theme
 
     def run(self):
@@ -443,7 +444,7 @@ class VideoRecordingThread:
 
     def _get_cursor(self):
         cursor_theme = None
-        if self._os_name == "linux":
+        if self._os_name in ["linux", "macos"]:
             cursor_theme = self._load_cursor_thread.cursor_theme
 
         cursor_state, anim_info = get_cursor_state(cursor_theme)
