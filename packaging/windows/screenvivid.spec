@@ -12,6 +12,7 @@ a = Analysis(
     datas=[
         ('../../screenvivid/resources/images/wallpapers/hires', 'resources/images/wallpapers/hires'),
         ('../../screenvivid/resources/images/cursor/windows', 'resources/images/cursor/windows'),
+        ('../../screenvivid/resources/images/cursor/default', 'resources/images/cursor/default'),
         ('../../screenvivid/resources/icons/screenvivid.ico', 'resources/icons/'),
         *tcl_tk_data,
     ],

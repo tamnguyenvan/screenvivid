@@ -11,6 +11,8 @@ a = Analysis(
     binaries=[],
     datas=[
         ('../../screenvivid/resources/images/wallpapers/hires', 'resources/images/wallpapers/hires'),
+        ('../../screenvivid/resources/images/cursor/macos', 'resources/images/cursor/macos'),
+        ('../../screenvivid/resources/images/cursor/default', 'resources/images/cursor/default'),
         ('../../screenvivid/resources/icons/screenvivid.ico', 'resources/icons/'),
         *tcl_tk_data,
     ],
