@@ -41,23 +41,27 @@ class MacOSCursorLoader:
 
         cursor_theme = {}
         for state in self.states:
-            cursor_method = getattr(AppKit.NSCursor, f"{state}Cursor")
-            cursor = cursor_method()
-            image = cursor.image()
-            size = image.size()
-            width, height = int(size.width), int(size.height)
+            try:
+                cursor_method = getattr(AppKit.NSCursor, f"{state}Cursor")
+                cursor = cursor_method()
+                image = cursor.image()
+                size = image.size()
+                width, height = int(size.width), int(size.height)
 
-            bitmap_rep = NSBitmapImageRep.imageRepWithData_(image.TIFFRepresentation())
+                bitmap_rep = NSBitmapImageRep.imageRepWithData_(image.TIFFRepresentation())
 
-            png_data = bitmap_rep.representationUsingType_properties_(NSPNGFileType, None)
+                png_data = bitmap_rep.representationUsingType_properties_(NSPNGFileType, None)
 
-            buffer = io.BytesIO(png_data)
-            img_array = Image.open(buffer)
-            img_array = np.array(img_array)
-            cursor_theme.setdefault(width, {}).setdefault(state, []).append({
-                "image": img_array,
-                "offset": cursor.hotSpot()
-            })
+                buffer = io.BytesIO(png_data)
+                img_array = Image.open(buffer)
+                img_array = np.array(img_array)
+                bgra = img_array[..., ::-1]
+                cursor_theme.setdefault(width, {}).setdefault(state, []).append({
+                    "image": bgra,
+                    "offset": cursor.hotSpot()
+                })
+            except Exception as e:
+                logger.error(f"Failed to load cursor state '{state}': {e}")
         return cursor_theme
 
 class LinuxCursorLoader:

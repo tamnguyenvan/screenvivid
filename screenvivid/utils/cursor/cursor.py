@@ -108,7 +108,7 @@ def get_cursor_state_macos(cursor_theme):
         "n_steps": 1,
     }
 
-    AVAILABLE_ANIM_CURSORS = ["wait", "progress"]
+    AVAILABLE_ANIM_CURSORS = ["wait", "progress", "busy"]
 
     if width in cursor_theme:
         for name, cursors  in cursor_theme[width].items():
