@@ -6,6 +6,8 @@ from loguru import logger
 logger.remove()
 
 log_level = os.getenv("SCREENVIVID_LOG_LEVEL", "INFO")
+if log_level not in ["DEBUG", "INFO", "WARNING", "ERROR"]:
+    log_level = "INFO"
 logger.add(sys.stderr, level=log_level)
 
 logger.add(

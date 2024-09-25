@@ -1,4 +1,4 @@
-name: Build and Package for MacOS
+name: Build and Package for MacOS Intel Only
 
 on:
   push:
@@ -54,19 +54,19 @@ jobs:
             --icon "ScreenVivid.app" 175 120 \
             --hide-extension "ScreenVivid.app" \
             --app-drop-link 425 120 \
-            "ScreenVivid-${{ github.ref_name }}.dmg" \
+            "ScreenVivid-${{ github.ref_name }}-intel.dmg" \
             "dist/ScreenVivid.app"
-          mv ScreenVivid-${{ github.ref_name }}.dmg ../..
+          mv ScreenVivid-${{ github.ref_name }}-intel.dmg ../..
 
       - name: Upload DMG
         uses: actions/upload-artifact@v3
         with:
-          name: ScreenVivid-${{ github.ref_name }}.dmg
-          path: ./ScreenVivid-${{ github.ref_name }}.dmg
+          name: ScreenVivid-${{ github.ref_name }}-intel.dmg
+          path: ./ScreenVivid-${{ github.ref_name }}-intel.dmg
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: ScreenVivid-${{ github.ref_name }}.dmg
+          files: ScreenVivid-${{ github.ref_name }}-intel.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
