@@ -880,7 +880,7 @@ class VideoProcessor(QObject):
                 "cursor": transforms.Cursor(move_data=self._mouse_events, cursors_map=self._cursors_map, offsets=(x_offset, y_offset), scale=self._cursor_scale),
                 "padding": transforms.Padding(padding=self.padding),
                 "inset": transforms.Inset(inset=self.inset, color=(0, 0, 0)),
-                # "border_shadow": transforms.BorderShadow(radius=self.border_radius),
+                "border_shadow": transforms.BorderShadow(radius=self.border_radius),
                 "background": transforms.Background(background=self._background),
             })
 
@@ -911,7 +911,8 @@ class VideoProcessor(QObject):
     @Slot()
     def play(self):
         self.is_playing = True
-        self.play_timer.start(1000 / self.fps)
+        # self.play_timer.start(1000 / self.fps)
+        self.play_timer.start(1)
 
     @Slot()
     def pause(self):

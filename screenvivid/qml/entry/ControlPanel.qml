@@ -152,7 +152,7 @@ Item {
                             icon.height: 26
 
                             background: Rectangle {
-                                radius: width / 2
+                                radius: 8
                                 color: browseButton.hovered ? "#242424" : "#212121"
                             }
 
