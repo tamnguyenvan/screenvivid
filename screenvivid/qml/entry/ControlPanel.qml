@@ -18,8 +18,7 @@ Item {
     readonly property int homeHeight: 80
     readonly property int closeButtonSize: 30
     readonly property int modeButtonSize: 60
-    readonly property int recordButtonSize: 50
-    readonly property int browseButtonSize: 40
+    readonly property int toolButtonSize: 50
     readonly property string backgroundColor: "#1c1c1c"
     readonly property string borderColor: "#464646"
     readonly property int borderWidth: 1
@@ -119,8 +118,8 @@ Item {
 
                         RecordButton {
                             id: recordButton
-                            Layout.preferredWidth: recordButtonSize
-                            Layout.preferredHeight: recordButtonSize
+                            Layout.preferredWidth: root.toolButtonSize
+                            Layout.preferredHeight: root.toolButtonSize
                             Layout.alignment: Qt.AlignCenter
 
                             onClicked: {
@@ -144,13 +143,13 @@ Item {
                         // Browse button
                         ToolButton {
                             id: browseButton
-                            Layout.preferredWidth: browseButtonSize
-                            Layout.preferredHeight: browseButtonSize
+                            Layout.preferredWidth: root.toolButtonSize
+                            Layout.preferredHeight: root.toolButtonSize
                             Layout.alignment: Qt.AlignCenter
                             icon.source: "qrc:/resources/icons/folder.svg"
                             icon.color: "#e8eaed"
-                            icon.width: 24
-                            icon.height: 24
+                            icon.width: 26
+                            icon.height: 26
 
                             background: Rectangle {
                                 radius: width / 2
