@@ -1,4 +1,5 @@
 import platform
+from screenvivid.utils.logging import logger
 
 def get_cursor_state_windows():
     import win32gui
@@ -34,6 +35,8 @@ def get_cursor_state_windows():
     if state in AVAILABLE_ANIM_CURSORS:
         anim_info["is_anim"] = True
         anim_info["n_steps"] = 18
+        logger.debug(f"{state} cursor is an animation cursor.")
+    logger.debug(f"{state} cursor found.")
     return state, anim_info
 
 def get_cursor_state_linux(cursor_theme):
@@ -43,7 +46,7 @@ def get_cursor_state_linux(cursor_theme):
 
     d = display.Display()
     if not d.has_extension('XFIXES'):
-        print('XFIXES extension not supported')
+        logger.error('XFIXES extension not supported.')
         return
 
     xfixes_version = d.xfixes_query_version()
@@ -70,15 +73,18 @@ def get_cursor_state_linux(cursor_theme):
     # Match the rgba image with the 24x24 image in the cursor theme
     AVAILABLE_ANIM_CURSORS = ["wait", "progress", "watch"]
     if width in cursor_theme:
-        for name, cursors  in cursor_theme[width].items():
+        for cursor_state, cursors  in cursor_theme[width].items():
             total_cursors = len(cursors)
             for cursor_info in cursors:
                 if np.array_equal(bgra, cursor_info["image"]):
-                    if name in AVAILABLE_ANIM_CURSORS:
+                    logger.debug(f"{cursor_state} cursor found.")
+                    if cursor_state in AVAILABLE_ANIM_CURSORS:
+                        logger.debug(f"{cursor_state} cursor is an animation cursor.")
                         anim_info["is_anim"] = True
                         anim_info["n_steps"] = total_cursors
-                    return name, anim_info
+                    return cursor_state, anim_info
 
+    logger.debug(f"No cursor found fallback to arrow.")
     return "arrow", anim_info
 
 def get_cursor_state_macos(cursor_theme):
@@ -111,15 +117,18 @@ def get_cursor_state_macos(cursor_theme):
     AVAILABLE_ANIM_CURSORS = ["wait", "progress", "busy"]
 
     if width in cursor_theme:
-        for name, cursors  in cursor_theme[width].items():
+        for cursor_state, cursors  in cursor_theme[width].items():
             total_cursors = len(cursors)
             for cursor_info in cursors:
                 if np.array_equal(bgra, cursor_info["image"]):
-                    if name in AVAILABLE_ANIM_CURSORS:
+                    logger.debug(f"{cursor_state} cursor found.")
+                    if cursor_state in AVAILABLE_ANIM_CURSORS:
+                        logger.debug(f"{cursor_state} cursor is an animation cursor.")
                         anim_info["is_anim"] = True
                         anim_info["n_steps"] = total_cursors
-                    return name, anim_info
+                    return cursor_state, anim_info
 
+    logger.debug(f"No cursor found fallback to arrow.")
     return "arrow", anim_info
 
 def get_cursor_state(cursor_theme):
@@ -131,4 +140,4 @@ def get_cursor_state(cursor_theme):
     elif current_platform == "Darwin":
         return get_cursor_state_macos(cursor_theme)
     else:
-        raise NotImplementedError(f"Cursor image capture is not implemented for {current_platform}")
+        raise NotImplementedError(f"Cursor image capture is not implemented for {current_platform}.")

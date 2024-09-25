@@ -209,6 +209,7 @@ class Cursor(BaseTransform):
                 "resizeUpDown", "operationNotAllowed"
             ],
         }
+        self.available_scales = ["1x", "1.5x", "2x", "3x"]
         self.default_cursor = self._load_default_cursor()
         self.os_name = get_os_name()
         if self.os_name in "linux":
@@ -230,10 +231,9 @@ class Cursor(BaseTransform):
             offsets = json.load(f)
 
         cursors_map = {}
-        scales = ["1x", "1.5x", "2x", "3x"]
         for cursor_state in self.cursor_states[self.os_name]:
             cursors_map[cursor_state] = {}
-            for scale in scales:
+            for scale in self.available_scales:
                 if scale not in cursors_map[cursor_state]:
                     cursors_map[cursor_state][scale] = []
                 pattern = os.path.join(base_path, f"resources/images/cursor/{self.os_name}/{scale}/{cursor_state}*.png")
@@ -290,6 +290,7 @@ class Cursor(BaseTransform):
             cursor_offset = cursor_info["offset"]
         else:
             # Check if arrow cursor is available and the scale_str is available
+            print(self.cursors_map[cursor_state].keys())
             if (
                 self.cursors_map.get("arrow")
                 and self.cursors_map["arrow"].get(scale_str)

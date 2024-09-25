@@ -6,7 +6,6 @@ from threading import Thread, Event
 import cv2
 import numpy as np
 import pyautogui
-from loguru import logger
 from mss import mss
 from PySide6.QtCore import (
     QObject, Qt, Property, Slot, Signal, QThread, QTimer, QPoint, QAbstractListModel,
@@ -20,35 +19,28 @@ from screenvivid import transforms
 from screenvivid.utils.general import generate_video_path, get_os_name
 from screenvivid.utils.cursor.cursor import get_cursor_state
 from screenvivid.utils.cursor.loader import CursorLoader
+from screenvivid.utils.logging import logger
 
 class LoadCursorThread(QThread):
     def __init__(self):
         super().__init__()
         self._cursor_loader = CursorLoader()
-        self._cursor_theme = None
-        self._base_size = 32
-        self._sizes = [24, 32, 48, 64, 96]
 
     @Property(list)
     def cursor_theme(self):
-        return self._cursor_theme
+        return self._cursor_loader.cursor_theme
 
-    def get_cursor(self, name):
-        """A string of the cursor name (arrow, ibeam, etc)"""
-        cursor_theme = dict()
-        for size in self._sizes:
-            cursor_theme_size = self._cursor_theme.get(size, {})
-            if name in cursor_theme_size:
-                scale = size / self._base_size
-                scale_str = f"{int(scale)}x" if scale.is_integer() else f"{scale:.1f}"
-                cursor_theme[scale_str] = self._cursor_theme.get(size, {}).get(name, [])
-        return cursor_theme
+    def get_cursor(self, state):
+        """Return a dictionary of the cursor theme with the cursor state
+          (arrow, ibeam, etc) corresponding to the cursor scale.
+        """
+        return self._cursor_loader.get_cursor(state)
 
     def run(self):
         import time
         t0 = time.time()
-        self._cursor_theme = self._cursor_loader.load_cursor_theme()
-        logger.info(f"Cursor theme loaded in {time.time() - t0} seconds")
+        self._cursor_loader.load_cursor_theme()
+        logger.info(f"Cursor theme loaded in {time.time() - t0:.1f} seconds")
 
 class UndoRedoManager:
     def __init__(self):

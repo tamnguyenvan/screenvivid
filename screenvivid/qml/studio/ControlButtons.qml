@@ -25,7 +25,7 @@ Item {
                     Layout.preferredWidth: 120
 
                     currentIndex: 0
-                    model: ["Auto", "16:9", "9:16", "4:3", "3:4", "1:1"]
+                    model: ["Auto", "16:9", "9:16", "4:3", "3:4", "1:1", "16:10", "10:16"]
                     onCurrentIndexChanged: {
                         videoController.aspect_ratio = model[currentIndex].toLowerCase()
                         videoController.get_current_frame()

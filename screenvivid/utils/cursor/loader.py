@@ -4,27 +4,46 @@ import subprocess
 from abc import ABCMeta, abstractmethod
 from typing import Tuple, Any, List
 
-from loguru import logger
 import numpy as np
 
 from screenvivid.utils.general import get_os_name
+from screenvivid.utils.logging import logger
 
 class CursorLoader:
     def __init__(self):
-        self.cursor_theme = None
+        self.os_name = get_os_name()
+        self._loader = None
 
     def load_cursor_theme(self):
-        if get_os_name() == "macos":
-            return MacOSCursorLoader().load_cursor_theme()
-        elif get_os_name() == "linux":
-            return LinuxCursorLoader().load_cursor_theme()
+        if self.os_name == "macos":
+            self._loader = MacOSCursorLoader()
+            return self._loader.load_cursor_theme()
+        elif self.os_name == "linux":
+            self._loader = LinuxCursorLoader()
+            return self._loader.load_cursor_theme()
         else:
             return None
 
+    def get_cursor(self, name):
+        if self.os_name == "macos":
+            return self._loader.get_cursor(name)
+        elif self.os_name == "linux":
+            return self._loader.get_cursor(name)
+        else:
+            return None
+
+    @property
+    def cursor_theme(self):
+        if self.os_name == "macos":
+            return self._loader.cursor_theme
+        elif self.os_name == "linux":
+            return self._loader.cursor_theme
+        else:
+            return None
 
 class MacOSCursorLoader:
     def __init__(self):
-        self.cursor_theme = None
+        self.cursor_theme = {}
         self.states = [
             "arrow", "IBeam", "crosshair", "closedHand", "openHand", "pointingHand",
             "resizeLeft", "resizeRight", "resizeLeftRight", "resizeUp", "resizeDown",
@@ -39,7 +58,6 @@ class MacOSCursorLoader:
         from PIL import Image
         import numpy as np
 
-        cursor_theme = {}
         for state in self.states:
             try:
                 cursor_method = getattr(AppKit.NSCursor, f"{state}Cursor")
@@ -56,16 +74,20 @@ class MacOSCursorLoader:
                 img_array = Image.open(buffer)
                 img_array = np.array(img_array)
                 bgra = img_array[..., ::-1]
-                cursor_theme.setdefault(width, {}).setdefault(state, []).append({
+                self.cursor_theme.setdefault(width, {}).setdefault(state, []).append({
                     "image": bgra,
                     "offset": cursor.hotSpot()
                 })
             except Exception as e:
                 logger.error(f"Failed to load cursor state '{state}': {e}")
-        return cursor_theme
+
+        return self.cursor_theme
 
 class LinuxCursorLoader:
     def __init__(self):
+        self.cursor_theme = {}
+        self.base_size = 32
+        self.sizes = [24, 32, 48, 64, 96]
         self.states = [
             "arrow", "ibeam", "wait", "progress", "watch", "crosshair", "text", "vertical-text",
             "alias", "copy", "move", "no-drop", "not-allowed", "grab",
@@ -76,7 +98,7 @@ class LinuxCursorLoader:
             "zoom-in", "zoom-out", "pointer-move", "xterm"
         ]
 
-    def get_active_cursor_theme(self):
+    def _get_active_cursor_theme(self):
         de = os.environ.get('XDG_CURRENT_DESKTOP', '').lower()
         if not de:
             de = os.environ.get('DESKTOP_SESSION', '').lower()
@@ -134,12 +156,9 @@ class LinuxCursorLoader:
         return cursor_theme, cursor_theme_dir
 
     def load_cursor_theme(self):
-        AVAILABLE_SIZES = frozenset([24, 32, 48, 64, 96])
+        cursor_theme, cursor_theme_dir = self._get_active_cursor_theme()
+        logger.debug(f"Cursor theme: {cursor_theme}, directory: {cursor_theme_dir}")
 
-        cursor_theme, cursor_theme_dir = self.get_active_cursor_theme()
-        logger.info(f"Cursor theme: {cursor_theme}, directory: {cursor_theme_dir}")
-
-        cursor_theme = {}
         if cursor_theme_dir:
             for state in self.states:
                 cursor_path = os.path.join(cursor_theme_dir, "cursors", state)
@@ -152,15 +171,28 @@ class LinuxCursorLoader:
 
                 for cursor_image, cursor_size, cursor_offset, _ in cursors:
                     width = cursor_size[0]
-                    if width not in AVAILABLE_SIZES:
+                    if width not in self.sizes:
                         continue
 
                     logger.debug(f"Cursor: {cursor_path}, size: {width}, state: {state}")
-                    cursor_theme.setdefault(width, {}).setdefault(state, []).append({
+                    self.cursor_theme.setdefault(width, {}).setdefault(state, []).append({
                         "image": cursor_image,
                         "offset": cursor_offset
                     })
 
+        return self.cursor_theme
+
+    def get_cursor(self, state):
+        """Return a dictionary with the scale as the key and the cursor images
+          as the value.
+        """
+        cursor_theme = dict()
+        for size in self.sizes:
+            cursor_theme_size = self.cursor_theme.get(size, {})
+            if state in cursor_theme_size:
+                scale = size / self.base_size
+                scale_str = f"{int(scale)}x" if scale.is_integer() else f"{scale:.1f}"
+                cursor_theme[scale_str] = self.cursor_theme.get(size, {}).get(state, [])
         return cursor_theme
 
 class BaseParser(metaclass=ABCMeta):
