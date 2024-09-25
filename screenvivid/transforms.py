@@ -468,7 +468,7 @@ class Background(BaseTransform):
             index = background['value']
             background_path = os.path.join(self.background_dir, f'gradient-wallpaper-{index:04d}.jpg')
             background_image = cv2.imread(background_path)
-            background_image = cv2.resize(background_image, (width, height))
+            background_image = cv2.resize(background_image, (width, height), cv2.INTER_LANCZOS4)
         elif background['type'] == 'gradient':
             value = background['value']
             first_color, second_color = value['colors']
@@ -484,7 +484,7 @@ class Background(BaseTransform):
                 raise Exception()
 
             background_image = cv2.imread(background_path)
-            background_image = cv2.resize(background_image, (width, height))
+            background_image = cv2.resize(background_image, (width, height), cv2.INTER_LANCZOS4)
         else:
             background_image = np.full((height, width, 3), fill_value=0, dtype=np.uint8)
 

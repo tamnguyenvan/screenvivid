@@ -48,7 +48,7 @@ Item {
         id: fullScreenWindow
         width: Screen.width
         height: Screen.height
-        flags: Qt.Window | Qt.FramelessWindowHint
+        flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
         visible: false
 
         readonly property string accentColor: "#e85c0d"
