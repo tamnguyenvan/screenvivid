@@ -10,7 +10,7 @@ Window {
     visible: true
     width: Screen.width
     height: Screen.height
-    visibility: Window.FullScreen
+    visibility: Qt.platform.os === "osx" ? Window.Windowed : Window.FullScreen
     flags: Qt.FramelessWindowHint
     color: "transparent"
 
