@@ -17,6 +17,12 @@ Item {
     readonly property int homeWidth: 420
     readonly property int homeHeight: 80
     readonly property int closeButtonSize: 30
+    readonly property int modeButtonSize: 60
+    readonly property int recordButtonSize: 50
+    readonly property int browseButtonSize: 40
+    readonly property string backgroundColor: "#1c1c1c"
+    readonly property string borderColor: "#464646"
+    readonly property int borderWidth: 1
     property int bottomMargin: 40
 
     // Control panel
@@ -26,15 +32,17 @@ Item {
         height: parent.homeHeight
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        color: "#1c1c1c"
+        color: backgroundColor
         radius: 14
-        border.width: 1
-        border.color: "#464646"
+        border.width: borderWidth
+        border.color: borderColor
 
         Item {
             anchors.fill: parent
             anchors.leftMargin: 30
             anchors.rightMargin: 30
+            anchors.topMargin: 10
+            anchors.bottomMargin: 10
 
             RowLayout {
                 anchors.fill: parent
@@ -58,8 +66,8 @@ Item {
                                 windowButton.activated = false
                                 startupWindow.selectedMode = "custom"
                             }
-                            Layout.preferredWidth: 60
-                            Layout.preferredHeight: 60
+                            Layout.preferredWidth: modeButtonSize
+                            Layout.preferredHeight: modeButtonSize
                         }
 
                         ModeButton {
@@ -74,8 +82,8 @@ Item {
                                 windowButton.activated = false
                                 startupWindow.selectedMode = "screen"
                             }
-                            Layout.preferredWidth: 60
-                            Layout.preferredHeight: 60
+                            Layout.preferredWidth: modeButtonSize
+                            Layout.preferredHeight: modeButtonSize
                         }
 
                         ModeButton {
@@ -89,8 +97,8 @@ Item {
                                 windowButton.activated = true
                                 startupWindow.selectedMode = "window"
                             }
-                            Layout.preferredWidth: 60
-                            Layout.preferredHeight: 60
+                            Layout.preferredWidth: modeButtonSize
+                            Layout.preferredHeight: modeButtonSize
                         }
                     }
                 }
@@ -111,8 +119,8 @@ Item {
 
                         RecordButton {
                             id: recordButton
-                            Layout.preferredWidth: 50
-                            Layout.preferredHeight: 50
+                            Layout.preferredWidth: recordButtonSize
+                            Layout.preferredHeight: recordButtonSize
                             Layout.alignment: Qt.AlignCenter
 
                             onClicked: {
@@ -136,8 +144,8 @@ Item {
                         // Browse button
                         ToolButton {
                             id: browseButton
-                            Layout.preferredWidth: 50
-                            Layout.preferredHeight: 50
+                            Layout.preferredWidth: browseButtonSize
+                            Layout.preferredHeight: browseButtonSize
                             Layout.alignment: Qt.AlignCenter
                             icon.source: "qrc:/resources/icons/folder.svg"
                             icon.color: "#e8eaed"
