@@ -911,8 +911,8 @@ class VideoProcessor(QObject):
     @Slot()
     def play(self):
         self.is_playing = True
-        # self.play_timer.start(1000 / self.fps)
-        self.play_timer.start(1)
+        self.play_timer.start(1000 / self.fps)
+        # self.play_timer.start(1)
 
     @Slot()
     def pause(self):

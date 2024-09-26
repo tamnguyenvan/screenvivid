@@ -10,12 +10,6 @@ Item {
     id: root
     width: controlPanelWidth
     height: controlPanelHeight
-    // anchors.bottom: parent.bottom
-    // anchors.bottomMargin: bottomMargin
-    // anchors.horizontalCenter: parent.horizontalCenter
-
-    // property point startMousePos
-    // property point startWindowPos
 
     readonly property int controlPanelWidth: 480
     readonly property int controlPanelHeight: 80
@@ -86,7 +80,7 @@ Item {
 
                 Item {
                     Layout.fillHeight: true
-                    Layout.minimumWidth: modeButtonSize * 3 + layoutSpacing * 2 + 20
+                    Layout.minimumWidth: modeButtonSize * 3 + layoutSpacing * 2
 
                     Row {
                         anchors.fill: parent
