@@ -47,9 +47,12 @@ ScreenVivid is a powerful and user-friendly screen recording application designe
   - **Minimum Requirements:** MacOS 10.15 or later, 4GB RAM (8GB recommended)
 
 ### Linux Installation
-Download the latest .deb package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).```bash
+Download the latest .deb package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
+
+```bash
 # Debian/Ubuntu (apt-get)
-sudo dpkg -i screenvivid_x.x.x_amd64.deb```
+sudo dpkg -i screenvivid_x.x.x_amd64.deb
+```
 
 ### Windows Installation
 
