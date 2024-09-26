@@ -8,6 +8,7 @@ Item {
     Layout.preferredHeight: 60
 
     readonly property color accentColor: "#545EEE"
+    readonly property color accentColorLight: "#7778FF"
     signal exportClicked()
 
     RowLayout {
@@ -24,12 +25,15 @@ Item {
             text: qsTr("Export")
             Layout.preferredWidth: 120
             Layout.preferredHeight: 50
-
             background: Rectangle {
-                color: exportButton.pressed ? Qt.darker(root.accentColor, 1.2) :
-                       exportButton.hovered ? Qt.lighter(root.accentColor, 1.1) : root.accentColor
                 radius: 8
-                Behavior on color {
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: exportButton.pressed ? Qt.darker(root.accentColor, 1.4) :
+                                                         exportButton.hovered ? Qt.darker(root.accentColor, 1.2) : root.accentColor }
+                    GradientStop { position: 1.0; color: exportButton.pressed ? Qt.darker(root.accentColorLight, 1.2) :
+                                                         exportButton.hovered ? Qt.darker(root.accentColorLight, 1.1) : root.accentColorLight }
+                }
+                Behavior on gradient {
                     ColorAnimation { duration: 150 }
                 }
             }

@@ -6,6 +6,7 @@ from threading import Thread, Event
 import cv2
 import numpy as np
 import pyautogui
+import imageio
 from mss import mss
 from PySide6.QtCore import (
     QObject, Qt, Property, Slot, Signal, QThread, QTimer, QPoint, QAbstractListModel,
@@ -1020,12 +1021,16 @@ class ExportThread(QThread):
         if format == "mp4":
             output_path += ".mp4"
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        elif format == "avi":
+            output_path += ".avi"
+            fourcc = cv2.VideoWriter_fourcc(*"XVID")
         elif format == "gif":
             output_path += ".gif"
-            # For GIF, we"ll use a different approach
 
-        # Create VideoWriter object (for mp4)
-        if format == "mp4":
+        # Create VideoWriter object (for mp4) or imageio writer (for gif)
+        if format == "gif":
+            writer = imageio.get_writer(output_path, mode='I', fps=fps, quantizer='nq')
+        elif format in ("mp4", "avi"):
             out = cv2.VideoWriter(output_path, fourcc, fps, output_size)
 
         # Rewind video to start
@@ -1033,9 +1038,7 @@ class ExportThread(QThread):
         self.video_processor.video.set(cv2.CAP_PROP_POS_FRAMES, self.video_processor.start_frame)
         self.video_processor.current_frame = self.video_processor.start_frame
 
-        frames = []
         total_frames = self.video_processor.end_frame - self.video_processor.start_frame
-
         for i in range(total_frames):
             if self._stop_flag:
                 break
@@ -1048,13 +1051,12 @@ class ExportThread(QThread):
                 if processed_frame.shape[:2] != output_size:
                     processed_frame = cv2.resize(processed_frame, output_size)
 
-                if format == "mp4":
+                if format in ("mp4", "avi"):
                     out.write(cv2.cvtColor(processed_frame, cv2.COLOR_RGB2BGR))
                 elif format == "gif":
-                    frames.append(Image.fromarray(processed_frame))
-
-                if format == "gif" and i + 1 == total_frames:
-                    break
+                    # Convert to RGB
+                    processed_frame = cv2.cvtColor(processed_frame, cv2.COLOR_BGR2RGB)
+                    writer.append_data(processed_frame)
 
                 self.progress.emit((i + 1) / total_frames * 100)
             else:
@@ -1063,10 +1065,9 @@ class ExportThread(QThread):
         self.video_processor.video.set(cv2.CAP_PROP_POS_FRAMES, current_frame)
         self.video_processor.current_frame = current_frame
 
-        if format == "mp4":
+        if format in ("mp4", "avi"):
             out.release()
-        elif format == "gif" and not self._stop_flag:
-            frames[0].save(output_path, save_all=True, append_images=frames[1:], duration=1000/fps, loop=0)
-            self.progress.emit(100)
+        elif format == "gif":
+            writer.close()
 
         self.finished.emit()

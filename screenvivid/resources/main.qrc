@@ -9,7 +9,6 @@
         <file>../qml/components/CustomButton.qml</file>
         <file>../qml/components/RecordButton.qml</file>
         <file>../qml/components/AnchorButton.qml</file>
-        <file>../qml/components/GradientPreview.qml</file>
 
         <file>../qml/countdown/Countdown.qml</file>
 

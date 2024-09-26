@@ -42,6 +42,13 @@ Item {
         color: parent.color
     }
 
+    Behavior on x {
+        NumberAnimation {
+            duration: 50
+            easing.type: Easing.Linear
+        }
+    }
+
     Connections {
         target: videoController
         function onCurrentFrameChanged(currentFrame) {

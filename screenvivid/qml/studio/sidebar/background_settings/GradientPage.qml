@@ -10,6 +10,8 @@ Item {
 
     property var gradientColors: ["#8B5CF6", "#545EEE"]
     property real gradientAngle: 0
+    readonly property color accentColor: "#545EEE"
+    readonly property color accentColorLight: "#7778FF"
 
     ColumnLayout {
         anchors.fill: parent
@@ -92,6 +94,7 @@ Item {
 
         // Apply Button
         Button {
+            id: applyButton
             text: qsTr("Apply")
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: 120
@@ -106,8 +109,16 @@ Item {
             }
 
             background: Rectangle {
-                color: parent.down ? "#2A5CA8" : "#3A7BED"
                 radius: 8
+                gradient: Gradient {
+                    GradientStop { position: 0.0; color: applyButton.pressed ? Qt.darker(root.accentColor, 1.4) :
+                                                         applyButton.hovered ? Qt.darker(root.accentColor, 1.2) : root.accentColor }
+                    GradientStop { position: 1.0; color: applyButton.pressed ? Qt.darker(root.accentColorLight, 1.2) :
+                                                         applyButton.hovered ? Qt.darker(root.accentColorLight, 1.1) : root.accentColorLight }
+                }
+                Behavior on gradient {
+                    ColorAnimation { duration: 150 }
+                }
             }
 
             MouseArea {

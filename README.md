@@ -18,9 +18,11 @@ ScreenVivid is a powerful and user-friendly screen recording application designe
   - [Running from Source](#running-from-source)
 - [Advantages](#advantages)
 - [Current Limitations](#current-limitations)
+- [FAQs](#faqs)
 - [Roadmap](#roadmap)
-- [Support](#support)
 - [License](#license)
+- [References](#references)
+- [Support](#support)
 
 ## Features
 
@@ -45,11 +47,9 @@ ScreenVivid is a powerful and user-friendly screen recording application designe
   - **Minimum Requirements:** MacOS 10.15 or later, 4GB RAM (8GB recommended)
 
 ### Linux Installation
-Download the latest .deb package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
-```bash
+Download the latest .deb package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).```bash
 # Debian/Ubuntu (apt-get)
-sudo dpkg -i screenvivid_x.x.x_amd64.deb
-```
+sudo dpkg -i screenvivid_x.x.x_amd64.deb```
 
 ### Windows Installation
 
@@ -78,7 +78,7 @@ For systems without installation file support, ScreenVivid can be run using Pyth
 ```bash
 git clone https://github.com/tamnguyenvan/screenvivid.git
 ```
-2. Install dependencies
+2. Install Python dependencies
 ```bash
 pip install -r requirements.txt
 ```
@@ -88,19 +88,17 @@ cd screenvivid
 python compile_resources.py
 ```
 
-4. Run the app
+4. Install system dependencies for PySide6
 ```bash
 # Ubuntu/Debian
 sudo apt-get install python3-tk libxcb-cursor0
+```
 
-# MacOS
-
+5. Run the app
+```bash
 # Assuming you're in the root of the repository
 python -m screenvivid.main
 ```
-
-## FAQs
-
 
 ## Advantages
 
@@ -114,10 +112,35 @@ python -m screenvivid.main
 
 - **Advanced features**: Advanced features like zoom, audio capture, and webcam integration are not yet available.
 
+## FAQs
+
+1. **Q: Is ScreenVivid free?**
+   A: Yes, ScreenVivid is completely free for personal use. However, commercial use is not permitted under our license.
+
+2. **Q: I see a security warning when downloading and running the installer. Is it safe?**
+   A: Due to budget constraints, we haven't yet been able to obtain a code signing certificate for our installer. This is why you may see security warnings. Rest assured, our software is safe to use. We're working on getting a certificate as soon as possible to eliminate these warnings.
+
+3. **Q: Can I contribute to the project?**
+   A: Absolutely! We welcome contributions from the community. Please check our GitHub repository for information on how to contribute, or reach out to us directly if you have specific ideas or skills you'd like to offer.
+
+
 ## Roadmap
 
 We're constantly working to improve ScreenVivid. Here are some features we're planning to add in the future:
 - [ ] **Advanced editing features**: Zoom, audio capture, and webcam integration.
+- [ ] **Export to GIF**: Ability to export recordings as GIF files.
+- [ ] **Output file compression**: Option to compress exported files for smaller file sizes.
+
+## License
+
+ScreenVivid is released under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. See the LICENSE file for more details.
+
+## References
+
+- [PySide6](https://pypi.org/project/PySide6/)
+- [python-mss](https://github.com/BoboTiG/python-mss)
+- [pyautogui](https://github.com/asweigart/pyautogui)
+
 
 ## Support
 
@@ -127,10 +150,7 @@ If you encounter any issues or have questions, please:
 2. Visit our [community forums](https://discord.gg/NKtmBnR6nE)
 3. Contact us at tamnnv.work@gmail.com
 
-## License
-
-ScreenVivid is released under the MIT License. See the LICENSE file for more details.
-
 ---
 
 Thank you for choosing ScreenVivid for your screen recording needs! If you find our software helpful, please consider donating to support its development and help us add more amazing features! 💖
+

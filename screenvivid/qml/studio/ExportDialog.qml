@@ -147,9 +147,64 @@ Dialog {
                         }
                         ComboBox {
                             id: formatComboBox
-                            model: ["MP4", "GIF"]
+                            model: ["MP4", "AVI"]
                             currentIndex: 0
                             onCurrentTextChanged: exportFormat = currentText
+                            width: 120
+                            height: 30
+
+                            background: Rectangle {
+                                color: formatComboBox.pressed ? "#2c313c" : "#1e2228"
+                                border.color: formatComboBox.pressed ? "#3d4450" : "#2c313c"
+                                border.width: 1
+                                radius: 5
+                            }
+
+                            contentItem: Text {
+                                text: formatComboBox.displayText
+                                color: "#ecf0f1"
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 10
+                            }
+
+                            delegate: ItemDelegate {
+                                width: formatComboBox.width
+                                contentItem: Text {
+                                    text: modelData
+                                    color: "#e8eaed"
+                                    font: formatComboBox.font
+                                    elide: Text.ElideNone
+                                    verticalAlignment: Text.AlignVCenter
+                                    width: parent.width
+                                    clip: true
+                                }
+                                highlighted: formatComboBox.highlightedIndex === index
+                                background: Rectangle {
+                                    color: highlighted ? "#3d4450" : "#1e2228"
+                                }
+                            }
+
+                            popup: Popup {
+                                y: formatComboBox.height
+                                width: formatComboBox.width
+                                implicitHeight: contentItem.implicitHeight
+                                padding: 1
+
+                                contentItem: ListView {
+                                    clip: true
+                                    implicitHeight: contentHeight
+                                    model: formatComboBox.popup.visible ? formatComboBox.delegateModel : null
+                                    currentIndex: formatComboBox.highlightedIndex
+
+                                    ScrollIndicator.vertical: ScrollIndicator { }
+                                }
+
+                                background: Rectangle {
+                                    border.color: "#3d4450"
+                                    color: "#1e2228"
+                                    radius: 4
+                                }
+                            }
                         }
                     }
 
