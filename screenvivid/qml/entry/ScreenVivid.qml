@@ -42,9 +42,9 @@ Window {
 
         // Visualize selected region in window mode
         Item {
-            id: windowModeSelector
+            id: safeAreaModeSelector
             anchors.fill: parent
-            visible: startupWindow.selectedMode == "window"
+            visible: startupWindow.selectedMode == "safeArea"
             Rectangle {
                 x: windowController.left
                 y: windowController.top
@@ -62,7 +62,14 @@ Window {
         }
 
         // Control panel
-        ControlPanel {}
+        ControlPanel {
+            id: controlPanel
+            Component.onCompleted: {
+                // Set the position of the control panel to the bottom of the screen
+                controlPanel.x = (Screen.width - controlPanel.width) / 2
+                controlPanel.y = Screen.height - controlPanel.height - controlPanel.bottomMargin
+            }
+        }
 
         FileDialog {
             id: videoFileDialog

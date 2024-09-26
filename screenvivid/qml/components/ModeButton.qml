@@ -23,8 +23,8 @@ Button {
             anchors.top: parent.top
             anchors.topMargin: 10
             anchors.horizontalCenter: parent.horizontalCenter
-            width: 26
-            height: 26
+            width: 28
+            height: 28
             source: iconPath
             fillMode: Image.PreserveAspectFit
         }

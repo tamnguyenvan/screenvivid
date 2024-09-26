@@ -5,7 +5,6 @@ import QtQuick.Layouts
 ToolButton {
     id: root
     icon.source: "qrc:/resources/icons/record.svg"
-    icon.color: "white"
     icon.width: 26
     icon.height: 26
 
@@ -16,7 +15,7 @@ ToolButton {
     }
 
     background: Rectangle {
-        radius: 8
+        radius: width / 2
         color: root.hovered ? "#242424" : "#212121"
     }
 }

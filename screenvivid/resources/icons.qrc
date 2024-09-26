@@ -24,9 +24,11 @@
         <file>../resources/icons/record.svg</file>
         <file>../resources/icons/scale.svg</file>
         <file>../resources/icons/screen.svg</file>
+        <file>../resources/icons/drag_indicator.svg</file>
+        <file>../resources/icons/monitor.svg</file>
         <file>../resources/icons/trash.svg</file>
         <file>../resources/icons/upload.svg</file>
-        <file>../resources/icons/window.svg</file>
+        <file>../resources/icons/safe_area.svg</file>
         <file>../resources/icons/zoom.svg</file>
         <file>../resources/icons/full_screen.svg</file>
         <file>../resources/icons/exit_full_screen.svg</file>

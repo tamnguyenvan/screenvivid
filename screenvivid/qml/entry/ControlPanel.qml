@@ -8,27 +8,34 @@ import "../components"
 
 Item {
     id: root
-    width: homeWidth
-    height: homeHeight
-    anchors.bottom: parent.bottom
-    anchors.bottomMargin: bottomMargin
-    anchors.horizontalCenter: parent.horizontalCenter
+    width: controlPanelWidth
+    height: controlPanelHeight
+    // anchors.bottom: parent.bottom
+    // anchors.bottomMargin: bottomMargin
+    // anchors.horizontalCenter: parent.horizontalCenter
 
-    readonly property int homeWidth: 420
-    readonly property int homeHeight: 80
+    // property point startMousePos
+    // property point startWindowPos
+
+    readonly property int controlPanelWidth: 480
+    readonly property int controlPanelHeight: 80
     readonly property int closeButtonSize: 30
     readonly property int modeButtonSize: 60
-    readonly property int toolButtonSize: 50
-    readonly property string backgroundColor: "#1c1c1c"
+    readonly property int toolButtonSize: 40
+    readonly property string backgroundColor: "#212121"
     readonly property string borderColor: "#464646"
     readonly property int borderWidth: 1
-    property int bottomMargin: 40
+    readonly property int separatorWidth: 1
+    readonly property int verticalMargin: 10
+    readonly property int horizontalMargin: 40
+    readonly property int layoutSpacing: 14
+    property int bottomMargin: 120
 
     // Control panel
     Rectangle {
-        id: home
-        width: parent.homeWidth
-        height: parent.homeHeight
+        id: controlPanel
+        width: controlPanelWidth
+        height: controlPanelHeight
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         color: backgroundColor
@@ -38,22 +45,53 @@ Item {
 
         Item {
             anchors.fill: parent
-            anchors.leftMargin: 30
-            anchors.rightMargin: 30
-            anchors.topMargin: 10
-            anchors.bottomMargin: 10
+            anchors.leftMargin: 0
+            anchors.rightMargin: horizontalMargin
+            anchors.topMargin: verticalMargin
+            anchors.bottomMargin: verticalMargin
 
             RowLayout {
                 anchors.fill: parent
-                spacing: 2
+
+                // Drag indicator
+                Item {
+                    Layout.fillHeight: true
+                    Layout.preferredWidth: horizontalMargin
+
+                    Rectangle {
+                        id: dragIndicator
+                        anchors.fill: parent
+                        color: "transparent"
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 4
+
+                            Image {
+                                source: "qrc:/resources/icons/drag_indicator.svg"
+                                width: 20
+                                height: 20
+                            }
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        drag.target: root
+                        drag.axis: Drag.XAndYAxis
+                        drag.minimumX: 0
+                        drag.minimumY: 0
+                    }
+                }
 
                 Item {
-                    Layout.fillWidth: true
                     Layout.fillHeight: true
+                    Layout.minimumWidth: modeButtonSize * 3 + layoutSpacing * 2 + 20
 
-                    RowLayout {
+                    Row {
                         anchors.fill: parent
-                        spacing: 10
+                        spacing: layoutSpacing
+
                         ModeButton {
                             id: customButton
                             text: "Custom"
@@ -62,11 +100,11 @@ Item {
                             onClicked: {
                                 customButton.activated = true
                                 screenButton.activated = false
-                                windowButton.activated = false
+                                safeAreaButton.activated = false
                                 startupWindow.selectedMode = "custom"
                             }
-                            Layout.preferredWidth: modeButtonSize
-                            Layout.preferredHeight: modeButtonSize
+                            width: modeButtonSize
+                            height: modeButtonSize
                         }
 
                         ModeButton {
@@ -78,58 +116,77 @@ Item {
                             onClicked: {
                                 customButton.activated = false
                                 screenButton.activated = true
-                                windowButton.activated = false
+                                safeAreaButton.activated = false
                                 startupWindow.selectedMode = "screen"
                             }
-                            Layout.preferredWidth: modeButtonSize
-                            Layout.preferredHeight: modeButtonSize
+                            width: modeButtonSize
+                            height: modeButtonSize
                         }
 
                         ModeButton {
-                            id: windowButton
+                            id: safeAreaButton
                             text: "Safe Area"
-                            iconPath: "qrc:/resources/icons/window.svg"
+                            iconPath: "qrc:/resources/icons/safe_area.svg"
                             toolTipText: "Safe Area Selection"
                             onClicked: {
                                 customButton.activated = false
                                 screenButton.activated = false
-                                windowButton.activated = true
-                                startupWindow.selectedMode = "window"
+                                safeAreaButton.activated = true
+                                startupWindow.selectedMode = "safeArea"
                             }
-                            Layout.preferredWidth: modeButtonSize
-                            Layout.preferredHeight: modeButtonSize
+                            width: modeButtonSize
+                            height: modeButtonSize
                         }
+
+                        // MonitorComboBox {
+                        //     id: monitorComboBox
+                        //     text: "Monitor 1"
+                        //     iconPath: "qrc:/resources/icons/monitor.svg"
+                        //     toolTipText: "Choose Monitor"
+                        //     width: modeButtonSize
+                        //     height: modeButtonSize
+                        // }
                     }
                 }
 
-                // Record button
+                // Add a vertical separator
                 Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    RowLayout {
-                        anchors.fill: parent
-                        spacing: 20
+                    Rectangle {
+                        anchors.centerIn: parent
+                        width: 1
+                        height: parent.height - 10
+                        color: borderColor
+                    }
+                }
 
-                        Item {
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                        }
+                Item {
+                    Layout.fillHeight: true
+                    Layout.minimumWidth: recordButton.width + browseButton.width + layoutSpacing
 
+                    Row {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: layoutSpacing
+
+                        // Record button
                         RecordButton {
                             id: recordButton
-                            Layout.preferredWidth: root.toolButtonSize
-                            Layout.preferredHeight: root.toolButtonSize
-                            Layout.alignment: Qt.AlignCenter
+                            width: root.toolButtonSize
+                            height: root.toolButtonSize
+                            icon.width: 28
+                            icon.height: 28
 
                             onClicked: {
-                                var region;
+                                var region = "screen";
                                 if (startupWindow.selectedMode === "custom") {
                                     region = [customSelector.customRegionX, customSelector.customRegionY,
                                             customSelector.customRegionWidth, customSelector.customRegionHeight];
                                 } else if (startupWindow.selectedMode === "screen") {
                                     region = [startupWindow.x, startupWindow.y, startupWindow.width, startupWindow.height];
-                                } else if (startupWindow.selectedMode === "window") {
+                                } else if (startupWindow.selectedMode === "safeArea") {
                                     region = [windowController.left, windowController.top,
                                             Screen.desktopAvailableWidth, Screen.desktopAvailableHeight];
                                 }
@@ -143,23 +200,22 @@ Item {
                         // Browse button
                         ToolButton {
                             id: browseButton
-                            Layout.preferredWidth: root.toolButtonSize
-                            Layout.preferredHeight: root.toolButtonSize
-                            Layout.alignment: Qt.AlignCenter
+                            width: root.toolButtonSize
+                            height: root.toolButtonSize
+                            anchors.verticalCenter: recordButton.verticalCenter
                             icon.source: "qrc:/resources/icons/folder.svg"
                             icon.color: "#e8eaed"
-                            icon.width: 26
-                            icon.height: 26
-
-                            background: Rectangle {
-                                radius: 8
-                                color: browseButton.hovered ? "#242424" : "#212121"
-                            }
+                            icon.width: 24
+                            icon.height: 24
 
                             onClicked: {
                                 startupWindow.hide();
                                 videoFileDialog.open();
                             }
+                            // background: Rectangle {
+                            //     radius: 8
+                            //     color: browseButton.hovered ? "#242424" : "#212121"
+                            // }
                         }
                     }
                 }
@@ -182,8 +238,7 @@ Item {
             Rectangle {
                 anchors.fill: parent
                 radius: root.closeButtonSize / 2
-                color: closeButton.hovered ? Qt.lighter("#393939",
-                                                        1.2) : "#393939"
+                color: closeButton.hovered ? Qt.lighter("#393939", 1.2) : "#393939"
                 border.width: 1
                 border.color: "#404040"
             }
@@ -199,8 +254,8 @@ Item {
     }
 
     MultiEffect {
-        source: home
-        anchors.fill: home
+        source: controlPanel
+        anchors.fill: controlPanel
         shadowBlur: 1.0
         shadowEnabled: true
         shadowColor: "black"
