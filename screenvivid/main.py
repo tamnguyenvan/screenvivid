@@ -13,7 +13,7 @@ from screenvivid.model import (
     ClipTrackModel, WindowController, VideoController, VideoRecorder
 )
 from screenvivid.image_provider import FrameImageProvider
-from screenvivid.utils.logs import logger
+from screenvivid.utils.logging import logger
 
 
 def main():

@@ -20,7 +20,7 @@ from screenvivid import transforms
 from screenvivid.utils.general import generate_video_path, get_os_name
 from screenvivid.utils.cursor.cursor import get_cursor_state
 from screenvivid.utils.cursor.loader import CursorLoader
-from screenvivid.utils.logs import logger
+from screenvivid.utils.logging import logger
 
 class LoadCursorThread(QThread):
     def __init__(self):

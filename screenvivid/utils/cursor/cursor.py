@@ -1,5 +1,5 @@
 import platform
-from screenvivid.utils.logs import logger
+from screenvivid.utils.logging import logger
 
 def get_cursor_state_windows():
     import win32gui

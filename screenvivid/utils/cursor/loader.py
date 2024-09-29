@@ -7,7 +7,7 @@ from typing import Tuple, Any, List
 import numpy as np
 
 from screenvivid.utils.general import get_os_name
-from screenvivid.utils.logs import logger
+from screenvivid.utils.logging import logger
 
 class CursorLoader:
     def __init__(self):
