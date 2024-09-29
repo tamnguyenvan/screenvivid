@@ -6,6 +6,8 @@ RUN dnf -y install \
     python3.9 \
     python3.9-devel \
     python3.9-pip \
+    cairo-devel \
+    pkg-config \
     rpm-build \
     && dnf clean all
 

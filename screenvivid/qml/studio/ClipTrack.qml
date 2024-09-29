@@ -3,7 +3,7 @@ import QtQuick.Layouts 6.7
 import QtQuick.Controls 6.7
 
 FocusScope {
-    id: clipTrack
+    id: root
     implicitWidth: 100
     implicitHeight: 60
 
@@ -18,6 +18,7 @@ FocusScope {
 
     readonly property string borderColor: "#e8eaed"
     readonly property int borderWidth: 2
+    readonly property int borderRadius: 10
     readonly property string backgroundColor: "#7778ff"
     readonly property string stripColor: "#545eee"
 
@@ -31,17 +32,15 @@ FocusScope {
     Rectangle {
         id: clipTrackRect
         anchors.fill: parent
-        radius: 10
-        color: clipTrack.backgroundColor
-        border.width: clipTrack.borderWidth
-        border.color: "transparent"
+        radius: borderRadius
+        color: root.backgroundColor
 
         Rectangle {
-            width: parent.width - 2 * clipTrack.resizeHandleWidth
+            width: parent.width - 2 * root.resizeHandleWidth
             height: parent.height
-            x: clipTrack.resizeHandleWidth
+            x: root.resizeHandleWidth
             y: 0
-            color: clipTrack.stripColor
+            color: root.stripColor
 
             ColumnLayout {
                 anchors.fill: parent
@@ -104,26 +103,12 @@ FocusScope {
             }
         }
 
-        // Top border
         Rectangle {
-            id: topEdge
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.leftMargin: resizeHandleWidth
-            width: parent.width - 2 * resizeHandleWidth
-            height: clipTrack.borderWidth
+            anchors.fill: parent
             color: "transparent"
-        }
-
-        // Bottom border
-        Rectangle {
-            id: bottomEdge
-            anchors.left: parent.left
-            anchors.bottom: parent.bottom
-            anchors.leftMargin: resizeHandleWidth
-            width: parent.width - 2 * resizeHandleWidth
-            height: clipTrack.borderWidth
-            color: "transparent"
+            radius: root.borderRadius
+            border.width: root.borderWidth
+            border.color: root.focus ? root.borderColor : "transparent"
         }
 
         MouseArea {
@@ -131,29 +116,66 @@ FocusScope {
             acceptedButtons: Qt.LeftButton | Qt.RightButton
 
             function highlight() {
-                clipTrack.focus = true
-                topEdge.color = clipTrack.borderColor
-                bottomEdge.color = clipTrack.borderColor
-                clipTrackRect.border.color = clipTrack.borderColor
+                root.focus = true
             }
 
             onClicked: event => {
                 if (event.button === Qt.LeftButton) {
-                    clipTrack.leftMouseClicked(mouseX)
+                    root.leftMouseClicked(mouseX)
                     highlight()
                 } else if (event.button == Qt.RightButton) {
-                    clipTrack.rightMouseClicked(mouseX)
+                    root.rightMouseClicked(mouseX)
                     highlight()
                     menu.popup(mouseX, mouseY)
                 }
             }
         }
-
         Menu {
             id: menu
+            width: 200
+
+            background: Rectangle {
+                implicitWidth: 200
+                implicitHeight: 40
+                color: "#2C2C2C"
+                border.color: "#3A3A3A"
+                radius: 8
+            }
+
             MenuItem {
-                text: "Delete"
+                id: deleteMenuItem
+                width: parent.width
+                height: 40
+
+                contentItem: Row {
+                    spacing: 10
+                    leftPadding: 10
+
+                    Image {
+                        source: "qrc:/resources/icons/trash.svg"
+                        width: 16
+                        height: 16
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+
+                    Text {
+                        text: qsTr("Delete")
+                        color: deleteMenuItem.highlighted ? "#FFFFFF" : "#CCCCCC"
+                        font.pixelSize: 14
+                        font.weight: Font.Medium
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                }
+
+                background: Rectangle {
+                    color: deleteMenuItem.highlighted ? "#4A4A4A" : "transparent"
+                    radius: 4
+                }
+
                 onTriggered: {
+                    if (clipTrackModel.rowCount() === 1) {
+                        return
+                    }
                     if (index === 0) {
                         var startFrame = parseInt(clipTrackModel.get_clip(index).width / studioWindow.pixelsPerFrame)
                         videoController.trim_left(startFrame)
@@ -163,20 +185,11 @@ FocusScope {
                         var relativeEndFrame = clipTrack.x / studioWindow.pixelsPerFrame
                         var endFrame = videoController.start_frame + relativeEndFrame
                         videoController.trim_right(endFrame)
-                        videoController.jump_to_frame(relativeEndFrame - 5)
+                        videoController.jump_to_frame(Math.max(0, relativeEndFrame - 5))
                     }
                     clipTrackModel.delete_clip(index)
                 }
             }
-        }
-
-    }
-
-    onFocusChanged: {
-        if (!clipTrack.focus) {
-            topEdge.color = "transparent"
-            bottomEdge.color = "transparent"
-            clipTrackRect.border.color = "transparent"
         }
     }
 

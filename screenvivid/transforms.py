@@ -1,4 +1,6 @@
 import io
+import math
+import time
 import json
 import glob
 import os
@@ -8,6 +10,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import cairo
 import pyautogui
 from PIL import Image, ImageDraw, ImageFilter
 from PySide6.QtCore import QFile, QIODevice
@@ -20,7 +23,6 @@ class BaseTransform:
 
     def __call__(self, **kwargs):
         raise NotImplementedError('Transform __call__ method must be implemented.')
-
 
 class Compose(BaseTransform):
     def __init__(self, transforms):
@@ -40,10 +42,14 @@ class Compose(BaseTransform):
     def __setitem__(self, key, value):
         self.transforms[key] = value
 
+    def get(self, key, default=None):
+        return self.transforms.get(key, default)
+
 class AspectRatio(BaseTransform):
     def __init__(self, aspect_ratio: str):
         super().__init__()
         self.aspect_ratio = aspect_ratio
+        self.aspect_ratio_float = 16 /  9
         self.screen_size = pyautogui.size()
         self.output_resolution_cache = None
 
@@ -87,7 +93,7 @@ class AspectRatio(BaseTransform):
         if aspect_ratio not in self._resolutions:
             # Not a standard aspect ratio
             input_width, input_height = fit_input(screen_width, screen_height, input_width, input_height)
-            return screen_width, screen_height, input_width, input_height
+            return screen_width, screen_height, input_width, input_height, input_width / input_height
 
         # Get the highest resolution
         possible_resolutions = self._resolutions[aspect_ratio]
@@ -111,44 +117,45 @@ class AspectRatio(BaseTransform):
         if input_width > width or input_height > height:
             input_width, input_height = fit_input(width, height, input_width, input_height)
 
-        return output_width, output_height, input_width, input_height
+        return output_width, output_height, input_width, input_height, input_width / input_height
 
     def __call__(self, **kwargs):
         input = kwargs['input']
         input_height, input_width = input.shape[:2]
 
-        width, height, input_width, input_height = self.calculate_output_resolution(
+        width, height, input_width, input_height, self.aspect_ratio_float = self.calculate_output_resolution(
             self.aspect_ratio, input_width, input_height)
 
         kwargs.update({
-            "video_width": width,
-            "video_height": height,
-            "frame_width": input_width,
-            "frame_height": input_height,
+            "background_width": width,
+            "background_height": height,
+            "foreground_width": input_width,
+            "foreground_height": input_height,
+            "aspect_ratio_float": self.aspect_ratio_float
         })
         return kwargs
 
 class Padding(BaseTransform):
-    def __init__(self, padding: int):
+    def __init__(self, padding: float):
         super().__init__()
 
         self.padding = padding
 
     def __call__(self, **kwargs):
-        frame_width = kwargs['frame_width']
-        frame_height = kwargs['frame_height']
-        video_width = kwargs['video_width']
-        video_height = kwargs['video_height']
+        foreground_width = kwargs['foreground_width']
+        foreground_height = kwargs['foreground_height']
+        background_width = kwargs['background_width']
+        background_height = kwargs['background_height']
 
-        pad_x = int(frame_width * self.padding) if isinstance(self.padding, float) and (0 <= self.padding <= 1.) else self.padding
-        new_width = max(50, frame_width - 2 * pad_x)
-        new_height = int(new_width * frame_height / frame_width)
+        pad_x = int(foreground_width * self.padding * 0.5) if isinstance(self.padding, float) and (0 <= self.padding <= 1.) else self.padding
+        new_width = max(50, foreground_width - 2 * pad_x)
+        new_height = int(new_width * foreground_height / foreground_width)
 
-        x_offset = (video_width - new_width) // 2
-        y_offset = (video_height - new_height) // 2
+        x_offset = (background_width - new_width) // 2
+        y_offset = (background_height - new_height) // 2
 
-        kwargs['frame_width'] = new_width
-        kwargs['frame_height'] = new_height
+        kwargs['foreground_width'] = new_width
+        kwargs['foreground_height'] = new_height
         kwargs['x_offset'] = x_offset
         kwargs['y_offset'] = y_offset
 
@@ -290,7 +297,6 @@ class Cursor(BaseTransform):
             cursor_offset = cursor_info["offset"]
         else:
             # Check if arrow cursor is available and the scale_str is available
-            print(self.cursors_map[cursor_state].keys())
             if (
                 self.cursors_map.get("arrow")
                 and self.cursors_map["arrow"].get(scale_str)
@@ -349,35 +355,52 @@ class BorderShadow(BaseTransform):
         self.radius = radius
         self.shadow_blur = shadow_blur
         self.shadow_opacity = shadow_opacity
+        from screenvivid.utils.effects import DropShadowEffect
+        self.effect = DropShadowEffect()
 
+    @lru_cache(maxsize=1)
     def create_rounded_rectangle(self, background_size, foreground_size, x_offset, y_offset):
-        width, height = background_size
-        rectangle_width, rectangle_height = foreground_size
-        radius = self.radius
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, background_size[0], background_size[1])
+        ctx = cairo.Context(surface)
+        ctx.set_source_rgb(0, 0, 0)
+        ctx.paint()
 
-        image = np.zeros((height, width, 3), dtype=np.uint8)
+        ctx.set_source_rgb(1, 1, 1)  # white
 
+        corner_radius = self.radius
         x = x_offset
         y = y_offset
+        width, height = foreground_size
 
-        cv2.rectangle(image, (x + radius, y), (x + rectangle_width - radius, y + rectangle_height), (255, 255, 255), -1, cv2.LINE_AA)
-        cv2.rectangle(image, (x, y + radius), (x + rectangle_width, y + rectangle_height - radius), (255, 255, 255), -1, cv2.LINE_AA)
-        cv2.circle(image, (x + radius, y + radius), radius, (255, 255, 255), -1, cv2.LINE_AA)
-        cv2.circle(image, (x + rectangle_width - radius, y + radius), radius, (255, 255, 255), -1, cv2.LINE_AA)
-        cv2.circle(image, (x + radius, y + rectangle_height - radius), radius, (255, 255, 255), -1, cv2.LINE_AA)
-        cv2.circle(image, (x + rectangle_width - radius, y + rectangle_height - radius), radius, (255, 255, 255), -1, cv2.LINE_AA)
+        ctx.new_path()
 
-        return image
+        ctx.move_to(x + corner_radius, y)
 
-    @lru_cache(maxsize=100)
-    def create_rounded_mask(self, size, return_float=False):
-        rect = self.create_rounded_rectangle(size, size, 0, 0)
-        mask = rect[:, :, [2, 1, 0]]
-        if return_float:
-            mask = mask.astype(np.float32) / 255.0
-        return mask
+        ctx.line_to(x + width - corner_radius, y)
+        ctx.arc(x + width - corner_radius, y + corner_radius, corner_radius, -0.5 * math.pi, 0)
 
-    @lru_cache(maxsize=100)
+        ctx.line_to(x + width, y + height - corner_radius)
+        ctx.arc(x + width - corner_radius, y + height - corner_radius, corner_radius, 0, 0.5 * math.pi)
+
+        ctx.line_to(x + corner_radius, y + height)
+        ctx.arc(x + corner_radius, y + height - corner_radius, corner_radius, 0.5 * math.pi, math.pi)
+
+        ctx.line_to(x, y + corner_radius)
+        ctx.arc(x + corner_radius, y + corner_radius, corner_radius, math.pi, 1.5 * math.pi)
+
+        ctx.close_path()
+        ctx.fill()
+        buf = surface.get_data()
+        rect = np.ndarray(shape=(height, width, 4), dtype=np.uint8, buffer=buf)
+
+        # RGBA -> GrayScale
+        rect = rect[:, :, 0]
+
+        # Normalize
+        rect = rect / 255.
+        return rect
+
+    @lru_cache(maxsize=1)
     def create_shadow(self, background_size, foreground_size, x_offset, y_offset):
         shadow = Image.new('L', background_size, 0)
         shadow_draw = ImageDraw.Draw(shadow)
@@ -385,10 +408,63 @@ class BorderShadow(BaseTransform):
                                        (x_offset + foreground_size[0], y_offset + foreground_size[1])],
                                       self.radius, fill=int(255 * self.shadow_opacity))
         shadow = np.array(shadow.filter(ImageFilter.GaussianBlur(self.shadow_blur)))
-        shadow = cv2.cvtColor(shadow, cv2.COLOR_GRAY2BGR)
         shadow = shadow.astype(np.float32) / 255.0
-        shadow = 1 - shadow
         return shadow
+
+    def render_drop_shadow_fast(self, background, foreground, shadow_alpha, alpha, x_offset, y_offset, foreground_size):
+        bg_height, bg_width = background.shape[:2]
+
+        shadow_alpha = np.expand_dims(shadow_alpha, axis=-1)
+        alpha = np.expand_dims(alpha, axis=-1)
+        width = max(self.radius, int(2 * self.shadow_blur))
+        x1, y1 = max(0, x_offset - width), max(0, y_offset - width)
+        x2, y2 = min(x_offset + foreground_size[0] + width, bg_width), min(y_offset + foreground_size[1] + width, bg_height)
+        thickness = 2 * width
+
+        # Left side
+        shadow_alpha_roi = shadow_alpha[y1:y2, x1:x1+thickness]
+        alpha_roi = alpha[:, :width]
+        foreground_roi = foreground[:, :width]
+        bg_roi = background[y1:y2, x1:x1+thickness]
+        patch = (1 - shadow_alpha_roi) * bg_roi
+        patch_roi = patch[width:-width, width:thickness]
+        patch[width:-width, width:thickness] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
+        background[y1:y2, x1:x1+thickness] = patch
+
+        # Bottom side
+        shadow_alpha_roi = shadow_alpha[y2-thickness:y2, x1+thickness:x2-thickness]
+        alpha_roi = alpha[-width:, width:-width]
+        foreground_roi = foreground[-width:, width:-width]
+        bg_roi = background[y2-thickness:y2, x1+thickness:x2-thickness]
+        patch = (1 - shadow_alpha_roi) * bg_roi
+        patch_roi = patch[width:, :]
+        patch[:width, :] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
+        background[y2-thickness:y2, x1+thickness:x2-thickness] = patch
+
+        # Right side
+        shadow_alpha_roi = shadow_alpha[y1:y2, x2-thickness:x2]
+        alpha_roi = alpha[:, -width:]
+        foreground_roi = foreground[:, -width:]
+        bg_roi = background[y1:y2, x2-thickness:x2]
+        patch = (1 - shadow_alpha_roi) * bg_roi
+        patch_roi = patch[width:-width, :width]
+        patch[width:-width, :width] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
+        background[y1:y2, x2-thickness:x2] = patch
+
+        # Top side
+        shadow_alpha_roi = shadow_alpha[y1:y1+thickness, x1+thickness:x2-thickness]
+        alpha_roi = alpha[:width, width:-width]
+        foreground_roi = foreground[:width, width:-width]
+        bg_roi = background[y1:y1+thickness, x1+thickness:x2-thickness]
+        patch = (1 - shadow_alpha_roi) * bg_roi
+        patch_roi = patch[:width, :]
+        patch[-width:, :] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
+        background[y1:y1+thickness, x1+thickness:x2-thickness] = patch
+
+        # Center
+        background[y1+thickness:y2-thickness, x1+thickness:x2-thickness] = foreground[width:-width, width:-width]
+
+        return background
 
     def apply_border_radius_with_shadow(
         self,
@@ -397,51 +473,77 @@ class BorderShadow(BaseTransform):
         x_offset,
         y_offset,
     ):
-        # import time
-        foreground_size = foreground.shape[1], foreground.shape[0]
         background_size = background.shape[1], background.shape[0]
+        foreground_size = foreground.shape[1], foreground.shape[0]
 
-        # Create mask and shadow
-        # tt = time.time()
+        alpha = self.create_rounded_rectangle(
+            foreground_size,
+            foreground_size,
+            0, 0
+        )
+
+        blur_alpha = self.create_shadow(background_size, foreground_size, x_offset, y_offset)
+
+        t0 = time.time()
+
+        # blur_alpha = np.expand_dims(blur_alpha, axis=-1)
+        # result = (1 - blur_alpha) * background
+        result = self.render_drop_shadow_fast(background, foreground, blur_alpha, alpha, x_offset, y_offset, foreground_size)
+        result = np.clip(result, 0, 255).astype(np.uint8)
+        print('overlay 1:', time.time() - t0)
+
         # t0 = time.time()
-        mask_float = self.create_rounded_mask(foreground_size, return_float=True)
-        # print('mask', time.time() - t0)
+        # fg_roi = result[y_offset:y_offset+foreground_size[1], x_offset:x_offset+foreground_size[0]]
+        # alpha = np.expand_dims(alpha, axis=-1)
+        # fg_roi = (1 - alpha) * fg_roi + alpha * foreground
+        # result[y_offset:y_offset+foreground_size[1], x_offset:x_offset+foreground_size[0]] = fg_roi
+        # print('time', time.time() - t0)
+        return result
+        # # import time
+        # foreground_size = foreground.shape[1], foreground.shape[0]
+        # background_size = background.shape[1], background.shape[0]
 
-        # t0 = time.time()
-        shadow = self.create_shadow(background_size, foreground_size, x_offset, y_offset)
-        background_float = background.astype(np.float32) / 255.0
-        # print('mask and shadow', time.time() - tt)
+        # # Create mask and shadow
+        # # tt = time.time()
+        # # t0 = time.time()
+        # mask_float = self.create_rounded_mask(foreground_size, return_float=True)
+        # # print('mask', time.time() - t0)
 
-        # Vectorized shadow overlay
-        # t0 = time.time()
-        result = shadow * background_float
-        # print('overlay', time.time() - t0)
+        # # t0 = time.time()
+        # shadow = self.create_shadow(background_size, foreground_size, x_offset, y_offset)
+        # background_float = background.astype(np.float32) / 255.0
+        # # print('mask and shadow', time.time() - tt)
 
-        # Optimized blending
-        # t0 = time.time()
-        roi = result[y_offset:y_offset + foreground_size[1], x_offset:x_offset + foreground_size[0]]
-        foreground_float = foreground.astype(np.float32) / 255.0
+        # # Vectorized shadow overlay
+        # # t0 = time.time()
+        # result = shadow * background_float
+        # # print('overlay', time.time() - t0)
 
-        # Blend roi and foreground based on mask
-        inv_mask = 1.0 - mask_float
-        pad = self.radius // 3
+        # # Optimized blending
+        # # t0 = time.time()
+        # roi = result[y_offset:y_offset + foreground_size[1], x_offset:x_offset + foreground_size[0]]
+        # foreground_float = foreground.astype(np.float32) / 255.0
 
-        blended_roi_top = foreground_float[:pad, ...] * mask_float[:pad, ...] + roi[:pad, ...] * inv_mask[:pad, ...]
-        blended_roi_left = foreground_float[pad:-pad, :pad] * mask_float[pad:-pad, :pad] + roi[pad:-pad, :pad] * inv_mask[pad:-pad, :pad]
-        blended_roi_bottom = foreground_float[-pad:, ...] * mask_float[-pad:, ...] + roi[-pad:, ...] * inv_mask[-pad:, ...]
-        blended_roi_right = foreground_float[pad:-pad, -pad:] * mask_float[pad:-pad, -pad:] + roi[pad:-pad, -pad:] * inv_mask[pad:-pad, -pad:]
+        # # Blend roi and foreground based on mask
+        # inv_mask = 1.0 - mask_float
+        # pad = self.radius // 3
 
-        roi[:pad, ...] = blended_roi_top
-        roi[pad:-pad, :pad] = blended_roi_left
-        roi[-pad:, ...] = blended_roi_bottom
-        roi[pad:-pad, -pad:] = blended_roi_right
-        roi[pad:-pad, pad:-pad] = foreground_float[pad:-pad, pad:-pad]
+        # blended_roi_top = foreground_float[:pad, ...] * mask_float[:pad, ...] + roi[:pad, ...] * inv_mask[:pad, ...]
+        # blended_roi_left = foreground_float[pad:-pad, :pad] * mask_float[pad:-pad, :pad] + roi[pad:-pad, :pad] * inv_mask[pad:-pad, :pad]
+        # blended_roi_bottom = foreground_float[-pad:, ...] * mask_float[-pad:, ...] + roi[-pad:, ...] * inv_mask[-pad:, ...]
+        # blended_roi_right = foreground_float[pad:-pad, -pad:] * mask_float[pad:-pad, -pad:] + roi[pad:-pad, -pad:] * inv_mask[pad:-pad, -pad:]
 
-        result[y_offset:y_offset + foreground_size[1], x_offset:x_offset + foreground_size[0]] = roi
-        # print('blending', time.time() - t0)
-        # print('total', time.time() - tt)
+        # roi[:pad, ...] = blended_roi_top
+        # roi[pad:-pad, :pad] = blended_roi_left
+        # roi[-pad:, ...] = blended_roi_bottom
+        # roi[pad:-pad, -pad:] = blended_roi_right
+        # roi[pad:-pad, pad:-pad] = foreground_float[pad:-pad, pad:-pad]
 
-        return (result * 255).astype(np.uint8)
+        # result[y_offset:y_offset + foreground_size[1], x_offset:x_offset + foreground_size[0]] = roi
+        # # print('blending', time.time() - t0)
+        # # print('total', time.time() - tt)
+
+        # return (result * 255).astype(np.uint8)
 
     def __call__(self, **kwargs):
         kwargs["radius"] = self.radius
@@ -463,66 +565,95 @@ class Background(BaseTransform):
         self.background = background
         self.background_image = None
 
+    def _crop_and_resize(self, image, target_size):
+        width, height = target_size
+        img_height, img_width = image.shape[:2]
+        scale = max(width / img_width, height / img_height)
+        if width / img_width > height / img_height:
+            new_width = width
+            new_height = int(img_height * scale)
+        else:
+            new_width = int(img_width * scale)
+            new_height = height
+        image = cv2.resize(image, (new_width, new_height), cv2.INTER_LANCZOS4)
+
+        # Crop center
+        start_x = (new_width - width) // 2
+        start_y = (new_height - height) // 2
+        image = image[start_y:start_y+height, start_x:start_x+width]
+        return image
+
     def _get_background_image(self, background, width, height):
         if background['type'] == 'wallpaper':
             index = background['value']
             background_path = os.path.join(self.background_dir, f'gradient-wallpaper-{index:04d}.jpg')
             background_image = cv2.imread(background_path)
-            background_image = cv2.resize(background_image, (width, height), cv2.INTER_LANCZOS4)
         elif background['type'] == 'gradient':
             value = background['value']
             first_color, second_color = value['colors']
             angle = value['angle']
             background_image = create_gradient_image(width, height, first_color, second_color, angle)
+            return background_image  # No need to resize or crop for gradient
         elif background['type'] == 'color':
             hex_color = background['value']
             r, g, b = hex_to_rgb(hex_color)
             background_image = np.full(shape=(height, width, 3), fill_value=(b, g, r), dtype=np.uint8)
+            return background_image  # No need to resize or crop for solid color
         elif background['type'] == 'image':
             background_path = background['value'].toLocalFile()
             if not os.path.exists(background_path):
-                raise Exception()
-
+                raise Exception("Background image file does not exist")
             background_image = cv2.imread(background_path)
-            background_image = cv2.resize(background_image, (width, height), cv2.INTER_LANCZOS4)
         else:
             background_image = np.full((height, width, 3), fill_value=0, dtype=np.uint8)
+            return background_image  # No need to resize or crop for default black background
+
+        # Resize to contain (width, height)
+        background_image = self._crop_and_resize(background_image, (width, height))
 
         return background_image
 
     def __call__(self, **kwargs):
         input = kwargs['input']
-        video_width = kwargs['video_width']
-        video_height = kwargs['video_height']
-        frame_width = kwargs['frame_width']
-        frame_height = kwargs['frame_height']
+        background_width = kwargs['background_width']
+        background_height = kwargs['background_height']
+        foreground_width = kwargs['foreground_width']
+        foreground_height = kwargs['foreground_height']
         x_offset = kwargs.get('x_offset', 0)
         y_offset = kwargs.get('y_offset', 0)
 
-        if input.shape[0] != frame_height or input.shape[1] != frame_width:
-            input = cv2.resize(input, (frame_width, frame_height))
+        if self.background_image is None or self.background_image.shape[:2] != (background_height, background_width):
+            self.background_image = self._get_background_image(self.background, background_width, background_height)
 
-        if self.background_image is None or self.background_image.shape[0] != video_height or self.background_image.shape[1] != video_width:
-            self.background_image = self._get_background_image(self.background, video_width, video_height)
+        background_image = self.background_image.copy()
 
-        output = self.background_image.copy()
+        foreground = self._crop_and_resize(input.copy(), (foreground_width, foreground_height))
+        # foreground = cv2.cvtColor(foreground, cv2.COLOR_BGR2RGB)
 
         x1 = x_offset
         y1 = y_offset
-        x2 = x1 + frame_width
-        y2 = y1 + frame_height
+        x2 = x1 + foreground_width
+        y2 = y1 + foreground_height
 
         if 'border_shadow' in kwargs:
             border_shadow = kwargs['border_shadow']
 
             output = border_shadow.apply_border_radius_with_shadow(
-                self.background_image,
-                input,
+                background_image,
+                foreground,
                 x_offset,
                 y_offset,
             )
         else:
             output[y1:y2, x1:x2, :] = input
 
-        kwargs['input'] = output
-        return kwargs
+        # output[y1:y2, x1:x2, :] = foreground
+        return output
+        # kwargs['input'] = output
+        # return kwargs
+        # return {
+        #     "background": background,
+        #     "foreground": foreground,
+        #     "background_changed": background_changed,
+        #     "aspect_ratio_float": kwargs["aspect_ratio_float"]
+        # }

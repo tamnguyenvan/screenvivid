@@ -20,7 +20,7 @@ from screenvivid import transforms
 from screenvivid.utils.general import generate_video_path, get_os_name
 from screenvivid.utils.cursor.cursor import get_cursor_state
 from screenvivid.utils.cursor.loader import CursorLoader
-from screenvivid.utils.logging import logger
+from screenvivid.utils.logs import logger
 
 class LoadCursorThread(QThread):
     def __init__(self):
@@ -473,7 +473,12 @@ class VideoController(QObject):
 
     exportProgress = Signal(float)
     exportFinished = Signal()
-    aspectRatioChanged = Signal(str)
+    paddingChanged = Signal()
+    insetChanged = Signal()
+    borderRadiusChanged = Signal()
+    aspectRatioChanged = Signal()
+    backgroundChanged = Signal()
+    cursorScaleChanged = Signal()
     frameWidthChanged = Signal()
     frameHeightChanged = Signal()
     canUndoChanged = Signal(bool)
@@ -530,47 +535,61 @@ class VideoController(QObject):
     def aspect_ratio(self, aspect_ratio):
         if self.video_processor.aspect_ratio != aspect_ratio:
             self.video_processor.aspect_ratio = aspect_ratio
-            self.aspectRatioChanged.emit(aspect_ratio)
+            self.aspectRatioChanged.emit()
 
-    @Property(int)
+    @Property(float, notify=aspectRatioChanged)
+    def aspect_ratio_float(self):
+        return self.video_processor.aspect_ratio_float
+
+    @Property(float, notify=paddingChanged)
     def padding(self):
         return self.video_processor.padding
 
     @padding.setter
     def padding(self, value):
-        self.video_processor.padding = value
+        if self.video_processor.padding != value:
+            self.video_processor.padding = value
+            self.paddingChanged.emit(value)
 
-    @Property(int)
+    @Property(int, notify=insetChanged)
     def inset(self):
         return self.video_processor.inset
 
     @inset.setter
     def inset(self, inset):
-        self.video_processor.inset = inset
+        if self.video_processor.inset != inset:
+            self.video_processor.inset = inset
+            self.insetChanged.emit(inset)
 
-    @Property(int)
+    @Property(int, notify=borderRadiusChanged)
     def border_radius(self):
         return self.video_processor.border_radius
 
     @border_radius.setter
     def border_radius(self, value):
-        self.video_processor.border_radius = value
+        if self.video_processor.border_radius != value:
+            self.video_processor.border_radius = value
+            self.borderRadiusChanged.emit()
 
-    @Property(dict)
+    @Property(dict, notify=backgroundChanged)
     def background(self):
         return self.video_processor.background
 
     @background.setter
     def background(self, value):
-        self.video_processor.background = value
+        if self.video_processor.background != value:
+            self.video_processor.background = value
+            self.backgroundChanged.emit(value)
 
-    @Property(float)
+    @Property(float, notify=cursorScaleChanged)
     def cursor_scale(self):
         return self.video_processor.cursor_scale
 
     @cursor_scale.setter
     def cursor_scale(self, value):
-        self.video_processor.cursor_scale = value
+        if self.video_processor.cursor_scale != value:
+            self.video_processor.cursor_scale = value
+            self.cursorScaleChanged.emit(value)
 
     @Property(list, notify=outputSizeChanged)
     def output_size(self):
@@ -684,7 +703,6 @@ class VideoController(QObject):
         self.frame_provider.updateFrame(q_image)
         self.frameReady.emit()
 
-
 class VideoLoadingError(Exception):
     pass
 
@@ -705,7 +723,7 @@ class VideoProcessor(QObject):
         self.play_timer.timeout.connect(self.process_next_frame)
 
         self._aspect_ratio = "Auto"
-        self._padding = 100
+        self._padding = 0.1
         self._inset = 0
         self._border_radius = 8
         self._background = {"type": "wallpaper", "value": 1}
@@ -725,6 +743,12 @@ class VideoProcessor(QObject):
     def aspect_ratio(self, aspect_ratio):
         self._aspect_ratio = aspect_ratio
         self._transforms["aspect_ratio"] = transforms.AspectRatio(aspect_ratio=aspect_ratio)
+
+    @property
+    def aspect_ratio_float(self):
+        if self._transforms and self._transforms.get("aspect_ratio"):
+            return self._transforms["aspect_ratio"].aspect_ratio_float
+        return 16 / 9
 
     @property
     def padding(self):
@@ -973,11 +997,13 @@ class VideoProcessor(QObject):
         self.get_frame()
 
     def process_frame(self, frame):
-        transformed_result = self._transforms(input=frame, start_frame=self.start_frame + self.current_frame)
-        output_frame = transformed_result["input"]
+        result = self._transforms(input=frame, start_frame=self.start_frame + self.current_frame)
+        # output_frame = transformed_result["input"]
 
-        output_frame = cv2.cvtColor(output_frame, cv2.COLOR_BGR2RGB)
-        return output_frame
+        # output_frame = cv2.cvtColor(output_frame, cv2.COLOR_BGR2RGB)
+        # return output_frame
+        result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
+        return result
 
 
 class VideoThread(QThread):
@@ -987,7 +1013,6 @@ class VideoThread(QThread):
 
     def run(self):
         self.video_processor.play()
-
 
 class ExportThread(QThread):
     progress = Signal(float)
@@ -1008,7 +1033,7 @@ class ExportThread(QThread):
     def run(self):
         format = self.export_params.get("format", "mp4")
         fps = self.export_params.get("fps", self.video_processor.fps)
-        output_size = self.export_params.get("output_size")
+        output_size = tuple(self.export_params.get("output_size"))
         aspect_ratio = self.export_params.get("aspect_ratio", "auto")
         compression_level = self.export_params.get("compression_level", "high")
         output_file = self.export_params.get("output_path", "output_video")

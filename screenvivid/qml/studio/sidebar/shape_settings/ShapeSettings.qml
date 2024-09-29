@@ -58,7 +58,7 @@ Item {
 
                     Label {
                         id: paddingLabel
-                        text: paddingSlider.value.toFixed(0)
+                        text: (paddingSlider.value * 100).toFixed(0)
                         font.pixelSize: 14
                         color: "#FFFFFF"
                     }
@@ -67,8 +67,9 @@ Item {
                 Slider {
                     id: paddingSlider
                     from: 0
-                    to: 500
-                    value: 100
+                    to: 0.8
+                    value: 0.1
+                    stepSize: 0.01
                     Layout.fillWidth: true
 
                     background: Rectangle {
@@ -97,8 +98,8 @@ Item {
                     }
 
                     onValueChanged: {
-                        paddingLabel.text = value.toFixed(0)
-                        videoController.padding = Math.round(value)
+                        paddingLabel.text = (value * 100).toFixed(0)
+                        videoController.padding = value
                         if (!isPlaying) {
                             videoController.get_current_frame()
                         }

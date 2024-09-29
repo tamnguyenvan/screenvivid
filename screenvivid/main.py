@@ -1,9 +1,10 @@
 import sys
 from pathlib import Path
 
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
+from PySide6.QtQuick import QQuickView
 
 from screenvivid import rc_main
 from screenvivid import rc_icons
@@ -12,7 +13,7 @@ from screenvivid.model import (
     ClipTrackModel, WindowController, VideoController, VideoRecorder
 )
 from screenvivid.image_provider import FrameImageProvider
-from screenvivid.utils.logging import logger
+from screenvivid.utils.logs import logger
 
 
 def main():
@@ -41,6 +42,7 @@ def main():
     # Models
     clip_track_model = ClipTrackModel()
     window_controller = WindowController()
+
     video_controller = VideoController(frame_provider=frame_provider)
     video_recorder = VideoRecorder()
 
