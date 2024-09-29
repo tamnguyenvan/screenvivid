@@ -1,4 +1,3 @@
-import io
 import math
 import time
 import json
@@ -13,7 +12,6 @@ import numpy as np
 import cairo
 import pyautogui
 from PIL import Image, ImageDraw, ImageFilter
-from PySide6.QtCore import QFile, QIODevice
 
 from screenvivid.utils.general import hex_to_rgb, create_gradient_image, get_os_name
 
@@ -355,8 +353,6 @@ class BorderShadow(BaseTransform):
         self.radius = radius
         self.shadow_blur = shadow_blur
         self.shadow_opacity = shadow_opacity
-        from screenvivid.utils.effects import DropShadowEffect
-        self.effect = DropShadowEffect()
 
     @lru_cache(maxsize=1)
     def create_rounded_rectangle(self, background_size, foreground_size, x_offset, y_offset):
