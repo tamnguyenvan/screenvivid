@@ -184,6 +184,7 @@ Item {
                                     region = [windowController.left, windowController.top,
                                             Screen.desktopAvailableWidth, Screen.desktopAvailableHeight];
                                 }
+                                logger.debug("Selected region:" + region)
                                 videoRecorder.region = region;
                                 countdownLoader.source = "";
                                 countdownLoader.source = "qrc:/qml/countdown/Countdown.qml";

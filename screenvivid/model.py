@@ -13,7 +13,6 @@ from PySide6.QtCore import (
     QModelIndex
 )
 from PySide6.QtGui import QImage, QGuiApplication
-from PIL import Image
 
 from screenvivid import config
 from screenvivid import transforms
@@ -21,6 +20,26 @@ from screenvivid.utils.general import generate_video_path, get_os_name
 from screenvivid.utils.cursor.cursor import get_cursor_state
 from screenvivid.utils.cursor.loader import CursorLoader
 from screenvivid.utils.logging import logger
+
+class Logger(QObject):
+    def __init__(self):
+        super().__init__()
+
+    @Slot
+    def info(self, message):
+        logger.info(message)
+
+    @Slot
+    def debug(self, message):
+        logger.debug(message)
+
+    @Slot
+    def warning(self, message):
+        logger.warning(message)
+
+    @Slot
+    def error(self, message):
+        logger.error(message)
 
 class LoadCursorThread(QThread):
     def __init__(self):

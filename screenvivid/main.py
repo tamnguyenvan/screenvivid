@@ -1,20 +1,17 @@
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QUrl
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtQuick import QQuickView
 
 from screenvivid import rc_main
 from screenvivid import rc_icons
 from screenvivid import rc_images
 from screenvivid.model import (
-    ClipTrackModel, WindowController, VideoController, VideoRecorder
+    ClipTrackModel, WindowController, VideoController, VideoRecorder, Logger
 )
 from screenvivid.image_provider import FrameImageProvider
 from screenvivid.utils.logging import logger
-
 
 def main():
     logger.info("Starting ScreenVivid")
@@ -45,11 +42,13 @@ def main():
 
     video_controller = VideoController(frame_provider=frame_provider)
     video_recorder = VideoRecorder()
+    logger_model = Logger()
 
     engine.rootContext().setContextProperty("clipTrackModel", clip_track_model)
     engine.rootContext().setContextProperty("windowController", window_controller)
     engine.rootContext().setContextProperty("videoController", video_controller)
     engine.rootContext().setContextProperty("videoRecorder", video_recorder)
+    engine.rootContext().setContextProperty("logger", logger_model)
     logger.debug("Set context properties")
 
     qml_file = "qrc:/qml/entry/main.qml"

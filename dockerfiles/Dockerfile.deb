@@ -5,6 +5,7 @@ ENV POETRY_HOME=/opt/poetry
 ENV PATH="$POETRY_HOME/bin:$PATH"
 
 RUN apt-get update && apt-get install -y \
+    build-essential \
     python3.10 \
     python3.10-venv \
     python3.10-dev \
@@ -22,6 +23,7 @@ RUN apt-get update && apt-get install -y \
     libxkbcommon-x11-dev \
     libatspi2.0-dev \
     '^libxcb.*-dev' \
+    libxcb-cursor0 \
     libxcb-cursor-dev \
     libxcb-xinerama0 \
     libglib2.0-0 \
