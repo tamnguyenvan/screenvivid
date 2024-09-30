@@ -245,24 +245,10 @@ class Cursor(BaseTransform):
                 paths = sorted(glob.glob(pattern))
                 for i, path in enumerate(paths):
                     cursor_image = cv2.imread(path, cv2.IMREAD_UNCHANGED)
-                    # cursor_image = self._load_image(path)
-                    # cursor_image = cv2.cvtColor(cursor_image, cv2.COLOR_RGBA2BGRA)
 
                     offset = offsets.get(cursor_state, {}).get(scale, (0, 0))
                     cursors_map[cursor_state][scale].append({"image": cursor_image, "offset": offset})
         return cursors_map
-
-    # def _load_image(self, resource: str):
-    #     file = QFile(resource)
-    #     if not file.open(QIODevice.ReadOnly):  # Ensure the file is opened in read-only mode
-    #         raise IOError(f"Cannot open resource: {resource}")
-
-    #     byte_data = file.readAll().data()
-    #     file.close()
-
-    #     bytes_io = io.BytesIO(byte_data)
-    #     image_arr = np.frombuffer(bytes_io.getvalue(), np.uint8)
-    #     return cv2.imdecode(image_arr, cv2.IMREAD_UNCHANGED)
 
     def _load_default_cursor(self):
         if getattr(sys, 'frozen', False):
@@ -349,8 +335,8 @@ class Cursor(BaseTransform):
         return kwargs
 
 class BorderShadow(BaseTransform):
-    def __init__(self, radius, shadow_blur: int = 10, shadow_opacity: float = 0.5) -> None:
-        self.radius = radius
+    def __init__(self, border_radius, shadow_blur: int = 10, shadow_opacity: float = 0.5) -> None:
+        self.border_radius = border_radius
         self.shadow_blur = shadow_blur
         self.shadow_opacity = shadow_opacity
 
@@ -363,26 +349,26 @@ class BorderShadow(BaseTransform):
 
         ctx.set_source_rgb(1, 1, 1)  # white
 
-        corner_radius = self.radius
+        border_radius = self.border_radius
         x = x_offset
         y = y_offset
         width, height = foreground_size
 
         ctx.new_path()
 
-        ctx.move_to(x + corner_radius, y)
+        ctx.move_to(x + border_radius, y)
 
-        ctx.line_to(x + width - corner_radius, y)
-        ctx.arc(x + width - corner_radius, y + corner_radius, corner_radius, -0.5 * math.pi, 0)
+        ctx.line_to(x + width - border_radius, y)
+        ctx.arc(x + width - border_radius, y + border_radius, border_radius, -0.5 * math.pi, 0)
 
-        ctx.line_to(x + width, y + height - corner_radius)
-        ctx.arc(x + width - corner_radius, y + height - corner_radius, corner_radius, 0, 0.5 * math.pi)
+        ctx.line_to(x + width, y + height - border_radius)
+        ctx.arc(x + width - border_radius, y + height - border_radius, border_radius, 0, 0.5 * math.pi)
 
-        ctx.line_to(x + corner_radius, y + height)
-        ctx.arc(x + corner_radius, y + height - corner_radius, corner_radius, 0.5 * math.pi, math.pi)
+        ctx.line_to(x + border_radius, y + height)
+        ctx.arc(x + border_radius, y + height - border_radius, border_radius, 0.5 * math.pi, math.pi)
 
-        ctx.line_to(x, y + corner_radius)
-        ctx.arc(x + corner_radius, y + corner_radius, corner_radius, math.pi, 1.5 * math.pi)
+        ctx.line_to(x, y + border_radius)
+        ctx.arc(x + border_radius, y + border_radius, border_radius, math.pi, 1.5 * math.pi)
 
         ctx.close_path()
         ctx.fill()
@@ -402,64 +388,98 @@ class BorderShadow(BaseTransform):
         shadow_draw = ImageDraw.Draw(shadow)
         shadow_draw.rounded_rectangle([(x_offset, y_offset),
                                        (x_offset + foreground_size[0], y_offset + foreground_size[1])],
-                                      self.radius, fill=int(255 * self.shadow_opacity))
+                                      self.border_radius, fill=int(255 * self.shadow_opacity))
         shadow = np.array(shadow.filter(ImageFilter.GaussianBlur(self.shadow_blur)))
         shadow = shadow.astype(np.float32) / 255.0
         return shadow
 
-    def render_drop_shadow_fast(self, background, foreground, shadow_alpha, alpha, x_offset, y_offset, foreground_size):
+    def render_drop_shadow(self, background, foreground, shadow_alpha, foreground_alpha, offset):
         bg_height, bg_width = background.shape[:2]
+        x_offset, y_offset = offset
+        fg_size = foreground.shape[1], foreground.shape[0]
 
         shadow_alpha = np.expand_dims(shadow_alpha, axis=-1)
-        alpha = np.expand_dims(alpha, axis=-1)
-        width = max(self.radius, int(2 * self.shadow_blur))
-        x1, y1 = max(0, x_offset - width), max(0, y_offset - width)
-        x2, y2 = min(x_offset + foreground_size[0] + width, bg_width), min(y_offset + foreground_size[1] + width, bg_height)
-        thickness = 2 * width
+        fg_alpha = np.expand_dims(foreground_alpha, axis=-1)
+
+        outer_pad = 2 * self.shadow_blur
+        inner_pad = self.border_radius if self.border_radius > 0 else 10
+        corner_pad = outer_pad + inner_pad
+        x1, y1 = max(0, x_offset - outer_pad), max(0, y_offset - outer_pad)
+        x2, y2 = min(x_offset + fg_size[0] + outer_pad, bg_width), min(y_offset + fg_size[1] + outer_pad, bg_height)
+
+        # Top-left corner
+        shadow_alpha_roi = shadow_alpha[y1:y1+corner_pad, x1:x1+corner_pad]
+        bg_roi = background[y1:y1+corner_pad, x1:x1+corner_pad]
+        patch = (1 - shadow_alpha_roi) * bg_roi
+        patch_roi = patch[outer_pad:, outer_pad:]
+        alpha_roi = fg_alpha[:inner_pad, :inner_pad]
+        foreground_roi = foreground[:inner_pad, :inner_pad]
+        patch[outer_pad:, outer_pad:] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
+        background[y1:y1+corner_pad, x1:x1+corner_pad] = patch
+
+        # Bottom left corner
+        shadow_alpha_roi = shadow_alpha[y2-corner_pad:y2, x1:x1+corner_pad]
+        bg_roi = background[y2-corner_pad:y2, x1:x1+corner_pad]
+        patch = (1 - shadow_alpha_roi) * bg_roi
+        patch_roi = patch[:inner_pad, outer_pad:]
+        alpha_roi = fg_alpha[-inner_pad:, :inner_pad]
+        foreground_roi = foreground[-inner_pad:, :inner_pad]
+        patch[:inner_pad, outer_pad:] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
+        background[y2-corner_pad:y2, x1:x1+corner_pad] = patch
+
+        # Bottom right corner
+        shadow_alpha_roi = shadow_alpha[y2-corner_pad:y2, x2-corner_pad:x2]
+        bg_roi = background[y2-corner_pad:y2, x2-corner_pad:x2]
+        patch = (1 - shadow_alpha_roi) * bg_roi
+        patch_roi = patch[:inner_pad, :inner_pad]
+        alpha_roi = fg_alpha[-inner_pad:, -inner_pad:]
+        foreground_roi = foreground[-inner_pad:, -inner_pad:]
+        patch[:inner_pad, :inner_pad] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
+        background[y2-corner_pad:y2, x2-corner_pad:x2] = patch
+
+        # Top right corner
+        shadow_alpha_roi = shadow_alpha[y1:y1+corner_pad, x2-corner_pad:x2]
+        bg_roi = background[y1:y1+corner_pad, x2-corner_pad:x2]
+        patch = (1 - shadow_alpha_roi) * bg_roi
+        patch_roi = patch[outer_pad:, :inner_pad]
+        alpha_roi = fg_alpha[:inner_pad, -inner_pad:]
+        foreground_roi = foreground[:inner_pad, -inner_pad:]
+        patch[outer_pad:, :inner_pad] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
+        background[y1:y1+corner_pad, x2-corner_pad:x2] = patch
 
         # Left side
-        shadow_alpha_roi = shadow_alpha[y1:y2, x1:x1+thickness]
-        alpha_roi = alpha[:, :width]
-        foreground_roi = foreground[:, :width]
-        bg_roi = background[y1:y2, x1:x1+thickness]
+        shadow_alpha_roi = shadow_alpha[y1+corner_pad:y2-corner_pad, x1:x1+outer_pad]
+        bg_roi = background[y1+corner_pad:y2-corner_pad, x1:x1+outer_pad]
         patch = (1 - shadow_alpha_roi) * bg_roi
-        patch_roi = patch[width:-width, width:thickness]
-        patch[width:-width, width:thickness] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
-        background[y1:y2, x1:x1+thickness] = patch
+        background[y1+corner_pad:y2-corner_pad, x1:x1+outer_pad] = patch
 
-        # Bottom side
-        shadow_alpha_roi = shadow_alpha[y2-thickness:y2, x1+thickness:x2-thickness]
-        alpha_roi = alpha[-width:, width:-width]
-        foreground_roi = foreground[-width:, width:-width]
-        bg_roi = background[y2-thickness:y2, x1+thickness:x2-thickness]
+
+        # Bottom
+        shadow_alpha_roi = shadow_alpha[y2-outer_pad:y2, x1+corner_pad:x2-corner_pad]
+        bg_roi = background[y2-outer_pad:y2, x1+corner_pad:x2-corner_pad]
         patch = (1 - shadow_alpha_roi) * bg_roi
-        patch_roi = patch[width:, :]
-        patch[:width, :] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
-        background[y2-thickness:y2, x1+thickness:x2-thickness] = patch
+        background[y2-outer_pad:y2, x1+corner_pad:x2-corner_pad] = patch
 
         # Right side
-        shadow_alpha_roi = shadow_alpha[y1:y2, x2-thickness:x2]
-        alpha_roi = alpha[:, -width:]
-        foreground_roi = foreground[:, -width:]
-        bg_roi = background[y1:y2, x2-thickness:x2]
+        shadow_alpha_roi = shadow_alpha[y1+corner_pad:y2-corner_pad, x2-outer_pad:x2]
+        bg_roi = background[y1+corner_pad:y2-corner_pad, x2-outer_pad:x2]
         patch = (1 - shadow_alpha_roi) * bg_roi
-        patch_roi = patch[width:-width, :width]
-        patch[width:-width, :width] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
-        background[y1:y2, x2-thickness:x2] = patch
+        background[y1+corner_pad:y2-corner_pad, x2-outer_pad:x2] = patch
 
-        # Top side
-        shadow_alpha_roi = shadow_alpha[y1:y1+thickness, x1+thickness:x2-thickness]
-        alpha_roi = alpha[:width, width:-width]
-        foreground_roi = foreground[:width, width:-width]
-        bg_roi = background[y1:y1+thickness, x1+thickness:x2-thickness]
+        # Top
+        shadow_alpha_roi = shadow_alpha[y1:y1+outer_pad, x1+corner_pad:x2-corner_pad]
+        bg_roi = background[y1:y1+outer_pad, x1+corner_pad:x2-corner_pad]
         patch = (1 - shadow_alpha_roi) * bg_roi
-        patch_roi = patch[:width, :]
-        patch[-width:, :] = (1 - alpha_roi) * patch_roi + alpha_roi * foreground_roi
-        background[y1:y1+thickness, x1+thickness:x2-thickness] = patch
+        background[y1:y1+outer_pad, x1+corner_pad:x2-corner_pad] = patch
 
-        # Center
-        background[y1+thickness:y2-thickness, x1+thickness:x2-thickness] = foreground[width:-width, width:-width]
+        # Center 1
+        background[y1+corner_pad:y2-corner_pad, x1+outer_pad:x2-outer_pad] = foreground[inner_pad:fg_size[1]-inner_pad, :]
 
+        # Center 2
+        background[y1+outer_pad:y1+corner_pad, x1+corner_pad:x2-corner_pad] = foreground[:inner_pad, inner_pad:fg_size[0]-inner_pad]
+
+        # Center 3
+        background[y2-corner_pad:y2-outer_pad, x1+corner_pad:x2-corner_pad] = foreground[fg_size[1]-inner_pad:, inner_pad:fg_size[0]-inner_pad]
         return background
 
     def apply_border_radius_with_shadow(
@@ -472,77 +492,22 @@ class BorderShadow(BaseTransform):
         background_size = background.shape[1], background.shape[0]
         foreground_size = foreground.shape[1], foreground.shape[0]
 
-        alpha = self.create_rounded_rectangle(
+        foreground_alpha = self.create_rounded_rectangle(
             foreground_size,
             foreground_size,
             0, 0
         )
 
-        blur_alpha = self.create_shadow(background_size, foreground_size, x_offset, y_offset)
+        shadow_alpha = self.create_shadow(background_size, foreground_size, x_offset, y_offset)
 
-        t0 = time.time()
-
-        # blur_alpha = np.expand_dims(blur_alpha, axis=-1)
-        # result = (1 - blur_alpha) * background
-        result = self.render_drop_shadow_fast(background, foreground, blur_alpha, alpha, x_offset, y_offset, foreground_size)
+        offset = (x_offset, y_offset)
+        result = self.render_drop_shadow(background, foreground, shadow_alpha, foreground_alpha, offset)
         result = np.clip(result, 0, 255).astype(np.uint8)
-        print('overlay 1:', time.time() - t0)
 
-        # t0 = time.time()
-        # fg_roi = result[y_offset:y_offset+foreground_size[1], x_offset:x_offset+foreground_size[0]]
-        # alpha = np.expand_dims(alpha, axis=-1)
-        # fg_roi = (1 - alpha) * fg_roi + alpha * foreground
-        # result[y_offset:y_offset+foreground_size[1], x_offset:x_offset+foreground_size[0]] = fg_roi
-        # print('time', time.time() - t0)
         return result
-        # # import time
-        # foreground_size = foreground.shape[1], foreground.shape[0]
-        # background_size = background.shape[1], background.shape[0]
-
-        # # Create mask and shadow
-        # # tt = time.time()
-        # # t0 = time.time()
-        # mask_float = self.create_rounded_mask(foreground_size, return_float=True)
-        # # print('mask', time.time() - t0)
-
-        # # t0 = time.time()
-        # shadow = self.create_shadow(background_size, foreground_size, x_offset, y_offset)
-        # background_float = background.astype(np.float32) / 255.0
-        # # print('mask and shadow', time.time() - tt)
-
-        # # Vectorized shadow overlay
-        # # t0 = time.time()
-        # result = shadow * background_float
-        # # print('overlay', time.time() - t0)
-
-        # # Optimized blending
-        # # t0 = time.time()
-        # roi = result[y_offset:y_offset + foreground_size[1], x_offset:x_offset + foreground_size[0]]
-        # foreground_float = foreground.astype(np.float32) / 255.0
-
-        # # Blend roi and foreground based on mask
-        # inv_mask = 1.0 - mask_float
-        # pad = self.radius // 3
-
-        # blended_roi_top = foreground_float[:pad, ...] * mask_float[:pad, ...] + roi[:pad, ...] * inv_mask[:pad, ...]
-        # blended_roi_left = foreground_float[pad:-pad, :pad] * mask_float[pad:-pad, :pad] + roi[pad:-pad, :pad] * inv_mask[pad:-pad, :pad]
-        # blended_roi_bottom = foreground_float[-pad:, ...] * mask_float[-pad:, ...] + roi[-pad:, ...] * inv_mask[-pad:, ...]
-        # blended_roi_right = foreground_float[pad:-pad, -pad:] * mask_float[pad:-pad, -pad:] + roi[pad:-pad, -pad:] * inv_mask[pad:-pad, -pad:]
-
-        # roi[:pad, ...] = blended_roi_top
-        # roi[pad:-pad, :pad] = blended_roi_left
-        # roi[-pad:, ...] = blended_roi_bottom
-        # roi[pad:-pad, -pad:] = blended_roi_right
-        # roi[pad:-pad, pad:-pad] = foreground_float[pad:-pad, pad:-pad]
-
-        # result[y_offset:y_offset + foreground_size[1], x_offset:x_offset + foreground_size[0]] = roi
-        # # print('blending', time.time() - t0)
-        # # print('total', time.time() - tt)
-
-        # return (result * 255).astype(np.uint8)
 
     def __call__(self, **kwargs):
-        kwargs["radius"] = self.radius
+        kwargs["border_radius"] = self.border_radius
         kwargs["border_shadow"] = self
         return kwargs
 

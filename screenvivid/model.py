@@ -589,7 +589,7 @@ class VideoController(QObject):
     def cursor_scale(self, value):
         if self.video_processor.cursor_scale != value:
             self.video_processor.cursor_scale = value
-            self.cursorScaleChanged.emit(value)
+            self.cursorScaleChanged.emit()
 
     @Property(list, notify=outputSizeChanged)
     def output_size(self):
@@ -599,11 +599,9 @@ class VideoController(QObject):
     def trim_left(self, start_frame):
         def do_trim_left():
             self.video_processor.append_start_frame(start_frame)
-            # self.video_processor.jump_to_frame(0)
 
         def undo_trim_left():
             self.video_processor.pop_start_frame()
-            # self.video_processor.jump_to_frame(0)
 
         self.undo_redo_manager.do_action(do_trim_left, (do_trim_left, undo_trim_left))
 
@@ -611,7 +609,6 @@ class VideoController(QObject):
     def trim_right(self, end_frame):
         def do_trim_right():
             self.video_processor.append_end_frame(end_frame)
-            # self.video_processor.jump_to_frame(max(0, end_frame - 5))
 
         def undo_trim_right():
             self.video_processor.pop_end_frame()
@@ -740,9 +737,9 @@ class VideoProcessor(QObject):
         return self._aspect_ratio
 
     @aspect_ratio.setter
-    def aspect_ratio(self, aspect_ratio):
-        self._aspect_ratio = aspect_ratio
-        self._transforms["aspect_ratio"] = transforms.AspectRatio(aspect_ratio=aspect_ratio)
+    def aspect_ratio(self, value):
+        self._aspect_ratio = value
+        self._transforms["aspect_ratio"] = transforms.AspectRatio(aspect_ratio=value)
 
     @property
     def aspect_ratio_float(self):
@@ -775,7 +772,7 @@ class VideoProcessor(QObject):
     @border_radius.setter
     def border_radius(self, value):
         self._border_radius = value
-        self._transforms["border_shadow"] = transforms.BorderShadow(radius=value)
+        self._transforms["border_shadow"] = transforms.BorderShadow(border_radius=value)
 
     @property
     def background(self):
@@ -905,7 +902,7 @@ class VideoProcessor(QObject):
                 "cursor": transforms.Cursor(move_data=self._mouse_events, cursors_map=self._cursors_map, offsets=(x_offset, y_offset), scale=self._cursor_scale),
                 "padding": transforms.Padding(padding=self.padding),
                 "inset": transforms.Inset(inset=self.inset, color=(0, 0, 0)),
-                "border_shadow": transforms.BorderShadow(radius=self.border_radius),
+                "border_shadow": transforms.BorderShadow(border_radius=self.border_radius),
                 "background": transforms.Background(background=self._background),
             })
 

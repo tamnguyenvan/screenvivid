@@ -1,24 +1,31 @@
 FROM fedora:33
 
-ENV DEBIAN_FRONTEND=noninteractive
-
+# Install Python, development tools, and necessary libraries
 RUN dnf -y install \
     python3.9 \
     python3.9-devel \
     python3.9-pip \
-    cairo-devel \
-    pkg-config \
-    rpm-build \
     && dnf clean all
 
+# Install development tools (includes gcc, make, etc.) and other dependencies
+RUN dnf -y groupinstall "Development Tools" \
+    && dnf -y install cairo-devel pkg-config rpm-build \
+    && dnf clean all
+
+# Copy the requirements file into the container
 COPY requirements.txt .
 
+# Install Python packages
 RUN pip3 install --upgrade pip \
     && pip3 install pyinstaller \
     && pip3 install -r requirements.txt \
     && pip3 install "python-xlib>=0.33,<1.0"
 
+# Set the working directory to /app
 WORKDIR /app
+
+# Copy the rest of the application code
 COPY . .
 
+# Set the default command to bash
 CMD ["/bin/bash"]

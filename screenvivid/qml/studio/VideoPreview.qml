@@ -51,14 +51,15 @@ Item {
         flags: Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
         visible: false
 
-        readonly property string accentColor: "#e85c0d"
+        readonly property string accentColor: "#131519"
         Material.theme: Material.Dark
         Material.primary: accentColor
         Material.accent: accentColor
 
-        Item {
+        Rectangle {
             anchors.fill: parent
             focus: true
+            color: "#131519"
 
             MouseArea {
                 anchors.fill: parent
