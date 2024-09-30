@@ -2,9 +2,9 @@ FROM fedora:38
 
 # Install Python, development tools, and necessary libraries
 RUN dnf -y install \
-    python3.9 \
-    python3.9-devel \
-    python3.9-pip \
+    python3.10 \
+    python3.10-devel \
+    python3.10-pip \
     && dnf clean all
 
 # Install development tools (includes gcc, make, etc.) and other dependencies
