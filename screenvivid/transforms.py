@@ -200,9 +200,10 @@ class Cursor(BaseTransform):
                 "sizewe", "sizens", "sizeall", "no", "hand", "appstarting", "help"
             ],
             "linux": [
-                "arrow", "ibeam", "wait", "progress", "watch", "crosshair", "text", "vertical-text",
-                "alias", "copy", "move", "no-drop", "not-allowed", "grab",
-                "grabbing", "all-scroll", "col-resize", "row-resize", "n-resize",
+                "arrow", "ibeam", "wait", "progress", "watch", "pointing_hand", "closedhand",
+                "openhand", "help", "forbidden", "crosshair", "text", "vertical-text",
+                "alias", "copy", "move", "no-drop", "not-allowed",
+                "all-scroll", "col-resize", "row-resize", "n-resize",
                 "e-resize", "s-resize", "w-resize", "nw-resize", "se-resize",
                 "sw-resize", "ew-resize", "ns-resize", "nsew-resize", "nwse-resize",
                 "top_left_corner", "top_right_corner", "bottom_left_corner", "bottom_right_corner",

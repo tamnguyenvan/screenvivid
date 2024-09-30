@@ -549,7 +549,7 @@ class VideoController(QObject):
     def padding(self, value):
         if self.video_processor.padding != value:
             self.video_processor.padding = value
-            self.paddingChanged.emit(value)
+            self.paddingChanged.emit()
 
     @Property(int, notify=insetChanged)
     def inset(self):
@@ -559,7 +559,7 @@ class VideoController(QObject):
     def inset(self, inset):
         if self.video_processor.inset != inset:
             self.video_processor.inset = inset
-            self.insetChanged.emit(inset)
+            self.insetChanged.emit()
 
     @Property(int, notify=borderRadiusChanged)
     def border_radius(self):
@@ -579,7 +579,7 @@ class VideoController(QObject):
     def background(self, value):
         if self.video_processor.background != value:
             self.video_processor.background = value
-            self.backgroundChanged.emit(value)
+            self.backgroundChanged.emit()
 
     @Property(float, notify=cursorScaleChanged)
     def cursor_scale(self):
