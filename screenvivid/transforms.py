@@ -267,7 +267,13 @@ class Cursor(BaseTransform):
                 cursor_state = filename.split(".")[0]
                 cursor_path = os.path.join(scale_path, filename)
                 cursor_image = cv2.imread(cursor_path, cv2.IMREAD_UNCHANGED)
-                default_cursor[cursor_state] = {scale: [{"image": cursor_image, "offset": (0, 0)}]}
+                if cursor_state not in default_cursor:
+                    default_cursor[cursor_state] = {}
+
+                if scale not in default_cursor[cursor_state]:
+                    default_cursor[cursor_state][scale] = []
+                default_cursor[cursor_state][scale].append({"image": cursor_image, "offset": (0, 0)})
+
         return default_cursor
 
     def blend(self, image, x, y, cursor_state, anim_step):
