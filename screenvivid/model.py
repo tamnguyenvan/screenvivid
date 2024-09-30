@@ -25,19 +25,19 @@ class Logger(QObject):
     def __init__(self):
         super().__init__()
 
-    @Slot()
+    @Slot(str)
     def info(self, message):
         logger.info(message)
 
-    @Slot()
+    @Slot(str)
     def debug(self, message):
         logger.debug(message)
 
-    @Slot()
+    @Slot(str)
     def warning(self, message):
         logger.warning(message)
 
-    @Slot()
+    @Slot(str)
     def error(self, message):
         logger.error(message)
 
