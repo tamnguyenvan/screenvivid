@@ -390,7 +390,7 @@ class BorderShadow(BaseTransform):
         return rect
 
     @lru_cache(maxsize=1)
-    def create_shadow(self, background_size, foreground_size, x_offset, y_offset):
+    def create_shadow(self, background_size, foreground_size, x_offset, y_offset, border=None):
         shadow = Image.new('L', background_size, 0)
         shadow_draw = ImageDraw.Draw(shadow)
         shadow_draw.rounded_rectangle([(x_offset, y_offset),
@@ -398,6 +398,8 @@ class BorderShadow(BaseTransform):
                                       self.border_radius, fill=int(255 * self.shadow_opacity))
         shadow = np.array(shadow.filter(ImageFilter.GaussianBlur(self.shadow_blur)))
         shadow = shadow.astype(np.float32) / 255.0
+        if border is not None:
+            shadow = cv2.copyMakeBorder(shadow, border, border, border, border, cv2.BORDER_CONSTANT, None, 0)
         return shadow
 
     def render_drop_shadow(self, background, foreground, shadow_alpha, foreground_alpha, offset):
@@ -487,7 +489,8 @@ class BorderShadow(BaseTransform):
 
         # Center 3
         background[y2-corner_pad:y2-outer_pad, x1+corner_pad:x2-corner_pad] = foreground[fg_size[1]-inner_pad:, inner_pad:fg_size[0]-inner_pad]
-        return background
+        return background[outer_pad:-outer_pad, outer_pad:-outer_pad]
+        # return background
 
     def apply_border_radius_with_shadow(
         self,
@@ -505,9 +508,12 @@ class BorderShadow(BaseTransform):
             0, 0
         )
 
-        shadow_alpha = self.create_shadow(background_size, foreground_size, x_offset, y_offset)
+        outer_pad = 2 * self.shadow_blur
+        shadow_alpha = self.create_shadow(background_size, foreground_size, x_offset, y_offset, border=outer_pad)
 
-        offset = (x_offset, y_offset)
+        background = cv2.copyMakeBorder(background, outer_pad, outer_pad, outer_pad, outer_pad, cv2.BORDER_CONSTANT, None, 0)
+
+        offset = (x_offset + outer_pad, y_offset + outer_pad)
         result = self.render_drop_shadow(background, foreground, shadow_alpha, foreground_alpha, offset)
         result = np.clip(result, 0, 255).astype(np.uint8)
 
