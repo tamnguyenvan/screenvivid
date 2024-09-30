@@ -7,6 +7,8 @@
 
 ScreenVivid is a powerful and user-friendly screen recording application designed to help you capture your screen and enhance your recordings with intuitive editing features. Whether you're creating tutorials, recording meetings, or capturing gameplay, ScreenVivid is the perfect tool for you.
 
+🚨 **Important Note**: ScreenVivid is for non-commercial purpose only. Please go through the license for the details.
+
 ## Table of Contents
 
 - [Features](#features)
@@ -85,19 +87,20 @@ git clone https://github.com/tamnguyenvan/screenvivid.git
 ```bash
 pip install -r requirements.txt
 ```
+You may need to install system dependencies for cairo and pyside6. Please visit:
+- `cairo`: https://pycairo.readthedocs.io/en/latest/getting_started.html
+- `PySide6`
+  - Linux: https://doc.qt.io/qtforpython-6/gettingstarted/linux.html
+  - macOS: https://doc.qt.io/qtforpython-6/gettingstarted/macOS.html
+  - Windows: https://doc.qt.io/qtforpython-6/gettingstarted/windows.html
+
 3. Compile resources (Optional)
 ```bash
 cd screenvivid
 python compile_resources.py
 ```
 
-4. Install system dependencies for PySide6
-```bash
-# Ubuntu/Debian
-sudo apt-get install python3-tk libxcb-cursor0
-```
-
-5. Run the app
+4. Run the app
 ```bash
 # Assuming you're in the root of the repository
 python -m screenvivid.main
