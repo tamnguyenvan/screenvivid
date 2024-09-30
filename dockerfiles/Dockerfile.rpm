@@ -14,14 +14,14 @@ RUN dnf -y groupinstall "Development Tools" \
     qt5-qtbase-gui \
     qt5-qtx11extras \
     libtiff \
-    libcrypto \
     libgfortran \
     libjpeg \
-    liblzma \
+    xz \
+    xz-devel \
     libpng \
     libxkbcommon \
     libxkbcommon-x11 \
-    libxkbcommon-dev \
+    libxkbcommon-devel \
     openssl \
     && dnf clean all
 
