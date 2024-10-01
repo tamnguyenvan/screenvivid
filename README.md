@@ -5,7 +5,7 @@
 
 ## Overview
 
-ScreenVivid is a powerful and user-friendly screen recording application designed to help you capture your screen and enhance your recordings with intuitive editing features. Whether you're creating tutorials, recording meetings, or capturing gameplay, ScreenVivid is the perfect tool for you.
+[ScreenVivid](https://screenvivid.com) is a powerful and user-friendly screen recording application designed to help you capture your screen and enhance your recordings with intuitive editing features. Whether you're creating tutorials, recording meetings, or capturing gameplay, ScreenVivid is the perfect tool for you.
 
 🚨 **Important Note**: ScreenVivid is intended for non-commercial use only. We encourage you to review the license for more information to ensure compliance. Your understanding and adherence to this guideline are greatly appreciated!
 
@@ -81,17 +81,14 @@ Download the latest .dmg package from our [Releases page](https://github.com/tam
 
 For systems without installation file support, ScreenVivid can be run using Python by following these steps:
 
-1. Clone the repository
-```bash
-git clone https://github.com/tamnguyenvan/screenvivid.git
-```
-2. Install dependencies
+1. Install dependencies
 
 You may need to install system dependencies for pyside6 and cairo.
-- `cairo`: https://pycairo.readthedocs.io/en/latest/getting_started.html
 ```bash
+# cairo: https://pycairo.readthedocs.io/en/latest/getting_started.html
+
 # Ubuntu/Debian:
-sudo apt install libcairo2-dev pkg-config python3-dev
+sudo apt install libcairo2-dev pkg-config python3-dev libxcb-cursor0 libxkbcommon0 libxkbcommon-dev
 
 # macOS/Homebrew:
 brew install cairo pkg-config
@@ -104,31 +101,25 @@ sudo dnf install cairo-devel pkg-config python3-devel
 
 # openSUSE:
 sudo zypper install cairo-devel pkg-config python3-devel
-
-- `PySide6`:
-```
-# macOS:
-
-## Ubuntu/Debian:
-sudo apt install build-essential libxkbcommon0 libxcb-cursor0 libxcb-cursor-dev
-
-## Fedora/RedHat:
-
-
-```bash
-pip install -r requirements.txt
 ```
 
-3. Compile resources (Optional)
+2. Run installation script
 ```bash
-cd screenvivid
-python compile_resources.py
+# Linux
+curl -sSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/refs/heads/main/scripts/install-linux.sh | bash
+
+# macOS
+curl -sSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/refs/heads/main/scripts/install-macos.sh | bash
 ```
 
-4. Run the app
+You can uninstall anytime:
 ```bash
-# Assuming you're in the root of the repository
-python -m screenvivid.main
+# Linux
+curl -sSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/refs/heads/main/scripts/uninstall-linux.sh | bash
+
+# macOS
+curl -sSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/refs/heads/main/scripts/uninstall-macos.sh | bash
+
 ```
 
 ## Advantages
