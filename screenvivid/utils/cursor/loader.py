@@ -207,7 +207,6 @@ class BaseParser(metaclass=ABCMeta):
     @abstractmethod
     def can_parse(cls, blob: bytes) -> bool:
         raise NotImplementedError()
-
 class XCursorParser(BaseParser):
     MAGIC = b'Xcur'
     VERSION = 0x1_0000
