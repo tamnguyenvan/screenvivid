@@ -7,7 +7,7 @@
 
 ScreenVivid is a powerful and user-friendly screen recording application designed to help you capture your screen and enhance your recordings with intuitive editing features. Whether you're creating tutorials, recording meetings, or capturing gameplay, ScreenVivid is the perfect tool for you.
 
-🚨 **Important Note**: ScreenVivid is for non-commercial purpose only. Please go through the license for the details.
+🚨 **Important Note**: ScreenVivid is intended for non-commercial use only. We encourage you to review the license for more information to ensure compliance. Your understanding and adherence to this guideline are greatly appreciated!
 
 ## Table of Contents
 
@@ -28,7 +28,7 @@ ScreenVivid is a powerful and user-friendly screen recording application designe
 
 ## Features
 
-- **Cross-platform support**: ScreenVivid is available on MacOS, Windows, and Ubuntu/Debian, ensuring you can record your screen regardless of your operating system.
+- **Cross-platform support**: ScreenVivid is available on MacOS, Windows, and Linux, ensuring you can record your screen regardless of your operating system.
 - **High-quality screen recording**: Capture your screen with high-quality output, perfect for creating professional-looking videos.
 - **Free and open-source**: ScreenVivid is completely free to use and open-source, allowing the community to contribute and improve the application.
 - **Video enhancement tools**: Enhance your recordings with backgrounds, padding, and other intuitive editing features.
@@ -40,20 +40,22 @@ ScreenVivid is a powerful and user-friendly screen recording application designe
 
 ### System Requirements
 
-- **Ubuntu/Debian**:
-  - **Minimum Requirements:** Ubuntu 20.04 or later, Debian 10 or later, 4GB RAM (8GB recommended)
-  - **Compatibility Note:** ScreenVivid is designed to work seamlessly with X11-based systems, ensuring a smooth experience on Ubuntu and Debian.
+- **MacOS**:
+  - **Minimum Requirements:** MacOS 11.0+, 4GB RAM (8GB recommended)
 - **Windows**:
   - **Minimum Requirements:** Windows 10 or later, 4GB RAM (8GB recommended)
-- **MacOS**:
-  - **Minimum Requirements:** MacOS 10.15 or later, 4GB RAM (8GB recommended)
+- **Linux**:
+  - **Minimum Requirements:** Ubuntu 20.04+, Debian 10+, you can always install from source in other distriubutions (glibc 2.28+) 4GB RAM (8GB recommended)
+  - **Compatibility Note:** ScreenVivid is designed to work seamlessly with X11-based systems, ensuring a smooth experience on Ubuntu and Debian.
 
 ### Linux Installation
 Download the latest .deb package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
 
 ```bash
-# Debian/Ubuntu (apt-get)
+# Ubuntu/Debian (apt-get)
 sudo dpkg -i screenvivid_x.x.x_amd64.deb
+
+# For other distributions, please refer to the section on Running from Source
 ```
 
 ### Windows Installation
@@ -70,8 +72,8 @@ sudo dpkg -i screenvivid_x.x.x_amd64.deb
 ### MacOS Installation
 Download the latest .dmg package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
 
-1. Open the DMG file and drag the ScreenVivid icon to the Applications folder.
-2. Run the app from your Applications folder.
+1. Open the DMG file and drag the ScreenVivid icon to the `Applications` folder.
+2. Run the app from your `Applications` folder.
 
 🚨 **Important Note:** As the app is not notarized, Gatekeeper may display a warning. To proceed, go to System `Settings > Privacy & Security > Security`, select "Open Anyway", and confirm with your login password. For more information, please refer to [this guide](https://support.apple.com/en-vn/guide/mac-help/mchleab3a043/mac).
 
@@ -83,16 +85,39 @@ For systems without installation file support, ScreenVivid can be run using Pyth
 ```bash
 git clone https://github.com/tamnguyenvan/screenvivid.git
 ```
-2. Install Python dependencies
+2. Install dependencies
+
+You may need to install system dependencies for pyside6 and cairo.
+- `cairo`: https://pycairo.readthedocs.io/en/latest/getting_started.html
+```bash
+# Ubuntu/Debian:
+sudo apt install libcairo2-dev pkg-config python3-dev
+
+# macOS/Homebrew:
+brew install cairo pkg-config
+
+# Arch Linux:
+sudo pacman -S cairo pkgconf
+
+# Fedora:
+sudo dnf install cairo-devel pkg-config python3-devel
+
+# openSUSE:
+sudo zypper install cairo-devel pkg-config python3-devel
+
+- `PySide6`:
+```
+# macOS:
+
+## Ubuntu/Debian:
+sudo apt install build-essential libxkbcommon0 libxcb-cursor0 libxcb-cursor-dev
+
+## Fedora/RedHat:
+
+
 ```bash
 pip install -r requirements.txt
 ```
-You may need to install system dependencies for cairo and pyside6. Please visit:
-- `cairo`: https://pycairo.readthedocs.io/en/latest/getting_started.html
-- `PySide6`
-  - Linux: https://doc.qt.io/qtforpython-6/gettingstarted/linux.html
-  - macOS: https://doc.qt.io/qtforpython-6/gettingstarted/macOS.html
-  - Windows: https://doc.qt.io/qtforpython-6/gettingstarted/windows.html
 
 3. Compile resources (Optional)
 ```bash
@@ -146,6 +171,7 @@ ScreenVivid is released under the Creative Commons Attribution-NonCommercial-Sha
 - [PySide6](https://pypi.org/project/PySide6/)
 - [python-mss](https://github.com/BoboTiG/python-mss)
 - [pyautogui](https://github.com/asweigart/pyautogui)
+- [pycairo](https://pycairo.readthedocs.io/en/latest/index.html)
 
 
 ## Support
