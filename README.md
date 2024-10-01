@@ -46,7 +46,7 @@
   - **Minimum Requirements:** Windows 10 or later, 4GB RAM (8GB recommended)
 - **Linux**:
   - **Minimum Requirements:** Ubuntu 20.04+, Debian 10+, you can always install from source in other distriubutions (glibc 2.28+) 4GB RAM (8GB recommended)
-  - **Compatibility Note:** ScreenVivid is designed to work seamlessly with X11-based systems, ensuring a smooth experience on Ubuntu and Debian.
+  - **Compatibility Note:** ScreenVivid is designed to work seamlessly with X11-based systems. Please note that it may not function properly on Wayland or other non-X11 environments.
 
 ### Linux Installation
 Download the latest .deb package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
@@ -82,25 +82,26 @@ Download the latest .dmg package from our [Releases page](https://github.com/tam
 For systems without installation file support, ScreenVivid can be run using Python by following these steps:
 
 1. Install dependencies
+  - **Minimum Requirements:** Python>=3.9,<3.12
 
-You may need to install system dependencies for pyside6 and cairo.
 ```bash
 # cairo: https://pycairo.readthedocs.io/en/latest/getting_started.html
 
 # Ubuntu/Debian:
-sudo apt install libcairo2-dev pkg-config python3-dev libxcb-cursor0 libxkbcommon0 libxkbcommon-dev
+sudo apt install build-essential pkg-config cmake git curl python3-tk python3-dev \
+  libcairo2-dev libxcb-cursor-dev libxkbcommon-dev
 
 # macOS/Homebrew:
-brew install cairo pkg-config
+brew install cairo pkg-config git curl
 
 # Arch Linux:
-sudo pacman -S cairo pkgconf
+sudo pacman -S base-devel git curl cairo pkgconf
 
 # Fedora:
-sudo dnf install cairo-devel pkg-config python3-devel
+sudo dnf install @development-tools git curl cairo-devel pkg-config python3-devel
 
 # openSUSE:
-sudo zypper install cairo-devel pkg-config python3-devel
+sudo zypper install -t pattern devel_C_C++ git curl cairo-devel pkg-config python3-devel
 ```
 
 2. Run installation script
