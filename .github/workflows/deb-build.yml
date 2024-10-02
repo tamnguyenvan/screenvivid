@@ -47,7 +47,7 @@ jobs:
       - name: Package as .deb
         run: |
           docker run --rm -v ${PWD}:/app screenvivid-deb-build bash -c "
-          source /opt/venv/bin/activate && cd screenvivid && python3 compile_resources.py && cd .. &&
+          cd screenvivid && python3 compile_resources.py && cd .. &&
           cd packaging/linux &&
           pyinstaller --clean --noconfirm screenvivid.spec &&
           rm dist/ScreenVivid/_internal/libstdc++.so.6 &&

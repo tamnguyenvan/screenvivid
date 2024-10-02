@@ -163,10 +163,14 @@ class LinuxCursorLoader:
         if cursor_theme_dir:
             for state in self.states:
                 cursor_path = os.path.join(cursor_theme_dir, "cursors", state)
-                if not os.path.exists(cursor_path):
+                cursor_path_ext = os.path.join(cursor_theme_dir, "cursors", f"{state}.cur")
+                if not os.path.exists(cursor_path) and not os.path.exists(cursor_path_ext):
                     continue
 
-                cursors = load_xcursor(cursor_path)
+                if os.path.exists(cursor_path_ext):
+                    cursors = load_xcursor(cursor_path_ext)
+                else:
+                    cursors = load_xcursor(cursor_path)
                 if not cursors:
                     continue
 
