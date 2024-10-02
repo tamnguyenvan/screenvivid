@@ -13,15 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Read Changelog
-        id: changelog
-        run: |
-          # Read CHANGELOG.md
-          CHANGELOG=$(sed -n '/^## /,/^## /p' CHANGELOG.md | head -n -1)
-          echo "changelog<<EOF" >> $GITHUB_ENV
-          echo "$CHANGELOG" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -77,7 +68,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          body: ${{ env.changelog }}
           files: ScreenVivid-${{ github.ref_name }}-apple-silicon.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
