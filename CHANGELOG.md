@@ -7,12 +7,12 @@ All notable changes to this project will be documented in this file.
 ### Added
 - No new changes in the unreleased version.
 
-## [1.0.0] - 2024-08-15
+## [1.0.61] - 2024-10-02
 
 ### Added
 - **Screen Recording Feature**: Allows users to capture high-quality recordings of their screen.
 - **Basic Video Editing Tools**: Provides basic tools for editing recorded videos.
-- **Video Export Functionality**: Supports exporting videos in popular formats such as MP4.
+- **Video Export Functionality**: Supports exporting videos in popular formats such as MP4 and AVI.
 
 ### Fixed
 - **User Interface Bug**: Resolved display issues on different screen resolutions.
@@ -29,5 +29,5 @@ All notable changes to this project will be documented in this file.
 ### Security
 - No security updates have been made in this release.
 
-[Unreleased]: https://github.com/tamnguyenvan/screenvivid/compare/1.0.0...HEAD
-[1.0.0]: https://github.com/tamnguyenvan/screenvivid/releases/tag/1.0.0
+[Unreleased]: https://github.com/tamnguyenvan/screenvivid/compare/1.0.61...HEAD
+[1.0.61]: https://github.com/tamnguyenvan/screenvivid/releases/tag/1.0.61.

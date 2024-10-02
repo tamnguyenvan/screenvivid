@@ -10,6 +10,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Read Changelog
+      id: changelog
+      run: |
+        # Read CHANGELOG.md
+        CHANGELOG=$(sed -n '/^## /,/^## /p' CHANGELOG.md | head -n -1)
+        echo "changelog<<EOF" >> $GITHUB_ENV
+        echo "$CHANGELOG" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
@@ -37,6 +46,7 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
+        body: ${{ env.changelog }}
         files: screenvivid*.deb
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
