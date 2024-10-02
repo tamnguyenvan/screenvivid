@@ -26,6 +26,18 @@ jobs:
           PREVIOUS_TAG=$(echo "$TAGS" | grep -A 1 "${{ github.ref_name }}" | tail -n 1 || echo "none")
           echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_ENV
 
+      - name: Get Commit Messages
+        id: commits
+        run: |
+          if [[ "${{ env.previous_tag }}" == "none" ]]; then
+            echo "commits=No previous tags found." >> $GITHUB_ENV
+          else
+            COMMIT_MESSAGES=$(git log --pretty=format:"- %s (#%b)" "${{ env.previous_tag }}"..HEAD)
+            echo "commits<<EOF" >> $GITHUB_ENV
+            echo "$COMMIT_MESSAGES" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          fi
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
@@ -54,13 +66,13 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body: |
-            # ScreenVivid ${{ github.ref_name }} is out! 🎉✨
+            # ScreenVivid ${{ github.ref_name }} is out! 🎉
             ${{ env.changelog }}
 
-            ### Commit Messages
+            # What's Changed
             ${{ env.commits }}
 
-            Full Changelog: [${{ steps.get_previous_tag.outputs.tag }}...${{ github.ref_name }}](https://github.com/tamnguyenvan/screenvivid/compare/${{ steps.get_previous_tag.outputs.tag }}...${{ github.ref_name }})
+            Full Changelog: [${{ env.previous_tag }}...${{ github.ref_name }}](https://github.com/tamnguyenvan/screenvivid/compare/${{ env.previous_tag }}...${{ github.ref_name }})
           files: screenvivid*.deb
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
