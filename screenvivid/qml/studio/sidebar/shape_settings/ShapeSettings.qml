@@ -142,7 +142,7 @@ Item {
                     id: roundnessSlider
                     from: 0
                     to: 100
-                    value: 8
+                    value: 20
                     Layout.fillWidth: true
 
                     background: Rectangle {

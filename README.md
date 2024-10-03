@@ -85,13 +85,12 @@ For systems without installation file support, ScreenVivid can be run using Pyth
   - **Minimum Requirements:** Python>=3.9,<3.12. Using miniconda is highly recommended.
 
 ```bash
-# cairo: https://pycairo.readthedocs.io/en/latest/getting_started.html
 
 # Ubuntu/Linux Mint/Debian:
-sudo apt install build-essential pkg-config cmake git curl python3-tk python3-dev libcairo2-dev libxcb-cursor-dev libxkbcommon-dev
+sudo apt install python3-tk python3-dev libxcb-cursor0
 
 # Fedora:
-sudo dnf groupinstall -y "Development Tools" && sudo dnf install -y git curl cmake xcb-util-cursor cairo-devel pkg-config python3-devel python3-tkinter
+sudo dnf groupinstall -y "Development Tools" && sudo dnf install -y python3-devel python3-tkinter xcb-util-cursor
 ```
 
 2. Run installation script
@@ -144,7 +143,6 @@ ScreenVivid is released under the Creative Commons Attribution-NonCommercial-Sha
 - [PySide6](https://pypi.org/project/PySide6/)
 - [python-mss](https://github.com/BoboTiG/python-mss)
 - [pyautogui](https://github.com/asweigart/pyautogui)
-- [pycairo](https://pycairo.readthedocs.io/en/latest/index.html)
 
 
 ## Support

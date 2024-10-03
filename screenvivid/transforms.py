@@ -346,47 +346,65 @@ class BorderShadow(BaseTransform):
         self.border_radius = border_radius
         self.shadow_blur = shadow_blur
         self.shadow_opacity = shadow_opacity
+        self.scale_factor = 4  # For anti-aliasing corner
 
     @lru_cache(maxsize=1)
     def create_rounded_rectangle(self, background_size, foreground_size, x_offset, y_offset):
-        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, background_size[0], background_size[1])
-        ctx = cairo.Context(surface)
-        ctx.set_source_rgb(0, 0, 0)
-        ctx.paint()
+        def draw_rounded_corner(radius):
+            size = 2 * radius + 10
+            scaled_size = int(size * self.scale_factor)
+            scaled_radius = int(radius * self.scale_factor)
 
-        ctx.set_source_rgb(1, 1, 1)  # white
+            corner = Image.new("L", (scaled_size, scaled_size), 0)
+            draw = ImageDraw.Draw(corner)
 
-        border_radius = self.border_radius
-        x = x_offset
-        y = y_offset
-        width, height = foreground_size
+            draw.rounded_rectangle(
+                [0, 0, scaled_size, scaled_size],
+                radius=scaled_radius,
+                fill=255
+            )
 
-        ctx.new_path()
+            corner = corner.resize((size, size), Image.LANCZOS)
+            corner = corner.crop((0, 0, radius, radius))
+            return corner
 
-        ctx.move_to(x + border_radius, y)
+        width, height = background_size
+        fg_width, fg_height = foreground_size
+        radius = self.border_radius
 
-        ctx.line_to(x + width - border_radius, y)
-        ctx.arc(x + width - border_radius, y + border_radius, border_radius, -0.5 * math.pi, 0)
+        if radius > 0:
+            img = Image.new("L", background_size, 0)
+            draw = ImageDraw.Draw(img)
 
-        ctx.line_to(x + width, y + height - border_radius)
-        ctx.arc(x + width - border_radius, y + height - border_radius, border_radius, 0, 0.5 * math.pi)
+            draw.rectangle(
+                [x_offset + radius, y_offset,
+                x_offset + fg_width - radius, y_offset + fg_height],
+                fill=255
+            )
+            draw.rectangle(
+                [x_offset, y_offset + radius,
+                x_offset + fg_width, y_offset + fg_height - radius],
+                fill=255
+            )
 
-        ctx.line_to(x + border_radius, y + height)
-        ctx.arc(x + border_radius, y + height - border_radius, border_radius, 0.5 * math.pi, math.pi)
+            top_left = np.array(draw_rounded_corner(radius))
+            top_right = np.fliplr(top_left)
+            bottom_left = np.flipud(top_left)
+            bottom_right = np.fliplr(bottom_left)
 
-        ctx.line_to(x, y + border_radius)
-        ctx.arc(x + border_radius, y + border_radius, border_radius, math.pi, 1.5 * math.pi)
+            rect = np.array(img)
 
-        ctx.close_path()
-        ctx.fill()
-        buf = surface.get_data()
-        rect = np.ndarray(shape=(height, width, 4), dtype=np.uint8, buffer=buf)
+            rect[y_offset:y_offset+radius, x_offset:x_offset+radius] = top_left
+            rect[y_offset:y_offset+radius, x_offset+fg_width-radius:x_offset+fg_width] = top_right
+            rect[y_offset+fg_height-radius:y_offset+fg_height, x_offset:x_offset+radius] = bottom_left
+            rect[y_offset+fg_height-radius:y_offset+fg_height, x_offset+fg_width-radius:x_offset+fg_width] = bottom_right
 
-        # RGBA -> GrayScale
-        rect = rect[:, :, 0]
+            rect = rect[y_offset:y_offset+fg_height, x_offset:x_offset+fg_width]
 
-        # Normalize
-        rect = rect / 255.
+            rect = rect / 255.
+        else:
+            rect = np.ones((background_size[1], background_size[0]), dtype=np.float32)
+
         return rect
 
     @lru_cache(maxsize=1)
@@ -490,7 +508,6 @@ class BorderShadow(BaseTransform):
         # Center 3
         background[y2-corner_pad:y2-outer_pad, x1+corner_pad:x2-corner_pad] = foreground[fg_size[1]-inner_pad:, inner_pad:fg_size[0]-inner_pad]
         return background[outer_pad:-outer_pad, outer_pad:-outer_pad]
-        # return background
 
     def apply_border_radius_with_shadow(
         self,

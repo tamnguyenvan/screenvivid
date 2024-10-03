@@ -24,8 +24,10 @@ Version: $VERSION
 Section: utils
 Priority: optional
 Architecture: $ARCH
-Depends: libxcb-cursor0, python3-dev, python3-tk
-Maintainer: Dark Photon <tamnvhustcc@gmail.com>
+Depends: libxcb-cursor0, python3-venv, python3-tk
+Maintainer: DarkPhoton Labs <tamnvhustcc@gmail.com>
+Homepage: https://www.screenvivid.com
+License: CC BY-NC-SA 4.0
 Description: Screen recording and editing application
  ${DISPLAY_NAME} is a cross-platform desktop application for screen recording
  and video editing, featuring options like background replacement and padding.
