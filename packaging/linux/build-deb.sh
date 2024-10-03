@@ -77,7 +77,7 @@ Exec=/usr/bin/${PKG_NAME}
 Icon=${PKG_NAME}
 Type=Application
 Categories=Utility;
-Description: Screen recording and editing application
+Comment=Screen recording and editing application
 EOF
 
 # Copy the icon

@@ -17,7 +17,7 @@
   - [Linux Installation](#linux-installation)
   - [Windows Installation](#windows-installation)
   - [MacOS Installation](#macos-installation)
-  - [Running from Source](#running-from-source)
+  - [Building from Source](#building-from-source)
 - [Advantages](#advantages)
 - [Current Limitations](#current-limitations)
 - [FAQs](#faqs)
@@ -45,9 +45,8 @@
 - **Windows**:
   - **Minimum Requirements:** Windows 10 or later, 4GB RAM (8GB recommended)
 - **Linux**:
-  - **Minimum Requirements:** Ubuntu 18.04+, Debian 10+, glib 2.28+ 4GB RAM (8GB recommended)
-  - **Compatibility Note:** ScreenVivid is designed to work seamlessly with X11-based systems. Please note that it may not function properly on Wayland or other non-X11 environments.
-
+  - **Minimum Requirements**: Python 3.9+, glibc 2.28+, X11 (recommended: Ubuntu 21.04+ or Debian 11+), 4GB RAM (8GB recommended)
+  - **Compatibility Note**: ScreenVivid only supports Python 3.9+ and is optimized for systems running glibc 2.28+. Additionally, it is designed specifically for X11 environments. While it may work on other systems, such as Wayland, its functionality is not guaranteed.
 ### Linux Installation
 Download the latest .deb package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
 
@@ -55,7 +54,10 @@ Download the latest .deb package from our [Releases page](https://github.com/tam
 # Ubuntu/Debian (apt-get)
 sudo dpkg -i screenvivid_x.x.x_amd64.deb
 
-# For other distributions, please refer to the section on Running from Source
+# Install missing packages if needed
+sudo apt install -f
+
+# For other distributions, please refer to the section on Building from Source
 ```
 
 ### Windows Installation
@@ -77,7 +79,7 @@ Download the latest .dmg package from our [Releases page](https://github.com/tam
 
 🚨 **Important Note:** As the app is not notarized, Gatekeeper may display a warning. To proceed, go to System `Settings > Privacy & Security > Security`, select "Open Anyway", and confirm with your login password. For more information, please refer to [this guide](https://support.apple.com/en-vn/guide/mac-help/mchleab3a043/mac).
 
-### Running from Source
+### Building from Source
 
 For systems without installation file support, ScreenVivid can be run using Python by following these steps:
 
@@ -118,13 +120,20 @@ curl -sSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/refs/heads/
 ## FAQs
 
 1. **Q: Is ScreenVivid free?**
+
    A: Yes, ScreenVivid is completely free for personal use. However, commercial use is not permitted under our license.
 
 2. **Q: I see a security warning when downloading and running the installer. Is it safe?**
+
    A: Due to budget constraints, we haven't yet been able to obtain a code signing certificate for our installer. This is why you may see security warnings. Rest assured, our software is safe to use. We're working on getting a certificate as soon as possible to eliminate these warnings.
 
 3. **Q: Can I contribute to the project?**
+
    A: Absolutely! We welcome contributions from the community. Please check our GitHub repository for information on how to contribute, or reach out to us directly if you have specific ideas or skills you'd like to offer.
+
+4. **Q: I encountered missing packages when installing the .deb file. What should I do?**
+
+   A: You can install the missing packages by running the command `sudo apt install -f`.
 
 
 ## Roadmap
