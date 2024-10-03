@@ -12,7 +12,7 @@ ARCH="amd64"
 
 # Create directory structure for the .deb package
 mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/DEBIAN
-mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}
+mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}/${PKG_NAME}
 mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/applications
 mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/icons/hicolor/256x256/apps
 mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/usr/bin
@@ -24,6 +24,7 @@ Version: $VERSION
 Section: utils
 Priority: optional
 Architecture: $ARCH
+Depends: libxcb-cursor0, python3-dev, python3-tk
 Maintainer: Dark Photon <tamnvhustcc@gmail.com>
 Description: Screen recording and editing application
  ${DISPLAY_NAME} is a cross-platform desktop application for screen recording
@@ -31,10 +32,30 @@ Description: Screen recording and editing application
 EOF
 
 # Copy the entire application directory
-cp -R dist/${DISPLAY_NAME}/* ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}/
+# cp -R dist/${DISPLAY_NAME}/* ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}/
+cp -R ../../${PKG_NAME}/* ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}/${PKG_NAME}
+cp -R ../../requirements.txt ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}
+cp -R ../../scripts/run ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}/run
 
-# Create a soft link in /usr/bin
-ln -s /opt/${PKG_NAME}/${DISPLAY_NAME} ${PKG_NAME}-${VERSION}-${ARCH}/usr/bin/${PKG_NAME}
+# Create postinst file
+cat << EOF > ${PKG_NAME}-${VERSION}-${ARCH}/DEBIAN/postinst
+#!/bin/sh
+
+python3 -m venv /opt/screenvivid/venv
+. /opt/screenvivid/venv/bin/activate
+
+pip install -q -r /opt/screenvivid/requirements.txt
+
+ln -sf /opt/screenvivid/run /usr/bin/screenvivid
+
+chmod +x /opt/screenvivid/run
+
+exit 0
+EOF
+
+# Make postinst executable
+chmod 755 ${PKG_NAME}-${VERSION}-${ARCH}/DEBIAN/postinst
+
 
 # Create the .desktop file
 cat << EOF > ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/applications/${PKG_NAME}.desktop
