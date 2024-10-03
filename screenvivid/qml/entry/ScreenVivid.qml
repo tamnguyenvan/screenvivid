@@ -13,6 +13,7 @@ Window {
     visibility: Qt.platform.os === "osx" ? Window.Windowed : Window.FullScreen
     flags: Qt.FramelessWindowHint
     color: "transparent"
+    title: qsTr("ScreenVivid")
 
     property string selectedMode: "screen"
     property bool showCountdownFlag: false

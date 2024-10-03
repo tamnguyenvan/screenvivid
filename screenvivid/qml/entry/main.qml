@@ -8,6 +8,7 @@ Window {
     height: Screen.desktopAvailableHeight
     visible: true
     color: "transparent"
+    title: qsTr("ScreenVivid")
 
     Component.onCompleted: {
         logger.debug("Getting window position")

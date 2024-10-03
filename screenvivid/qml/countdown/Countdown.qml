@@ -12,6 +12,7 @@ Window {
     y: (Screen.desktopAvailableHeight - height) / 2
     flags: Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
     color: "transparent"
+    title: qsTr("ScreenVivid")
 
     readonly property int countdownTime: 3
     property bool recording: false
