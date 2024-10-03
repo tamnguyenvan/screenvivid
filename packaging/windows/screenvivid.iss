@@ -3,7 +3,7 @@
 
 #define MyAppName "ScreenVivid"
 #define MyAppVersion "X.X.X"
-#define MyAppPublisher "DarkPhoton Labs"
+#define MyAppPublisher "DarkPhoton"
 #define MyAppURL "https://www.screenvivid.com/"
 #define MyAppExeName "screenvivid.exe"
 #define MyAppAssocName MyAppName + " File"

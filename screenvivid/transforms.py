@@ -1,5 +1,3 @@
-import math
-import time
 import json
 import glob
 import os
@@ -9,7 +7,6 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-import cairo
 import pyautogui
 from PIL import Image, ImageDraw, ImageFilter
 

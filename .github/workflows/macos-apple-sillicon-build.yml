@@ -41,7 +41,6 @@ jobs:
 
       - name: Install create-dmg
         run: |
-          brew install cairo
           brew install create-dmg
 
       - name: Create DMG
