@@ -343,7 +343,7 @@ class BorderShadow(BaseTransform):
         self.border_radius = border_radius
         self.shadow_blur = shadow_blur
         self.shadow_opacity = shadow_opacity
-        self.scale_factor = 4  # For anti-aliasing corner
+        self.scale_factor = 8  # For anti-aliasing corner
 
     @lru_cache(maxsize=1)
     def create_rounded_rectangle(self, background_size, foreground_size, x_offset, y_offset):
