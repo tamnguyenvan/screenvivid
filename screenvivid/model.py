@@ -343,6 +343,7 @@ class VideoRecordingThread:
         self._monitor = {}
         self._frame_queue = queue.Queue()
         self._os_name = get_os_name()
+        self._nonscaled_screen_size = pyautogui.size()
 
         self._load_cursor_thread = LoadCursorThread()
         self._load_cursor_thread.start()
@@ -444,8 +445,8 @@ class VideoRecordingThread:
             and self._monitor["left"] <= x < self._monitor["left"] + self._monitor["width"]
             and self._monitor["top"] <= y < self._monitor["top"] + self._monitor["height"]
         ):
-            relative_x = (x - self._monitor["left"]) / self._frame_width
-            relative_y = (y - self._monitor["top"]) / self._frame_height
+            relative_x = (x - self._monitor["left"]) / self._nonscaled_screen_size[0]
+            relative_y = (y - self._monitor["top"]) / self._nonscaled_screen_size[1]
 
             # cursor shape
             cursor_state, anim_step = self._get_cursor()
@@ -497,6 +498,7 @@ class VideoController(QObject):
     borderRadiusChanged = Signal()
     aspectRatioChanged = Signal()
     backgroundChanged = Signal()
+    devicePixelRatioChanged = Signal()
     cursorScaleChanged = Signal()
     frameWidthChanged = Signal()
     frameHeightChanged = Signal()
@@ -599,6 +601,16 @@ class VideoController(QObject):
         if self.video_processor.background != value:
             self.video_processor.background = value
             self.backgroundChanged.emit()
+
+    @Property(float, notify=devicePixelRatioChanged)
+    def device_pixel_ratio(self):
+        return self.video_processor.device_pixel_ratio
+
+    @device_pixel_ratio.setter
+    def device_pixel_ratio(self, value):
+        if self.video_processor.device_pixel_ratio != value:
+            self.video_processor.device_pixel_ratio = value
+            self.devicePixelRatioChanged.emit()
 
     @Property(float, notify=cursorScaleChanged)
     def cursor_scale(self):
@@ -743,6 +755,7 @@ class VideoProcessor(QObject):
         self._inset = 0
         self._border_radius = 20
         self._background = {"type": "wallpaper", "value": 1}
+        self._device_pixel_ratio = 1.0
         self._cursor_scale = 1.0
         self._transforms = None
         self._mouse_events = []
@@ -758,7 +771,10 @@ class VideoProcessor(QObject):
     @aspect_ratio.setter
     def aspect_ratio(self, value):
         self._aspect_ratio = value
-        self._transforms["aspect_ratio"] = transforms.AspectRatio(aspect_ratio=value)
+        self._transforms["aspect_ratio"] = transforms.AspectRatio(
+            aspect_ratio=value,
+            screen_size=self._transforms["aspect_ratio"].screen_size
+        )
 
     @property
     def aspect_ratio_float(self):
@@ -801,6 +817,14 @@ class VideoProcessor(QObject):
     def background(self, value):
         self._background = value
         self._transforms["background"] = transforms.Background(background=value)
+
+    @property
+    def device_pixel_ratio(self):
+        return self._device_pixel_ratio
+
+    @device_pixel_ratio.setter
+    def device_pixel_ratio(self, value):
+        self._device_pixel_ratio = value
 
     @property
     def cursor_scale(self):
@@ -916,11 +940,13 @@ class VideoProcessor(QObject):
                 x_offset, y_offset = None, None
             self._x_offset = x_offset
             self._y_offset = y_offset
+            screen_width, screen_height = pyautogui.size()
+            screen_size = int(screen_width * self._device_pixel_ratio), int(screen_height * self._device_pixel_ratio)
             self._transforms = transforms.Compose({
-                "aspect_ratio": transforms.AspectRatio(self._aspect_ratio),
+                "aspect_ratio": transforms.AspectRatio(self._aspect_ratio, screen_size),
                 "cursor": transforms.Cursor(move_data=self._mouse_events, cursors_map=self._cursors_map, offsets=(x_offset, y_offset), scale=self._cursor_scale),
                 "padding": transforms.Padding(padding=self.padding),
-                "inset": transforms.Inset(inset=self.inset, color=(0, 0, 0)),
+                # "inset": transforms.Inset(inset=self.inset, color=(0, 0, 0)),
                 "border_shadow": transforms.BorderShadow(border_radius=self.border_radius),
                 "background": transforms.Background(background=self._background),
             })

@@ -41,11 +41,11 @@ class Compose(BaseTransform):
         return self.transforms.get(key, default)
 
 class AspectRatio(BaseTransform):
-    def __init__(self, aspect_ratio: str):
+    def __init__(self, aspect_ratio: str, screen_size: tuple):
         super().__init__()
         self.aspect_ratio = aspect_ratio
         self.aspect_ratio_float = 16 /  9
-        self.screen_size = pyautogui.size()
+        self.screen_size = screen_size
         self.output_resolution_cache = None
 
         self._resolutions = {
@@ -633,15 +633,7 @@ class Background(BaseTransform):
                 y_offset,
             )
         else:
+            output = background_image
             output[y1:y2, x1:x2, :] = input
 
-        # output[y1:y2, x1:x2, :] = foreground
         return output
-        # kwargs['input'] = output
-        # return kwargs
-        # return {
-        #     "background": background,
-        #     "foreground": foreground,
-        #     "background_changed": background_changed,
-        #     "aspect_ratio_float": kwargs["aspect_ratio_float"]
-        # }

@@ -122,4 +122,12 @@ Window {
     Loader {
         id: studioLoader
     }
+
+    Component.onCompleted: {
+        // Set device pixel ratio
+        videoController.device_pixel_ratio = Screen.devicePixelRatio
+
+        console.log("ratio: ", videoController.device_pixel_ratio)
+
+    }
 }
