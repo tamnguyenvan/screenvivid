@@ -15,6 +15,7 @@ mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/DEBIAN
 mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}/${PKG_NAME}
 mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/applications
 mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/icons/hicolor/256x256/apps
+mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/doc/${PKG_NAME}
 mkdir -p ${PKG_NAME}-${VERSION}-${ARCH}/usr/bin
 
 # Create the control file
@@ -37,6 +38,9 @@ EOF
 cp -R ../../${PKG_NAME}/* ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}/${PKG_NAME}
 cp -R ../../requirements.txt ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}
 cp -R ../../scripts/run ${PKG_NAME}-${VERSION}-${ARCH}/opt/${PKG_NAME}/run
+
+# Copy the LICENSE file and rename it to 'copyright'
+cp ../../LICENSE ${PKG_NAME}-${VERSION}-${ARCH}/usr/share/doc/${PKG_NAME}/copyright
 
 # Create postinst file
 cat << EOF > ${PKG_NAME}-${VERSION}-${ARCH}/DEBIAN/postinst

@@ -7,6 +7,7 @@ Item {
     height: 220
 
     property string color: "#484554"
+    property bool animationEnabled: true // Property to enable/disable animation
 
     Rectangle {
         id: timeSliderHead
@@ -43,8 +44,9 @@ Item {
     }
 
     Behavior on x {
+        enabled: animationEnabled
         NumberAnimation {
-            duration: 50
+            duration: 200
             easing.type: Easing.Linear
         }
     }

@@ -38,12 +38,18 @@ Rectangle {
                         clipLen: modelData.clip_len
 
                         onLeftMouseClicked: function (mouseX) {
+                            // Disable time slider's animation
+                            timeSlider.animationEnabled = false
+
                             // Update the frame
                             var targetFrame = Math.round(
                                         (x + mouseX) / studioWindow.pixelsPerFrame)
                             videoController.jump_to_frame(targetFrame)
 
                             clipTrackModel.set_cut_clip_data(index, mouseX)
+
+                            // Enable time slider's animation
+                            timeSlider.animationEnabled = true
                         }
                     }
                 }
