@@ -25,7 +25,7 @@ Version: $VERSION
 Section: utils
 Priority: optional
 Architecture: $ARCH
-Pre-Depends: libxcb-cursor0, python3-venv, python3-tk
+Depends: libxcb-cursor0, python3-venv, python3-tk
 Maintainer: DarkPhoton <tamnv.work@gmail.com>
 Homepage: https://www.screenvivid.com
 License: CC BY-NC-SA 4.0
