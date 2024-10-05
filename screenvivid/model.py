@@ -832,7 +832,7 @@ class VideoProcessor(QObject):
 
     @cursor_scale.setter
     def cursor_scale(self, value):
-        self._current_scale = value
+        self._cursor_scale = value
 
         self._transforms["cursor"] = transforms.Cursor(
             move_data=self._mouse_events,
@@ -1042,7 +1042,6 @@ class VideoProcessor(QObject):
         result = self._transforms(input=frame, start_frame=self.start_frame + self.current_frame)
         result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
         return result
-
 
 class VideoThread(QThread):
     def __init__(self, video_processor):

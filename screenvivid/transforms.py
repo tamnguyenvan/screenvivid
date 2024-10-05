@@ -207,9 +207,7 @@ class Cursor(BaseTransform):
                 "zoom-in", "zoom-out", "pointer-move", "xterm"
             ],
             "macos": [
-                "arrow", "ibeam", "crosshair", "closedHand", "openHand", "pointingHand",
-                "resizeLeft", "resizeRight", "resizeLeftRight", "resizeUp", "resizeDown",
-                "resizeUpDown", "operationNotAllowed"
+                "arrow", "IBeam", "crosshair", "closedHand", "openHand", "pointingHand",
             ],
         }
         self.available_scales = ["1x", "1.5x", "2x", "3x"]
