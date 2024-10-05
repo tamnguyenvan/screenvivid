@@ -89,14 +89,14 @@ def get_cursor_state_linux(cursor_theme):
 
 def get_cursor_state_macos(cursor_theme):
     import AppKit
-    import Quartz
     from Cocoa import NSBitmapImageRep, NSPNGFileType
     import io
     from PIL import Image
+    import cv2
     import numpy as np
 
     # Get current cursor
-    cursor = Quartz.NSCursor.currentSystemCursor()
+    cursor = AppKit.NSCursor.currentSystemCursor()
     image = cursor.image()
     size = image.size()
     width, height = int(size.width), int(size.height)
@@ -107,7 +107,7 @@ def get_cursor_state_macos(cursor_theme):
     buffer = io.BytesIO(png_data)
     img_array = Image.open(buffer)
     rgba = np.array(img_array)
-    bgra = rgba[..., ::-1]
+    bgra = cv2.cvtColor(rgba, cv2.COLOR_RGBA2BGRA)
 
     anim_info = {
         "is_anim": False,

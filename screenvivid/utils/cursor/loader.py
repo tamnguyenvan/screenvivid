@@ -4,6 +4,7 @@ import subprocess
 from abc import ABCMeta, abstractmethod
 from typing import Tuple, Any, List
 
+import cv2
 import numpy as np
 
 from screenvivid.utils.general import get_os_name
@@ -46,9 +47,6 @@ class MacOSCursorLoader:
         self.cursor_theme = {}
         self.states = [
             "arrow", "IBeam", "crosshair", "closedHand", "openHand", "pointingHand",
-            "resizeLeft", "resizeRight", "resizeLeftRight", "resizeUp", "resizeDown",
-            "resizeUpDown", "disappearingItem", "contextualMenu", "dragCopy",
-            "dragLink", "operationNotAllowed"
         ]
 
     def load_cursor_theme(self):
@@ -57,6 +55,8 @@ class MacOSCursorLoader:
         import io
         from PIL import Image
         import numpy as np
+
+        AppKit.NSApplication.sharedApplication()
 
         for state in self.states:
             try:
@@ -73,7 +73,7 @@ class MacOSCursorLoader:
                 buffer = io.BytesIO(png_data)
                 img_array = Image.open(buffer)
                 img_array = np.array(img_array)
-                bgra = img_array[..., ::-1]
+                bgra = cv2.cvtColor(img_array, cv2.COLOR_RGBA2BGRA)
                 self.cursor_theme.setdefault(width, {}).setdefault(state, []).append({
                     "image": bgra,
                     "offset": cursor.hotSpot()
@@ -211,6 +211,7 @@ class BaseParser(metaclass=ABCMeta):
     @abstractmethod
     def can_parse(cls, blob: bytes) -> bool:
         raise NotImplementedError()
+
 class XCursorParser(BaseParser):
     MAGIC = b'Xcur'
     VERSION = 0x1_0000
