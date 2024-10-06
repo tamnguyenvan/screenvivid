@@ -163,20 +163,18 @@ class LinuxCursorLoader:
         if cursor_theme_dir:
             for state in self.states:
                 cursor_path = os.path.join(cursor_theme_dir, "cursors", state)
-                cursor_path_ext = os.path.join(cursor_theme_dir, "cursors", f"{state}.cur")
-                if not os.path.exists(cursor_path) and not os.path.exists(cursor_path_ext):
+
+                if not os.path.exists(cursor_path):
                     continue
 
-                if os.path.exists(cursor_path_ext):
-                    cursors = load_xcursor(cursor_path_ext)
-                else:
-                    cursors = load_xcursor(cursor_path)
+                cursors = load_xcursor(cursor_path)
                 if not cursors:
                     continue
 
                 for cursor_image, cursor_size, cursor_offset, _ in cursors:
                     width = cursor_size[0]
                     if width not in self.sizes:
+                        logger.debug(f"Cursor: {cursor_path} has invalid size: {cursor_size}")
                         continue
 
                     logger.debug(f"Cursor: {cursor_path}, size: {width}, state: {state}")
