@@ -411,10 +411,12 @@ class VideoRecordingThread:
                 self._get_mouse_data()
 
                 self._frame_queue.put((frame, self._frame_width, self._frame_height))
-                convert_time = time.time() - t0
+                grab_time = time.time() - t0
 
-                sleep_duration = max(0.001, interval - convert_time)
+                sleep_duration = max(0.001, interval - grab_time)
                 time.sleep(sleep_duration)
+                t1 = time.time()
+                logger.debug(f"Grab time: {t1 - t0}")
         except Exception as e:
             logger.error(f"An error occurred: {e}")
 
@@ -422,11 +424,14 @@ class VideoRecordingThread:
         try:
             while not self._is_stopped.is_set():
                 try:
+                    t0 = time.time()
                     frame, frame_width, frame_height = self._frame_queue.get(block=False)
                     if self._writer is None:
                         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
                         self._writer = cv2.VideoWriter(self._output_path, fourcc, self._fps, (frame_width, frame_height))
                     self._writer.write(frame)
+                    write_time = time.time() - t0
+                    logger.debug(f"Write time: {write_time}")
                 except queue.Empty:
                     time.sleep(0.01)
         except Exception as e:
@@ -959,6 +964,7 @@ class VideoProcessor(QObject):
 
     def get_frame(self):
         try:
+            t0 = time.time()
             if self.start_frame + self.current_frame >= self.end_frame - 1:
                 self.pause()
                 return
@@ -970,6 +976,8 @@ class VideoProcessor(QObject):
             processed_frame = self.process_frame(frame)
             self.frameProcessed.emit(processed_frame)
             self.current_frame += 1
+            t1 = time.time()
+            logger.debug(f"Render FPS: {t1 - t0}")
             return processed_frame
         except Exception as e:
             logger.error(e)

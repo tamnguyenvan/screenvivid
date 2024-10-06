@@ -254,7 +254,7 @@ class Cursor(BaseTransform):
             # If running in a regular Python environment
             base_path = Path(__file__).resolve().parent
 
-        default_cursor_dir = os.path.join(base_path, f"resources/images/cursor/default")
+        default_cursor_dir = os.path.join(base_path, f"resources/images/cursor/default/{self.os_name}")
         default_cursor = {}
         for scale in os.listdir(default_cursor_dir):
             scale_path = os.path.join(default_cursor_dir, scale)
