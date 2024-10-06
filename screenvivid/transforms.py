@@ -211,8 +211,8 @@ class Cursor(BaseTransform):
             ],
         }
         self.available_scales = ["1x", "1.5x", "2x", "3x"]
-        self.default_cursor = self._load_default_cursor()
         self.os_name = get_os_name()
+        self.default_cursor = self._load_default_cursor()
         if self.os_name in "linux":
             self.cursors_map = cursors_map
         else:

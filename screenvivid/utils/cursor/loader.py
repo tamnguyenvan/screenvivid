@@ -196,7 +196,7 @@ class LinuxCursorLoader:
             cursor_theme_size = self.cursor_theme.get(size, {})
             if state in cursor_theme_size:
                 scale = size / self.base_size
-                scale_str = f"{int(scale)}x" if scale.is_integer() else f"{scale:.1f}"
+                scale_str = f"{int(scale)}x" if scale.is_integer() else f"{scale:.1f}x"
                 cursor_theme[scale_str] = self.cursor_theme.get(size, {}).get(state, [])
         return cursor_theme
 
