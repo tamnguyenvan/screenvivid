@@ -273,7 +273,7 @@ class Cursor(BaseTransform):
 
     def blend(self, image, x, y, cursor_state, anim_step):
         # Get cursor image
-        scale_str = f"{int(self.scale)}x" if self.scale.is_integer() else f"{self.scale:.1f}"
+        scale_str = f"{int(self.scale)}x" if self.scale.is_integer() else f"{self.scale:.1f}x"
         if (
             self.cursors_map.get(cursor_state)
             and self.cursors_map[cursor_state].get(scale_str)
