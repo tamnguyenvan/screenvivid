@@ -15,6 +15,16 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Download FFmpeg
+        run: |
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -OutFile "ffmpeg.zip"
+          Expand-Archive -Path "ffmpeg.zip" -DestinationPath "ffmpeg_temp"
+          Copy-Item "ffmpeg_temp\ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe" -Destination "packaging\windows\"
+          Remove-Item -Path "ffmpeg_temp" -Recurse -Force
+          Remove-Item -Path "ffmpeg.zip"
+        shell: pwsh
+
       - name: Install dependencies
         run: |
           python -m venv venv
@@ -35,17 +45,7 @@ jobs:
         run: |
           venv\Scripts\activate
           cd packaging/windows
-          pyinstaller --clean --noconfirm screenvivid.spec
-
-      - name: Download and Setup FFmpeg
-        run: |
-          $ProgressPreference = 'SilentlyContinue'
-          Invoke-WebRequest -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -OutFile "ffmpeg.zip"
-          Expand-Archive -Path "ffmpeg.zip" -DestinationPath "ffmpeg_temp"
-          New-Item -ItemType Directory -Force -Path "packaging\windows\dist\ScreenVivid\_internal"
-          Copy-Item "ffmpeg_temp\ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe" -Destination "packaging\windows\dist\ScreenVivid\_internal\"
-          Remove-Item -Path "ffmpeg_temp" -Recurse -Force
-          Remove-Item -Path "ffmpeg.zip"
+          pyinstaller --clean --noconfirm --add-binary "ffmpeg.exe;." screenvivid.spec
         shell: pwsh
 
       - name: Update version in Inno Setup script

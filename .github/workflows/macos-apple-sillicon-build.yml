@@ -15,6 +15,13 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Download FFmpeg
+        run: |
+          curl -L https://evermeet.cx/ffmpeg/ffmpeg-6.0.zip -o ffmpeg.zip
+          unzip ffmpeg.zip
+          mv ffmpeg packaging/macos/
+          rm ffmpeg.zip
+
       - name: Install dependencies
         run: |
           python -m venv venv
@@ -34,18 +41,7 @@ jobs:
         run: |
           source venv/bin/activate
           cd packaging/macos
-          pyinstaller --clean --noconfirm screenvivid.spec
-
-      - name: Download and Setup FFmpeg
-        run: |
-          mkdir -p ffmpeg_temp
-          cd ffmpeg_temp
-          curl -L https://evermeet.cx/ffmpeg/ffmpeg-6.0.zip -o ffmpeg.zip
-          unzip ffmpeg.zip
-          mkdir -p ../packaging/macos/dist/ScreenVivid/_internal/
-          mv ffmpeg ../packaging/macos/dist/ScreenVivid/_internal/
-          cd ..
-          rm -rf ffmpeg_temp
+          pyinstaller --clean --noconfirm --add-binary "ffmpeg:." screenvivid.spec
 
       - name: Install create-dmg
         run: |
