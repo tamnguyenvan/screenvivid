@@ -1,10 +1,11 @@
+import sys
+import os
 import platform
 import tempfile
 from pathlib import Path
 from datetime import datetime
 
 import numpy as np
-
 
 def str2bool(x: str) -> bool:
     x = x.lower()
@@ -60,3 +61,19 @@ def get_os_name():
     elif system_code == "darwin":
         os_name = "macos"
     return os_name
+
+def get_ffmpeg_path():
+    if getattr(sys, 'frozen', False):
+        # If running in a PyInstaller bundle
+        os.path.join(sys._MEIPASS, "screenvivid/resources/ffmpeg/")
+    else:
+        # If running in a regular Python environment
+        base_path = ""
+
+    os_name = get_os_name()
+    if os_name == "windows":
+        ffmpeg_executable_name = "ffmpeg.exe"
+    else:
+        ffmpeg_executable_name = "ffmpeg"
+
+    return os.path.join(base_path, ffmpeg_executable_name)

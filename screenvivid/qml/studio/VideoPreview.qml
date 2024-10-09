@@ -9,6 +9,20 @@ Item {
     Layout.fillWidth: true
     Layout.fillHeight: true
 
+    // Shortcut management
+    QtObject {
+        id: shortcutManager
+        function handleToggleFullScreenVideoPreview() {
+            fullScreenWindow.showFullScreen()
+        }
+    }
+
+    Shortcut {
+        sequence: "F"
+        context: Qt.WindowShortcut
+        onActivated: shortcutManager.handleToggleFullScreenVideoPreview()
+    }
+
     Rectangle {
         anchors.fill: parent
         radius: 4
@@ -55,6 +69,50 @@ Item {
         Material.theme: Material.Dark
         Material.primary: accentColor
         Material.accent: accentColor
+
+        // Shortcut management
+        QtObject {
+            id: videoPreviewShortcutManager
+            readonly property bool isMac: Qt.platform.os === "osx"
+            readonly property string undoModifier: isMac ? "Meta" : "Ctrl"
+            
+            function handleUndo() {
+                clipTrackModel.undo()
+                videoController.undo()
+            }
+
+            function handlePlayPause() {
+                videoController.toggle_play_pause()
+            }
+
+            function handlePrevFrame() {
+                videoController.prev_frame()
+            }
+
+            function handleNextFrame() {
+                videoController.next_frame()
+            }
+        }
+
+        Shortcut {
+            sequence: "Space"
+            onActivated: videoPreviewShortcutManager.handlePlayPause()
+        }
+
+        Shortcut {
+            sequence: "Left"
+            onActivated: videoPreviewShortcutManager.handlePrevFrame()
+        }
+
+        Shortcut {
+            sequence: "Right"
+            onActivated: videoPreviewShortcutManager.handleNextFrame()
+        }
+
+        Shortcut {
+            sequence: videoPreviewShortcutManager.undoModifier + "+Z"
+            onActivated: videoPreviewShortcutManager.handleUndo()
+        }
 
         Rectangle {
             anchors.fill: parent
@@ -206,7 +264,7 @@ Item {
                                 icon.source: "qrc:/resources/icons/exit_full_screen.svg"
                                 icon.color: "#e8eaed"
                                 onClicked: {
-                                    fullScreenWindow.hide()
+                                    fullScreenWindow.close()
                                 }
                             }
                         }
@@ -223,21 +281,9 @@ Item {
 
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape) {
-                    fullScreenWindow.hide()
+                    fullScreenWindow.close()
                 } else if (event.key === Qt.Key_F) {
-                    fullScreenWindow.hide()
-                } else if (event.key === Qt.Key_Space) {
-                    videoController.toggle_play_pause()
-                    controlBar.visible = true
-                    hideControlBarTimer.restart()
-                } else if (event.key === Qt.Key_Left) {
-                    videoController.prev_frame()
-                    controlBar.visible = true
-                    hideControlBarTimer.restart()
-                } else if (event.key === Qt.Key_Right) {
-                    videoController.next_frame()
-                    controlBar.visible = true
-                    hideControlBarTimer.restart()
+                    fullScreenWindow.close()
                 }
             }
         }
@@ -270,13 +316,6 @@ Item {
         target: videoController
         function onFrameReady(frame) {
             videoPreview.source = "image://frames/frame?" + Date.now()
-        }
-    }
-
-    Shortcut {
-        sequence: "F"
-        onActivated: {
-            fullScreenWindow.showFullScreen()
         }
     }
 }

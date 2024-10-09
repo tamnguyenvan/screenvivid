@@ -7,11 +7,11 @@ from PySide6.QtQml import QQmlApplicationEngine
 from screenvivid import rc_main
 from screenvivid import rc_icons
 from screenvivid import rc_images
-from screenvivid.model import (
-    ClipTrackModel, WindowController, VideoController, VideoRecorder, Logger
+from screenvivid.models import (
+    ClipTrackModel, WindowControllerModel, VideoControllerModel, ScreenRecorderModel, LoggerModel
 )
 from screenvivid.image_provider import FrameImageProvider
-from screenvivid.utils.logging import logger
+from screenvivid.models.logger import logger
 
 def main():
     logger.info("Starting ScreenVivid")
@@ -38,16 +38,16 @@ def main():
 
     # Models
     clip_track_model = ClipTrackModel()
-    window_controller = WindowController()
+    window_controller = WindowControllerModel()
 
-    video_controller = VideoController(frame_provider=frame_provider)
-    video_recorder = VideoRecorder()
-    logger_model = Logger()
+    video_controller = VideoControllerModel(frame_provider=frame_provider)
+    screen_recorder = ScreenRecorderModel()
+    logger_model = LoggerModel()
 
     engine.rootContext().setContextProperty("clipTrackModel", clip_track_model)
     engine.rootContext().setContextProperty("windowController", window_controller)
     engine.rootContext().setContextProperty("videoController", video_controller)
-    engine.rootContext().setContextProperty("videoRecorder", video_recorder)
+    engine.rootContext().setContextProperty("screenRecorder", screen_recorder)
     engine.rootContext().setContextProperty("logger", logger_model)
     logger.debug("Set context properties")
 

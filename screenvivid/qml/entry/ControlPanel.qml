@@ -175,17 +175,31 @@ Item {
 
                             onClicked: {
                                 var region = "screen";
+                                var devicePixelRatio = Screen.devicePixelRatio;
                                 if (startupWindow.selectedMode === "custom") {
-                                    region = [customSelector.customRegionX, customSelector.customRegionY,
-                                            customSelector.customRegionWidth, customSelector.customRegionHeight];
+                                    region = [
+                                        customSelector.customRegionX * devicePixelRatio,
+                                        customSelector.customRegionY * devicePixelRatio,
+                                        customSelector.customRegionWidth * devicePixelRatio,
+                                        customSelector.customRegionHeight * devicePixelRatio
+                                    ];
                                 } else if (startupWindow.selectedMode === "screen") {
-                                    region = [startupWindow.x, startupWindow.y, startupWindow.width, startupWindow.height];
+                                    region = [
+                                        startupWindow.x * devicePixelRatio,
+                                        startupWindow.y * devicePixelRatio,
+                                        startupWindow.width * devicePixelRatio,
+                                        startupWindow.height * devicePixelRatio
+                                    ];
                                 } else if (startupWindow.selectedMode === "safeArea") {
-                                    region = [windowController.left, windowController.top,
-                                            Screen.desktopAvailableWidth, Screen.desktopAvailableHeight];
+                                    region = [
+                                        windowController.left * devicePixelRatio,
+                                        windowController.top * devicePixelRatio,
+                                        Screen.desktopAvailableWidth * devicePixelRatio,
+                                        Screen.desktopAvailableHeight * devicePixelRatio
+                                    ];
                                 }
                                 logger.debug("Selected region:" + region)
-                                videoRecorder.region = region;
+                                screenRecorder.region = region;
                                 countdownLoader.source = "";
                                 countdownLoader.source = "qrc:/qml/countdown/Countdown.qml";
                                 startupWindow.hide();

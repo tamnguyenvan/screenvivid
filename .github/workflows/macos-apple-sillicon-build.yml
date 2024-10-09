@@ -1,14 +1,11 @@
 name: Build and Package for MacOS Apple Silicon
-
 on:
   push:
     tags:
       - '*.*.*'
-
 jobs:
   build:
     runs-on: macos-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -38,6 +35,17 @@ jobs:
           source venv/bin/activate
           cd packaging/macos
           pyinstaller --clean --noconfirm screenvivid.spec
+
+      - name: Download and Setup FFmpeg
+        run: |
+          mkdir -p ffmpeg_temp
+          cd ffmpeg_temp
+          curl -L https://evermeet.cx/ffmpeg/ffmpeg-6.0.zip -o ffmpeg.zip
+          unzip ffmpeg.zip
+          mkdir -p ../packaging/macos/dist/ScreenVivid/_internal/
+          mv ffmpeg ../packaging/macos/dist/ScreenVivid/_internal/
+          cd ..
+          rm -rf ffmpeg_temp
 
       - name: Install create-dmg
         run: |

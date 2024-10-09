@@ -1,5 +1,30 @@
 import platform
+import time
+
+from PySide6.QtCore import Property, QThread
+
+from .loader import CursorLoader
 from screenvivid.utils.logging import logger
+
+class CursorLoaderThread(QThread):
+    def __init__(self):
+        super().__init__()
+        self._cursor_loader = CursorLoader()
+
+    @Property(list)
+    def cursor_theme(self):
+        return self._cursor_loader.cursor_theme
+
+    def get_cursor(self, state):
+        """Return a dictionary of the cursor theme with the cursor state
+          (arrow, ibeam, etc) corresponding to the cursor scale.
+        """
+        return self._cursor_loader.get_cursor(state)
+
+    def run(self):
+        t0 = time.time()
+        self._cursor_loader.load_cursor_theme()
+        logger.info(f"Cursor theme loaded in {time.time() - t0:.1f} seconds")
 
 def get_cursor_state_windows():
     import win32gui

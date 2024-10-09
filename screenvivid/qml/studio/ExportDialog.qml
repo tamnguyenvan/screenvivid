@@ -290,7 +290,8 @@ Dialog {
                                 "output_size": outputSize,
                                 "aspect_ratio": videoController.aspect_ratio,
                                 "compression_level": exportCompression,
-                                "output_path": outputPath
+                                "output_path": outputPath,
+                                "icc_profile": screenRecorder.icc_profile
                             }
 
                             if (sizeMap[currentSize][videoController.aspect_ratio]) {
@@ -385,7 +386,10 @@ Dialog {
                     Layout.alignment: Qt.AlignHCenter
                 }
                 Text {
-                    text: `~/Videos/ScreenVivid/${outputPath}.${exportFormat.toLowerCase()}`
+                    text: {
+                        var basePath = (Qt.platform.os === "osx") ? "~/Movies" : "~/Videos";
+                        return `${basePath}/ScreenVivid/${outputPath}.${exportFormat.toLowerCase()}`;
+                    }
                     color: "white"
                     font.pixelSize: 14
                     Layout.alignment: Qt.AlignHCenter

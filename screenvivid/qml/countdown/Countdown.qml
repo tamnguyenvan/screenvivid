@@ -48,7 +48,7 @@ Window {
                     if (count == 0) {
                         timer.stop()
                         recording = true
-                        videoRecorder.start_recording()
+                        screenRecorder.start_recording()
                         recordingTimer.start()
                         if (Qt.platform.os === "linux" || Qt.platform.os === "osx") {
                             root.showMinimized()
@@ -146,16 +146,16 @@ Window {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            videoRecorder.stop_recording()
+                            screenRecorder.stop_recording()
                             recordingTimer.stop()
                             root.hide()
                             tray.hide()
                             // Load and show studio here
                             var metadata = {
-                                'mouse_events': videoRecorder.mouse_events,
-                                'region': videoRecorder.region,
+                                'mouse_events': screenRecorder.mouse_events,
+                                'region': screenRecorder.region
                             }
-                            var success = videoController.load_video(videoRecorder.output_path, metadata)
+                            var success = videoController.load_video(screenRecorder.output_path, metadata)
                             if (success) {
                                 clipTrackModel.set_fps(videoController.fps)
                                 clipTrackModel.set_video_len(0, videoController.video_len)
@@ -184,7 +184,7 @@ Window {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            videoRecorder.cancel_recording()
+                            screenRecorder.cancel_recording()
                             Qt.quit()
                         }
                     }
@@ -205,13 +205,13 @@ Window {
             MenuItem {
                 text: qsTr("Stop")
                 onTriggered: {
-                    videoRecorder.stop_recording()
+                    screenRecorder.stop_recording()
                     root.hide()
                     var metadata = {
-                        'mouse_events': videoRecorder.mouse_events,
-                        'region': videoRecorder.region,
+                        'mouse_events': screenRecorder.mouse_events,
+                        'region': screenRecorder.region
                     }
-                    var success = videoController.load_video(videoRecorder.output_path, metadata)
+                    var success = videoController.load_video(screenRecorder.output_path, metadata)
                     if (success) {
                         clipTrackModel.set_fps(videoController.fps)
                         clipTrackModel.set_video_len(0, videoController.video_len)
@@ -225,7 +225,7 @@ Window {
             MenuItem {
                 text: qsTr("Cancel")
                 onTriggered: {
-                    videoRecorder.cancel_recording()
+                    screenRecorder.cancel_recording()
                     Qt.quit()
                 }
             }
@@ -237,7 +237,7 @@ Window {
     }
 
     onClosing: {
-        videoRecorder.cancel_recording()
+        screenRecorder.cancel_recording()
         Qt.quit()
     }
 }

@@ -7,7 +7,6 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-import pyautogui
 from PIL import Image, ImageDraw, ImageFilter
 
 from screenvivid.utils.general import hex_to_rgb, create_gradient_image, get_os_name
@@ -225,7 +224,7 @@ class Cursor(BaseTransform):
             base_path = Path(sys._MEIPASS)
         else:
             # If running in a regular Python environment
-            base_path = Path(__file__).resolve().parent
+            base_path = Path(__file__).resolve().parents[2]
 
         offset_file = os.path.join(base_path, f"resources/images/cursor/{self.os_name}/offsets.json")
         with open(offset_file, "r") as f:
@@ -252,7 +251,7 @@ class Cursor(BaseTransform):
             base_path = Path(sys._MEIPASS)
         else:
             # If running in a regular Python environment
-            base_path = Path(__file__).resolve().parent
+            base_path = Path(__file__).resolve().parents[2]
 
         default_cursor_dir = os.path.join(base_path, f"resources/images/cursor/default/{self.os_name}")
         default_cursor = {}
@@ -545,7 +544,7 @@ class Background(BaseTransform):
             base_path = Path(sys._MEIPASS)
         else:
             # Run from source
-            base_path = Path(__file__).parents[0]
+            base_path = Path(__file__).parents[2]
 
         self.background_dir = os.path.join(base_path, "resources/images/wallpapers/hires")
         self.background = background
