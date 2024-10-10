@@ -271,59 +271,84 @@ class Cursor(BaseTransform):
         return default_cursor
 
     def blend(self, image, x, y, cursor_state, anim_step):
-        # Get cursor image
+        # Get cursor image and scale string
         scale_str = f"{int(self.scale)}x" if self.scale.is_integer() else f"{self.scale:.1f}x"
-        if (
-            self.cursors_map.get(cursor_state)
-            and self.cursors_map[cursor_state].get(scale_str)
-        ):
+
+        # Get cursor image and offset based on state and scale
+        cursor_image = None
+        cursor_offset = None
+
+        # Try to get cursor for current state and scale
+        if (self.cursors_map.get(cursor_state) and
+            self.cursors_map[cursor_state].get(scale_str)):
             cursor_info = self.cursors_map[cursor_state][scale_str][anim_step]
             cursor_image = cursor_info["image"]
             cursor_offset = cursor_info["offset"]
         else:
-            # Check if arrow cursor is available and the scale_str is available
-            if (
-                self.cursors_map.get("arrow")
-                and self.cursors_map["arrow"].get(scale_str)
-            ):
-                cursor_image = self.cursors_map["arrow"][scale_str][0]["image"]
-                cursor_offset = self.cursors_map["arrow"][scale_str][0]["offset"]
+            # Fallback to arrow cursor
+            if self.cursors_map.get("arrow") and self.cursors_map["arrow"].get(scale_str):
+                cursor_info = self.cursors_map["arrow"][scale_str][0]
             else:
-                if scale_str in self.default_cursor["arrow"]:
-                    cursor_image = self.default_cursor["arrow"][scale_str][0]["image"]
-                    cursor_offset = self.default_cursor["arrow"][scale_str][0]["offset"]
-                else:
-                    cursor_image = self.default_cursor["arrow"]["1x"][0]["image"]
-                    cursor_offset = self.default_cursor["arrow"]["1x"][0]["offset"]
+                # Use default cursor if needed
+                scale_key = scale_str if scale_str in self.default_cursor["arrow"] else "1x"
+                cursor_info = self.default_cursor["arrow"][scale_key][0]
+            cursor_image = cursor_info["image"]
+            cursor_offset = cursor_info["offset"]
 
+        # Get dimensions
         cursor_height, cursor_width = cursor_image.shape[:2]
         image_height, image_width = image.shape[:2]
 
-        # Calculate the position of the cursor on the image
-        x1, y1 = int(image_width * x) - cursor_offset[0], int(image_height * y) - cursor_offset[1]
-        x2, y2 = x1 + cursor_width, y1 + cursor_height
+        # Calculate cursor position relative to image
+        x1 = int(image_width * x) - cursor_offset[0]
+        y1 = int(image_height * y) - cursor_offset[1]
+        x2 = x1 + cursor_width
+        y2 = y1 + cursor_height
 
-        # The coordinates would be used to crop
-        crop_x1 = max(0, -x1)
-        crop_y1 = max(0, -y1)
-        crop_x2 = min(cursor_width, image_width - x1)
-        crop_y2 = min(cursor_height, image_height - y1)
+        # Check if cursor intersects with image at all
+        if (x2 <= 0 or x1 >= image_width or
+            y2 <= 0 or y1 >= image_height):
+            return image  # Cursor completely outside image
 
-        # Crop the cursor image
-        cropped_cursor_image = cursor_image[crop_y1:crop_y2, crop_x1:crop_x2]
-        cropped_cursor_rgb = cropped_cursor_image[:, :, :3]
-        mask = cropped_cursor_image[:, :, 3]
+        # Calculate valid crop coordinates for cursor
+        cursor_crop_x1 = max(0, -x1)
+        cursor_crop_y1 = max(0, -y1)
+        cursor_crop_x2 = min(cursor_width, image_width - x1)
+        cursor_crop_y2 = min(cursor_height, image_height - y1)
 
-        # Crop the image
-        x1, y1 = max(0, x1), max(0, y1)
-        x2, y2 = min(image_width, x2), min(image_height, y2)
-        fg_roi = image[y1:y2, x1:x2]
+        # Calculate valid coordinates for image
+        image_x1 = max(0, x1)
+        image_y1 = max(0, y1)
+        image_x2 = min(image_width, x2)
+        image_y2 = min(image_height, y2)
 
-        mask_float = mask.astype(np.float32) / 255.0
-        fg_cursor = cropped_cursor_rgb * mask_float[:, :, np.newaxis]
-        fg = fg_roi * (1 - mask_float[:, :, np.newaxis])
-        blended = fg_cursor + fg
-        image[y1:y2, x1:x2] = blended.astype(np.uint8)
+        # Ensure we have valid regions to blend
+        if cursor_crop_x2 <= cursor_crop_x1 or cursor_crop_y2 <= cursor_crop_y1:
+            return image
+
+        # Crop cursor image and get alpha channel
+        cursor_region = cursor_image[
+            cursor_crop_y1:cursor_crop_y2,
+            cursor_crop_x1:cursor_crop_x2
+        ]
+
+        # Split into RGB and alpha
+        cursor_rgb = cursor_region[:, :, :3]
+        cursor_alpha = cursor_region[:, :, 3].astype(np.float32) / 255.0
+
+        # Get image region and blend
+        image_region = image[image_y1:image_y2, image_x1:image_x2]
+
+        # Expand alpha for broadcasting
+        alpha = cursor_alpha[:, :, np.newaxis]
+
+        # Blend images
+        blended = (cursor_rgb * alpha +
+                image_region * (1 - alpha)).astype(np.uint8)
+
+        # Update image with blended result
+        image[image_y1:image_y2, image_x1:image_x2] = blended
+
         return image
 
     def __call__(self, **kwargs):

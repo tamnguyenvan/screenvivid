@@ -1,4 +1,5 @@
 import os
+import io
 import time
 import queue
 import subprocess
@@ -6,20 +7,26 @@ from threading import Thread, Event
 
 from PIL import Image
 import pyautogui
-from PySide6.QtCore import QObject, Property, Slot
+from PySide6.QtCore import QObject, Property, Slot, Signal
 
 from screenvivid import config
-from screenvivid.utils.general import generate_video_path, get_os_name, get_ffmpeg_path
 from screenvivid.models.utils.cursor import get_cursor_state, CursorLoaderThread
 from screenvivid.models.screen_capture import get_screen_capture_class
+from screenvivid.utils.general import (
+    generate_video_path, get_os_name, get_ffmpeg_path, generate_temp_file
+)
 from screenvivid.utils.logging import logger
 
 class ScreenRecorderModel(QObject):
+    outputPathChanged = Signal()
+    regionChanged = Signal()
+    iccProfileChanged = Signal()
+    devicePixelRatio = Signal()
+
     def __init__(self, output_path: str = None):
         super().__init__()
         self._output_path = output_path if output_path and os.path.exists(output_path) else generate_video_path()
         self._region = None
-        self._icc_profile = None
         self._screen_recording_thread = ScreenRecordingThread(self._output_path)
 
     @Property(str)
@@ -29,6 +36,7 @@ class ScreenRecorderModel(QObject):
     @output_path.setter
     def output_path(self, value):
         self._output_path = value
+        self.outputPathChanged.emit()
 
     @Property(dict)
     def mouse_events(self):
@@ -41,14 +49,25 @@ class ScreenRecorderModel(QObject):
     @region.setter
     def region(self, region):
         self._region = region
+        self.regionChanged.emit()
 
     @Property(str)
     def icc_profile(self):
-        return self._icc_profile
+        return self._screen_recording_thread.icc_profile
 
     @icc_profile.setter
     def icc_profile(self, value):
-        self._icc_profile = value
+        self._screen_recording_thread.icc_profile = value
+        self.icc_profile.emit()
+
+    @Property(float)
+    def device_pixel_ratio(self):
+        return self._screen_recording_thread.device_pixel_ratio
+
+    @device_pixel_ratio.setter
+    def device_pixel_ratio(self, value):
+        self._screen_recording_thread.device_pixel_ratio = value
+        self.devicePixelRatio.emit()
 
     @Slot()
     def start_recording(self):
@@ -77,13 +96,19 @@ class ScreenRecordingThread:
         self._is_stopped = Event()
         self._is_stopped.set()
         self._fps = config.DEFAULT_FPS or 24
+        self._icc_profile = None
+        self._device_pixel_ratio = 1.0
 
         # Queues for communication between threads
         self._image_queue = queue.Queue(maxsize=90)  # Buffer 3 seconds for FPS=30
         self._frame_index_queue = queue.Queue(maxsize=90)
 
         self._os_name = get_os_name()
-        self._nonscaled_screen_size = pyautogui.size()
+        nonscale_screen_size = pyautogui.size()
+        self._screen_size = [
+            int(self._device_pixel_ratio * nonscale_screen_size[0]),
+            int(self._device_pixel_ratio * nonscale_screen_size[1])
+        ]
 
         self._ffmpeg_process = None
         self._capture_thread = None
@@ -101,6 +126,22 @@ class ScreenRecordingThread:
     @property
     def mouse_events(self):
         return self._mouse_events
+
+    @property
+    def icc_profile(self):
+        return self._icc_profile
+
+    @icc_profile.setter
+    def icc_profile(self, value):
+        self._icc_profile = value
+
+    @property
+    def device_pixel_ratio(self):
+        return self._device_pixel_ratio
+
+    @device_pixel_ratio.setter
+    def device_pixel_ratio(self, value):
+        self._device_pixel_ratio = value
 
     def start_recording(self):
         if not self._output_path:
@@ -184,7 +225,8 @@ class ScreenRecordingThread:
         next_frame_time = time.time() + target_interval
 
         # ScreenCapture
-        icc_profile = None
+        icc_profile_probe_tries = 0
+        icc_profile_probe_max_tries = 3
         screen_capture = get_screen_capture_class()
         try:
             with screen_capture(self._region) as sct:
@@ -197,10 +239,18 @@ class ScreenRecordingThread:
                         continue
 
                     screenshot_bytes, pixel_format = sct.capture()
-                    if pixel_format in ("jpeg", "png") and icc_profile is None:
+                    if (
+                        pixel_format in ("jpeg", "png")
+                        and not self._icc_profile
+                        and icc_profile_probe_tries < icc_profile_probe_max_tries
+                    ):
                         # Extract icc profile
-                        image = Image.open(screenshot_bytes)
-                        icc_profile = image.info.get("icc_profile")
+                        image = Image.open(io.BytesIO(screenshot_bytes))
+                        icc_profile_data = image.info.get("icc_profile")
+                        if icc_profile_data:
+                            self._icc_profile = generate_temp_file(extensions=".icc")
+                            logger.debug(f"ICC profile file: {self._icc_profile}")
+                        icc_profile_probe_tries += 1
 
                     # Lưu timestamp của frame
                     frame_time = time.time()
@@ -230,7 +280,7 @@ class ScreenRecordingThread:
 
         # Initialize timing variables
         self._start_time = time.time()
-        next_frame_time = self._start_time + target_interval
+        # next_frame_time = self._start_time + target_interval
         frame_count = 0
 
         try:
@@ -291,8 +341,13 @@ class ScreenRecordingThread:
 
                     if frame_index > last_frame:
                         x, y = pyautogui.position()
-                        relative_x = x / self._nonscaled_screen_size[0]
-                        relative_y = y / self._nonscaled_screen_size[1]
+
+                        # Scale by device pixel ratio
+                        x *= self._device_pixel_ratio
+                        y *= self._device_pixel_ratio
+
+                        relative_x = (x - self._region[0]) / self._region[2]
+                        relative_y = (y - self._region[1]) / self._region[3]
 
                         cursor_state, anim_step = self._get_cursor()
                         self._mouse_events["move"][frame_index] = (

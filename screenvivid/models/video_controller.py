@@ -459,7 +459,6 @@ class VideoProcessor(QObject):
             self._mouse_events = metadata.get("mouse_events", {}).get("move", {}) if metadata else {}
             self._cursors_map = metadata.get("mouse_events", {}).get("cursors_map", {}) if metadata else {}
             self._region = metadata.get("region", []) if metadata else []
-            self._icc_profile = metadata.get("icc_profile")
 
             if self._region:
                 x_offset, y_offset = self._region[:2]

@@ -125,6 +125,7 @@ Window {
 
     Component.onCompleted: {
         // Set device pixel ratio
+        screenRecorder.device_pixel_ratio = Screen.devicePixelRatio
         videoController.device_pixel_ratio = Screen.devicePixelRatio
     }
 }

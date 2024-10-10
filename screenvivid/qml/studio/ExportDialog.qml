@@ -106,6 +106,24 @@ Dialog {
         }
     }
 
+    function formatTime(seconds) {
+        var h = Math.floor(seconds / 3600);
+        var m = Math.floor((seconds % 3600) / 60);
+        var s = Math.floor(seconds % 60);
+
+        var timeString = "";
+        if (h > 0) {
+            timeString += h + "h ";
+        }
+        if (m > 0) {
+            timeString += m + "m ";
+        }
+        timeString += s + "s";
+
+        return timeString.trim();
+    }
+
+
     onCurrentSizeChanged: updateOutputSize()
 
     Connections {
@@ -324,9 +342,8 @@ Dialog {
                 }
 
                 Text {
-                    // text: "Estimated export time — 6 seconds"
                     id: estimatedTimeText
-                    text: "Estimated export time: " + (estimatedExportTime >= 0 ? estimatedExportTime + " seconds" : "Calculating...")
+                    text: "Estimated export time: " + (estimatedExportTime >= 0 ? formatTime(estimatedExportTime) : "Calculating...")
                     color: "gray"
                     visible: isExporting
                 }

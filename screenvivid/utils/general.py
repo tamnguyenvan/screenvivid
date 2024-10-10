@@ -83,3 +83,6 @@ def get_ffmpeg_path():
         ffmpeg_binary_name = "ffmpeg"
 
     return os.path.join(base_path, ffmpeg_binary_name)
+
+def generate_temp_file(extension):
+    return tempfile.mktemp(suffix=extension)
