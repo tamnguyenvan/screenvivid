@@ -377,55 +377,59 @@ class ScreenRecordingThread:
 
         finally:
             logger.debug("Mouse tracking thread stopped")
+
     def _get_ffmpeg_command(self):
         ffmpeg_path = get_ffmpeg_path()
         width, height = int(self._region[2]), int(self._region[3])
-
-        # Adjust the width and height to be even numbers
         adjusted_width = (width + 1) & ~1
         adjusted_height = (height + 1) & ~1
 
-        # Common command parts
-        base_cmd = [
-            ffmpeg_path,
-            "-framerate", str(self._fps),
-            "-i", "-",
-            "-vf", f"scale={adjusted_width}:{adjusted_height}",
-            "-y"  # Overwrite output file if exists
-        ]
-
-        # OS-specific video input format and codec settings
-        if self._os_name == "macos":
-            input_cmd = [
+        if self._os_name == "macos":  # macOS
+            cmd = [
+                ffmpeg_path,
                 "-f", "image2pipe",
+                "-framerate", str(self._fps),
                 "-vcodec", "mjpeg",  # MJPEG for macOS
+                "-i", "-",
+                "-vf", f"scale={adjusted_width}:{adjusted_height}",
                 "-c:v", "h264_videotoolbox",  # Hardware acceleration for macOS
                 "-pix_fmt", "yuv420p",
-                "-preset", "fast"
+                "-preset", "fast",
+                "-y",
+                self._output_path
             ]
-        elif self._os_name == "linux":
-            input_cmd = [
+        elif self._os_name == "linux":  # Linux
+            cmd = [
+                ffmpeg_path,
                 "-f", "rawvideo",
-                "-video_size", f"{width}x{height}",
+                "-framerate", str(self._fps),
+                "-video_size", f"{width}x{height}",  # Explicitly specify video size
                 "-pixel_format", "bgra",  # Use bgra for python-mss
+                "-i", "-",
+                "-vf", f"scale={adjusted_width}:{adjusted_height}",
                 "-c:v", "libx264",
                 "-preset", "ultrafast",
                 "-crf", "23",
-                "-vsync", "1"  # Help maintain sync
+                "-vsync", "1",  # Help maintain sync
+                "-y",  # Overwrite output file if exists
+                self._output_path
             ]
         else:  # Windows
-            input_cmd = [
+            cmd = [
+                ffmpeg_path,
                 "-f", "rawvideo",
+                "-framerate", str(self._fps),
                 "-video_size", f"{width}x{height}",
                 "-pixel_format", "bgra",
+                "-i", "-",
+                "-vf", f"scale={adjusted_width}:{adjusted_height}",
                 "-c:v", "libx264",
                 "-preset", "fast",
                 "-qp", "23",
-                "-vsync", "1"  # Help maintain sync
+                "-vsync", "1",  # Help maintain sync
+                "-y",
+                self._output_path
             ]
-
-        # Combine base and OS-specific commands
-        cmd = base_cmd + input_cmd + [self._output_path]
         return cmd
 
     def _get_cursor(self):
