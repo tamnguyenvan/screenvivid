@@ -13,7 +13,7 @@ Window {
     readonly property int defaultHeight: Screen.height
     readonly property int minWidth: Screen.width / 2
     readonly property int minHeight: Screen.height / 2
-    
+
     // Theme colors
     readonly property string accentColor: "#545EEE"
     readonly property string backgroundColor: "#0B0D0F"
@@ -46,7 +46,7 @@ Window {
         id: shortcutManager
         readonly property bool isMac: Qt.platform.os === "osx"
         readonly property string undoModifier: isMac ? "Meta" : "Ctrl"
-        
+
         function handleUndo() {
             clipTrackModel.undo()
             videoController.undo()

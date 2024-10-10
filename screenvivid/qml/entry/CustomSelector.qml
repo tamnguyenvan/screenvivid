@@ -1,5 +1,5 @@
-import QtQuick
-import QtQuick.Controls
+import QtQuick 6.7
+import QtQuick.Controls 6.7
 
 Item {
     id: customSelector
@@ -57,7 +57,7 @@ Item {
             color: customSelector.color
             anchors.left: parent.left
             anchors.top: parent.top
-            // radius: width / 2
+            bottomRightRadius: width / 2
 
             MouseArea {
                 anchors.fill: parent
@@ -100,9 +100,9 @@ Item {
             width: customSelector.rulerSize
             height: customSelector.rulerSize
             color: customSelector.color
-            // radius: width / 2
             anchors.right: parent.right
             anchors.top: parent.top
+            bottomLeftRadius: width / 2
 
             MouseArea {
                 anchors.fill: parent
@@ -143,9 +143,9 @@ Item {
             width: customSelector.rulerSize
             height: customSelector.rulerSize
             color: customSelector.color
-            // radius: width / 2
             anchors.right: parent.right
             anchors.bottom: parent.bottom
+            topLeftRadius: width / 2
 
             MouseArea {
                 anchors.fill: parent
@@ -185,9 +185,9 @@ Item {
             width: customSelector.rulerSize
             height: customSelector.rulerSize
             color: customSelector.color
-            // radius: width / 2
             anchors.left: parent.left
             anchors.bottom: parent.bottom
+            topRightRadius: width / 2
 
             MouseArea {
                 anchors.fill: parent

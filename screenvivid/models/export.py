@@ -80,7 +80,7 @@ class FFmpegWriterThread(QThread):
             # macOS specific - using VideoToolbox hardware acceleration
             output_cmd = [
                 '-c:v', 'h264_videotoolbox',
-                '-vf', 'format=yuv420p',
+                '-pix_fmt', 'yuv420p',
                 '-preset', 'fast'
             ]
         elif os_name == "linux":
@@ -89,17 +89,18 @@ class FFmpegWriterThread(QThread):
                 '-c:v', 'libx264',
                 '-preset', 'ultrafast',
                 '-crf', '23',
-                '-vf', 'format=yuv420p',
+                '-pix_fmt', 'yuv420p',
                 '-movflags', '+faststart'
             ]
-        else:  # windows
+        else:
             # Windows specific
             output_cmd = [
                 '-c:v', 'libx264',
                 '-preset', 'ultrafast',
-                '-qp', '23',  # Quality parameter
-                '-vf', 'format=yuv420p',
-                '-movflags', '+faststart'
+                '-pix_fmt', 'yuv420p',
+                '-qp', '23',
+                '-movflags', '+faststart',
+                '-max_muxing_queue_size', '1024'
             ]
 
         # Combine commands and add output path
@@ -127,19 +128,22 @@ class FFmpegWriterThread(QThread):
 
         # Start FFmpeg process with larger pipe buffer
         if get_os_name() == "windows":
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             process = subprocess.Popen(
                 cmd,
                 stdin=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                bufsize=50*1024*1024,  # 50MB buffer
-                creationflags=subprocess.CREATE_NO_WINDOW
+                bufsize=10*1024*1024,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+                startupinfo=startupinfo
             )
         else:
             process = subprocess.Popen(
                 cmd,
                 stdin=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                bufsize=50*1024*1024,  # 50MB buffer
+                bufsize=10*1024*1024,
             )
         icc_data = None
         if icc_profile:

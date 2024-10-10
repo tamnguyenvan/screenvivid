@@ -147,6 +147,10 @@ class VideoControllerModel(QObject):
             self.video_processor.cursor_scale = value
             self.cursorScaleChanged.emit()
 
+    @Property(bool, notify=playingChanged)
+    def is_playing(self):
+        return self.video_processor.is_playing
+
     @Property(list, notify=outputSizeChanged)
     def output_size(self):
         return self.video_processor.output_size
