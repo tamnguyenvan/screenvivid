@@ -353,10 +353,11 @@ class ScreenRecordingThread:
                 "-video_size", f"{width}x{height}",
                 "-pixel_format", "bgra",
                 "-i", "-",
-                "-c:v", "h264_nvenc",
-                "-preset", "p1",
+                "-c:v", "libx264",
+                "-preset", "fast",
                 "-qp", "23",
                 "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p",
+                "-vsync", "1",  # Help maintain sync
                 "-y",
                 self._output_path
             ]

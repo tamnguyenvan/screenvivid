@@ -85,19 +85,19 @@ class FFmpegWriterThread(QThread):
                 '-preset', 'fast'
             ]
         elif os_name == "linux":
-            # Linux specific - using libx264 or NVIDIA hardware acceleration if available
+            # Linux specific - using libx264
             output_cmd = [
-                '-c:v', 'libx264',  # or 'h264_nvenc' if NVIDIA GPU is available
+                '-c:v', 'libx264',
                 '-preset', 'ultrafast',
                 '-crf', '23',
                 '-vf', 'format=yuv420p',
                 '-movflags', '+faststart'
             ]
         else:  # windows
-            # Windows specific - using NVIDIA hardware acceleration if available
+            # Windows specific
             output_cmd = [
-                '-c:v', 'h264_nvenc',  # NVIDIA GPU encoding
-                '-preset', 'p1',  # Lower latency preset
+                '-c:v', 'libx264',
+                '-preset', 'ultrafast',
                 '-qp', '23',  # Quality parameter
                 '-vf', 'format=yuv420p',
                 '-movflags', '+faststart'
