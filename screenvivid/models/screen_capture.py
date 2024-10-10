@@ -30,7 +30,6 @@ class BaseScreenCapture:
         """
         pass
 
-
 class MSSScreenCapture(BaseScreenCapture):
     def __init__(self, region=None):
         super().__init__(region)

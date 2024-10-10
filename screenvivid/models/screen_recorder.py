@@ -321,6 +321,7 @@ class ScreenRecordingThread:
                 "-vcodec", "mjpeg",  # MJPEG for macOS
                 "-i", "-",
                 "-c:v", "h264_videotoolbox",  # Hardware acceleration for macOS
+                "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p",
                 "-vf", "format=yuv420p",
                 "-preset", "fast",
                 "-y",
@@ -338,7 +339,7 @@ class ScreenRecordingThread:
                 "-c:v", "libx264",
                 "-preset", "ultrafast",
                 "-crf", "23",
-                "-vf", "format=yuv420p",
+                "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p",
                 "-vsync", "1",  # Help maintain sync
                 "-y",  # Overwrite output file if exists
                 self._output_path
@@ -355,7 +356,7 @@ class ScreenRecordingThread:
                 "-c:v", "h264_nvenc",
                 "-preset", "p1",
                 "-qp", "23",
-                "-vf", "format=yuv420p",
+                "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p",
                 "-y",
                 self._output_path
             ]

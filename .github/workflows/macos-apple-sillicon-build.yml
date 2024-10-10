@@ -29,6 +29,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install "pyobjc-framework-Quartz>=10.3.1,<10.4"
+          pip install "pyobjc-framework-UniformTypeIdentifiers>=10.3.1,<10.4"
+          pip install "pyobjc-framework-AVFoundation>=10.3.1,<10.4"
           pip install -r requirements.txt
 
       - name: Compile resources

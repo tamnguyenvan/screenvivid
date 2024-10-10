@@ -110,7 +110,10 @@ https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-lates
 pip install -r requirements.txt
 
 # macOS
-pip install "pyobjc-framework-Quartz>=10.3.1,<10.4" && pip install -r requirements.txt
+pip install "pyobjc-framework-Quartz>=10.3.1,<10.4" \
+  "pyobjc-framework-UniformTypeIdentifiers>=10.3.1,<10.4" \
+  "pyobjc-framework-AVFoundation>=10.3.1,<10.4" \
+  && pip install -r requirements.txt
 
 # Windows
 pip install "pywin32>=306,<308" && pip install -r requirements.txt
