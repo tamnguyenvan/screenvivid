@@ -87,22 +87,44 @@ For systems without installation file support, ScreenVivid can be run using Pyth
   - **Minimum Requirements:** Python>=3.9,<3.12. Using miniconda is highly recommended.
 
 ```bash
-
 # Ubuntu/Linux Mint/Debian:
-sudo apt install python3-tk python3-dev libxcb-cursor0
+sudo apt install python3-tk python3-dev libxcb-cursor0 ffmpeg
 
 # Fedora:
-sudo dnf groupinstall -y "Development Tools" && sudo dnf install -y python3-devel python3-tkinter xcb-util-cursor
+sudo dnf groupinstall -y "Development Tools" && sudo dnf install -y python3-devel python3-tkinter xcb-util-cursor ffmpeg
+
+# macOS:
+brew install ffmpeg
+
+# Windows:
+## 1. Download the FFmpeg static binary for Windows:
+https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-win64-gpl-7.1.zip
+
+## 2. Unzip it and place ffmpeg.exe in the root of the project folder.
+
 ```
 
-2. Run installation script
+2. Install requirements
 ```bash
-curl -sSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/refs/heads/main/scripts/install-linux.sh | bash
+# Linux
+pip install -r requirements.txt
+
+# macOS
+pip install "pyobjc-framework-Quartz>=10.3.1,<10.4" && pip install -r requirements.txt
+
+# Windows
+pip install "pywin32>=306,<308" && pip install -r requirements.txt
 ```
 
-You can uninstall it anytime:
+3. Compile resources
 ```bash
-curl -sSL https://raw.githubusercontent.com/tamnguyenvan/screenvivid/refs/heads/main/scripts/uninstall-linux.sh | bash
+cd screenvivid
+python compile_resources.py
+```
+
+4. Run
+```bash
+python -m screenvivid.main
 ```
 
 ## Advantages

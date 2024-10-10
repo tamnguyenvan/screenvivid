@@ -63,20 +63,23 @@ def get_os_name():
     return os_name
 
 def get_ffmpeg_path():
+    if os.getenv("FFMPEG_PATH"):
+        return os.environ["FFMPEG_PATH"]
+
     os_name = get_os_name()
     if os_name == "linux":
-        base_path = os.getenv("FFMPEG_PATH", "")
+        base_path = ""
     else:
         if getattr(sys, 'frozen', False):
             # If running in a PyInstaller bundle
             base_path = Path(sys._MEIPASS)
         else:
             # If running in a regular Python environment
-            base_path = os.getenv("FFMPEG_PATH", "")
+            base_path = Path(__file__).parents[2]
 
     if os_name == "windows":
-        ffmpeg_executable_name = "ffmpeg.exe"
+        ffmpeg_binary_name = "ffmpeg.exe"
     else:
-        ffmpeg_executable_name = "ffmpeg"
+        ffmpeg_binary_name = "ffmpeg"
 
-    return os.path.join(base_path, ffmpeg_executable_name)
+    return os.path.join(base_path, ffmpeg_binary_name)

@@ -8,7 +8,7 @@ tcl_tk_data = collect_data_files('tkinter')
 a = Analysis(
     ['../../screenvivid/main.py'],
     pathex=[],
-    binaries=[],
+    binaries=[('ffmpeg.exe', '.')],
     datas=[
         ('../../screenvivid/resources/images/wallpapers/hires', 'resources/images/wallpapers/hires'),
         ('../../screenvivid/resources/images/cursor/windows', 'resources/images/cursor/windows'),

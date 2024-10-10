@@ -18,9 +18,9 @@ jobs:
       - name: Download FFmpeg
         run: |
           $ProgressPreference = 'SilentlyContinue'
-          Invoke-WebRequest -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -OutFile "ffmpeg.zip"
+          Invoke-WebRequest -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-win64-gpl-7.1.zip" -OutFile "ffmpeg.zip"
           Expand-Archive -Path "ffmpeg.zip" -DestinationPath "ffmpeg_temp"
-          Copy-Item "ffmpeg_temp\ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe" -Destination "packaging\windows\"
+          Copy-Item "ffmpeg_temp\ffmpeg-n7.1-latest-win64-gpl-7.1\bin\ffmpeg.exe" -Destination "packaging\windows\"
           Remove-Item -Path "ffmpeg_temp" -Recurse -Force
           Remove-Item -Path "ffmpeg.zip"
         shell: pwsh

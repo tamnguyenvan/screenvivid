@@ -17,7 +17,7 @@ jobs:
 
       - name: Download FFmpeg
         run: |
-          curl -L https://evermeet.cx/ffmpeg/ffmpeg-6.0.zip -o ffmpeg.zip
+          curl -L https://evermeet.cx/ffmpeg/ffmpeg-7.1.zip -o ffmpeg.zip
           unzip ffmpeg.zip
           mv ffmpeg packaging/macos/
           rm ffmpeg.zip
