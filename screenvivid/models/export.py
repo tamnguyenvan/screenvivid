@@ -1,5 +1,4 @@
 import os
-import time
 import io
 import cv2
 import queue
@@ -127,12 +126,21 @@ class FFmpegWriterThread(QThread):
         logger.debug(f"FFmpeg export command: {' '.join(cmd)}")
 
         # Start FFmpeg process with larger pipe buffer
-        process = subprocess.Popen(
-            cmd,
-            stdin=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            bufsize=50*1024*1024  # 50MB buffer
-        )
+        if get_os_name() == "windows":
+            process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                bufsize=50*1024*1024,  # 50MB buffer
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
+        else:
+            process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                bufsize=50*1024*1024,  # 50MB buffer
+            )
         icc_data = None
         if icc_profile:
             with open(icc_profile, "rb") as f:

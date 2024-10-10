@@ -111,13 +111,23 @@ class ScreenRecordingThread:
         # Start FFmpeg process
         cmd = self._get_ffmpeg_command()
         logger.debug(f"FFmpeg command: {cmd}")
-        self._ffmpeg_process = subprocess.Popen(
-            cmd,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            bufsize=50*1024*1024  # 10MB buffer
-        )
+        if self._os_name == "windows":
+            self._ffmpeg_process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                bufsize=50*1024*1024,  # 10MB buffer
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
+        else:
+            self._ffmpeg_process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                bufsize=50*1024*1024,  # 10MB buffer
+            )
 
         # Start all threads
         self._capture_thread = Thread(target=self._capture_screen)
