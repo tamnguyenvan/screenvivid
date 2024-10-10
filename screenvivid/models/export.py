@@ -65,6 +65,10 @@ class FFmpegWriterThread(QThread):
 
     def _get_ffmpeg_command(self, ffmpeg_path, output_path, fps, output_size):
         os_name = get_os_name()
+        width, height = output_size
+
+        adjusted_width = (width + 1) & ~1
+        adjusted_height = (height + 1) & ~1
 
         # Base command parameters common to all platforms
         base_cmd = [
@@ -73,7 +77,8 @@ class FFmpegWriterThread(QThread):
             '-framerate', str(fps),
             '-s', f"{output_size[0]}x{output_size[1]}",
             '-vcodec', 'mjpeg',  # Using MJPEG for input pipe
-            '-i', '-'
+            '-i', '-',
+            '-vf', f'scale={adjusted_width}:{adjusted_height}'
         ]
 
         if os_name == "macos":

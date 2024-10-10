@@ -377,58 +377,55 @@ class ScreenRecordingThread:
 
         finally:
             logger.debug("Mouse tracking thread stopped")
-
     def _get_ffmpeg_command(self):
         ffmpeg_path = get_ffmpeg_path()
+        width, height = int(self._region[2]), int(self._region[3])
 
-        if self._os_name == "macos":  # macOS
-            cmd = [
-                ffmpeg_path,
+        # Adjust the width and height to be even numbers
+        adjusted_width = (width + 1) & ~1
+        adjusted_height = (height + 1) & ~1
+
+        # Common command parts
+        base_cmd = [
+            ffmpeg_path,
+            "-framerate", str(self._fps),
+            "-i", "-",
+            "-vf", f"scale={adjusted_width}:{adjusted_height}",
+            "-y"  # Overwrite output file if exists
+        ]
+
+        # OS-specific video input format and codec settings
+        if self._os_name == "macos":
+            input_cmd = [
                 "-f", "image2pipe",
-                "-framerate", str(self._fps),
                 "-vcodec", "mjpeg",  # MJPEG for macOS
-                "-i", "-",
                 "-c:v", "h264_videotoolbox",  # Hardware acceleration for macOS
-                "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p",
-                "-vf", "format=yuv420p",
-                "-preset", "fast",
-                "-y",
-                self._output_path
+                "-pix_fmt", "yuv420p",
+                "-preset", "fast"
             ]
-        elif self._os_name == "linux":  # Linux
-            width, height = int(self._region[2]), int(self._region[3])
-            cmd = [
-                ffmpeg_path,
+        elif self._os_name == "linux":
+            input_cmd = [
                 "-f", "rawvideo",
-                "-framerate", str(self._fps),
-                "-video_size", f"{width}x{height}",  # Explicitly specify video size
+                "-video_size", f"{width}x{height}",
                 "-pixel_format", "bgra",  # Use bgra for python-mss
-                "-i", "-",
                 "-c:v", "libx264",
                 "-preset", "ultrafast",
                 "-crf", "23",
-                "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p",
-                "-vsync", "1",  # Help maintain sync
-                "-y",  # Overwrite output file if exists
-                self._output_path
+                "-vsync", "1"  # Help maintain sync
             ]
         else:  # Windows
-            width, height = int(self._region[2]), int(self._region[3])
-            cmd = [
-                ffmpeg_path,
+            input_cmd = [
                 "-f", "rawvideo",
-                "-framerate", str(self._fps),
                 "-video_size", f"{width}x{height}",
                 "-pixel_format", "bgra",
-                "-i", "-",
                 "-c:v", "libx264",
                 "-preset", "fast",
                 "-qp", "23",
-                "-vf", "pad=ceil(iw/2)*2:ceil(ih/2)*2,format=yuv420p",
-                "-vsync", "1",  # Help maintain sync
-                "-y",
-                self._output_path
+                "-vsync", "1"  # Help maintain sync
             ]
+
+        # Combine base and OS-specific commands
+        cmd = base_cmd + input_cmd + [self._output_path]
         return cmd
 
     def _get_cursor(self):
