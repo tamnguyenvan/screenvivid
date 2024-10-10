@@ -45,7 +45,7 @@ jobs:
         run: |
           venv\Scripts\activate
           cd packaging/windows
-          pyinstaller --clean --noconfirm --add-binary "ffmpeg.exe;." screenvivid.spec
+          pyinstaller --clean --noconfirm screenvivid.spec
         shell: pwsh
 
       - name: Update version in Inno Setup script

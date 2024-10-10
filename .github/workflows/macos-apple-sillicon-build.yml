@@ -41,7 +41,7 @@ jobs:
         run: |
           source venv/bin/activate
           cd packaging/macos
-          pyinstaller --clean --noconfirm --add-binary "ffmpeg:." screenvivid.spec
+          pyinstaller --clean --noconfirm screenvivid.spec
 
       - name: Install create-dmg
         run: |
