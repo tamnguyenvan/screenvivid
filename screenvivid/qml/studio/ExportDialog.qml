@@ -61,6 +61,7 @@ Dialog {
     property string outputPath: ""
 
     property string exportFormat: "MP4"
+    property string codec: "MPEG4"
     property int exportFps: 30
     property string exportCompression: "Studio"
 
@@ -175,6 +176,7 @@ Dialog {
                                 color: formatComboBox.pressed ? "#2c313c" : "#1e2228"
                                 border.color: formatComboBox.pressed ? "#3d4450" : "#2c313c"
                                 border.width: 1
+                                implicitWidth: 120
                                 radius: 5
                             }
 
@@ -226,6 +228,74 @@ Dialog {
                         }
                     }
 
+                    RowLayout {
+                        Text {
+                            text: "Codec"
+                            color: "white"
+                        }
+                        ComboBox {
+                            id: codecComboBox
+                            model: ["H264", "MPEG4"]
+                            currentIndex: Qt.platform.os === "windows" ? 1 : 0
+                            onCurrentTextChanged: codec = currentText
+                            width: 120
+                            height: 30
+
+                            background: Rectangle {
+                                color: codecComboBox.pressed ? "#2c313c" : "#1e2228"
+                                border.color: codecComboBox.pressed ? "#3d4450" : "#2c313c"
+                                border.width: 1
+                                implicitWidth: 120
+                                radius: 5
+                            }
+
+                            contentItem: Text {
+                                text: codecComboBox.displayText
+                                color: "#ecf0f1"
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 10
+                            }
+
+                            delegate: ItemDelegate {
+                                width: codecComboBox.width
+                                contentItem: Text {
+                                    text: modelData
+                                    color: "#e8eaed"
+                                    font: codecComboBox.font
+                                    elide: Text.ElideNone
+                                    verticalAlignment: Text.AlignVCenter
+                                    width: parent.width
+                                    clip: true
+                                }
+                                highlighted: codecComboBox.highlightedIndex === index
+                                background: Rectangle {
+                                    color: highlighted ? "#3d4450" : "#1e2228"
+                                }
+                            }
+
+                            popup: Popup {
+                                y: codecComboBox.height
+                                width: codecComboBox.width
+                                implicitHeight: contentItem.implicitHeight
+                                padding: 1
+
+                                contentItem: ListView {
+                                    clip: true
+                                    implicitHeight: contentHeight
+                                    model: codecComboBox.popup.visible ? codecComboBox.delegateModel : null
+                                    currentIndex: codecComboBox.highlightedIndex
+
+                                    ScrollIndicator.vertical: ScrollIndicator { }
+                                }
+
+                                background: Rectangle {
+                                    border.color: "#3d4450"
+                                    color: "#1e2228"
+                                    radius: 4
+                                }
+                            }
+                        }
+                    }
                 }
 
                 RowLayout {
@@ -309,12 +379,16 @@ Dialog {
                                 "aspect_ratio": videoController.aspect_ratio,
                                 "compression_level": exportCompression,
                                 "output_path": outputPath,
-                                "icc_profile": screenRecorder.icc_profile
+                                "icc_profile": screenRecorder.icc_profile,
+                                "codec_config": {"codec": codec.toLowerCase()}
                             }
 
                             if (sizeMap[currentSize][videoController.aspect_ratio]) {
                                 exportParams['output_size'] = sizeMap[currentSize][videoController.aspect_ratio]
                             }
+
+                            console.log("log: ", JSON.stringify(exportParams))
+
                             videoController.export_video(exportParams)
                             estimatedExportTime = 0
                             exportProgressBar.visible = true

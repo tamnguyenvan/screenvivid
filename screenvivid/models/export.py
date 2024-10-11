@@ -63,12 +63,55 @@ class FFmpegWriterThread(QThread):
         self.stop_flag = stop_flag
         self.export_params = export_params
 
-    def _get_ffmpeg_command(self, ffmpeg_path, output_path, fps, output_size):
+    def _get_ffmpeg_command(self, ffmpeg_path, output_path, fps, output_size, codec_config):
         os_name = get_os_name()
         width, height = output_size
-
         adjusted_width = (width + 1) & ~1
         adjusted_height = (height + 1) & ~1
+
+        # Get codec configuration from export_params
+        codec_config = self.export_params.get("codec_config", {})
+
+        # Default codec configurations for different platforms
+        default_configs = {
+            "macos": {
+                "codec": "h264_videotoolbox",
+                "params": {
+                    "allow_sw": "1",  # Allow software encoding fallback
+                    "pix_fmt": "yuv420p",
+                    "movflags": "+faststart",
+                    "q": "23"  # Quality parameter (equivalent to CRF/QP in x264)
+                }
+            },
+            "linux": {
+                "codec": "libx264",
+                "params": {
+                    "preset": "ultrafast",
+                    "crf": "23",  # Constant Rate Factor for quality
+                    "pix_fmt": "yuv420p",
+                    "movflags": "+faststart",
+                    "tune": "zerolatency"  # Optimize for fast encoding
+                }
+            },
+            "windows": {
+                "codec": "mpeg4",
+                "params": {
+                    "q:v": "5",     # Quality scale for MPEG-4 (2-31, lower is better)
+                    "pix_fmt": "yuv420p",
+                    "movflags": "+faststart",
+                    "max_muxing_queue_size": "1024"  # Windows-specific buffer size
+                }
+            }
+        }
+
+        # Get platform-specific defaults
+        platform_config = default_configs.get(os_name, default_configs["windows"])
+
+        # Merge with user-provided config, prioritizing user settings
+        current_config = {
+            "codec": codec_config.get("codec", platform_config["codec"]),
+            "params": {**platform_config["params"], **(codec_config.get("params", {}))}
+        }
 
         # Base command parameters common to all platforms
         base_cmd = [
@@ -81,35 +124,10 @@ class FFmpegWriterThread(QThread):
             '-vf', f'scale={adjusted_width}:{adjusted_height}'
         ]
 
-        if os_name == "macos":
-            # macOS specific - using VideoToolbox hardware acceleration
-            output_cmd = [
-                '-c:v', 'h264_videotoolbox',
-                "-allow_sw", "1",
-                '-pix_fmt', 'yuv420p',
-                '-preset', 'fast'
-            ]
-        elif os_name == "linux":
-            # Linux specific - using libx264
-            output_cmd = [
-                '-c:v', 'libx264',
-                '-preset', 'ultrafast',
-                '-crf', '23',
-                '-pix_fmt', 'yuv420p',
-                '-movflags', '+faststart'
-            ]
-        else:
-            # Windows specific
-            output_cmd = [
-                '-c:v', 'libx264',
-                '-preset', 'ultrafast',
-                '-pix_fmt', 'yuv420p',
-                '-profile:v', 'high',
-                '-level', '4.1',
-                '-qp', '23',
-                '-movflags', '+faststart',
-                '-max_muxing_queue_size', '1024'
-            ]
+        # Build output command from configuration
+        output_cmd = ['-c:v', current_config["codec"]]
+        for key, value in current_config["params"].items():
+            output_cmd.extend([f'-{key}', str(value)])
 
         # Combine commands and add output path
         return base_cmd + output_cmd + ['-y', output_path]
@@ -121,6 +139,7 @@ class FFmpegWriterThread(QThread):
         output_file = self.export_params.get("output_path", "output_video")
         icc_profile = self.export_params.get("icc_profile", None)
         total_frames = self.export_params.get("total_frames")
+        codec_config = self.export_params.get("codec_config", {})
 
         # Determine output path
         video_dir = "Videos" if get_os_name() != "macos" else "Movies"
@@ -131,7 +150,7 @@ class FFmpegWriterThread(QThread):
         ffmpeg_path = get_ffmpeg_path()
 
         # FFmpeg command setup - changed pixel format to bgr24
-        cmd = self._get_ffmpeg_command(ffmpeg_path, output_path, fps, output_size)
+        cmd = self._get_ffmpeg_command(ffmpeg_path, output_path, fps, output_size, codec_config)
         logger.debug(f"FFmpeg export command: {' '.join(cmd)}")
 
         # Start FFmpeg process with larger pipe buffer
