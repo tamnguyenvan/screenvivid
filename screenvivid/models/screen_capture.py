@@ -43,7 +43,8 @@ class MSSScreenCapture(BaseScreenCapture):
         If region is None, capture the entire screen. Otherwise, capture the specified region.
         """
         if region:
-            return {"top": int(region[1]), "left": int(region[0]), "width": int(region[2]), "height": int(region[3])}
+            region = list(map(int, region))
+            return {"top": region[1], "left": region[0], "width": region[2], "height": region[3]}
         else:
             return self._sct.monitors[0]
 
@@ -77,7 +78,8 @@ class QuartzScreenCapture(BaseScreenCapture):
 
         with objc.autorelease_pool():
             if self._region:
-                rect = Quartz.CGRectMake(self._region[0], self._region[1], self._region[2], self._region[3])
+                region = list(map(int, self._region))
+                rect = Quartz.CGRectMake(region[0], region[1], region[2], region[3])
                 screenshot = Quartz.CGDisplayCreateImage(Quartz.CGMainDisplayID())
                 screenshot_region = Quartz.CGImageCreateWithImageInRect(screenshot, rect)
             else:

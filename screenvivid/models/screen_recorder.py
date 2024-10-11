@@ -251,7 +251,7 @@ class ScreenRecordingThread:
                         image = Image.open(io.BytesIO(screenshot_bytes))
                         icc_profile_data = image.info.get("icc_profile")
                         if icc_profile_data:
-                            self._icc_profile = generate_temp_file(extensions=".icc")
+                            self._icc_profile = generate_temp_file(extension=".icc")
                             logger.debug(f"ICC profile file: {self._icc_profile}")
                         icc_profile_probe_tries += 1
 
@@ -283,7 +283,6 @@ class ScreenRecordingThread:
 
         # Initialize timing variables
         self._start_time = time.time()
-        # next_frame_time = self._start_time + target_interval
         frame_count = 0
 
         try:
@@ -393,6 +392,7 @@ class ScreenRecordingThread:
                 "-i", "-",
                 "-vf", f"scale={adjusted_width}:{adjusted_height}",
                 "-c:v", "h264_videotoolbox",  # Hardware acceleration for macOS
+                "-allow_sw", "1",
                 "-pix_fmt", "yuv420p",
                 "-preset", "fast",
                 "-y",
