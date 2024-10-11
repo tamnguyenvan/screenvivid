@@ -165,7 +165,7 @@ Dialog {
                         }
                         ComboBox {
                             id: formatComboBox
-                            model: ["MP4", "AVI"]
+                            model: ["MP4"]
                             currentIndex: 0
                             onCurrentTextChanged: exportFormat = currentText
                             width: 120

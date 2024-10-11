@@ -252,6 +252,8 @@ class ScreenRecordingThread:
                         icc_profile_data = image.info.get("icc_profile")
                         if icc_profile_data:
                             self._icc_profile = generate_temp_file(extension=".icc")
+                            with open(self._icc_profile, "wb") as f:
+                                f.write(icc_profile_data)
                             logger.debug(f"ICC profile file: {self._icc_profile}")
                         icc_profile_probe_tries += 1
 

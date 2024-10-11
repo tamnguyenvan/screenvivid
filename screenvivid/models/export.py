@@ -154,12 +154,12 @@ class FFmpegWriterThread(QThread):
                 bufsize=10*1024*1024,
             )
         icc_data = None
-        if icc_profile:
-            with open(icc_profile, "rb") as f:
-                icc_data = f.read()
-
-        frame_count = 0
         try:
+            if icc_profile:
+                with open(icc_profile, "rb") as f:
+                    icc_data = f.read()
+
+            frame_count = 0
             while not self.stop_flag.is_set():
                 try:
                     frame = self.frame_queue.get(timeout=0.5)
