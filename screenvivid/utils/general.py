@@ -63,26 +63,47 @@ def get_os_name():
     return os_name
 
 def get_ffmpeg_path():
+    """
+    Get the FFmpeg executable path based on the operating system and environment.
+    Returns the path wrapped in appropriate quotes if needed.
+
+    Returns:
+        str: The quoted path to the FFmpeg executable
+    """
     if os.getenv("FFMPEG_PATH"):
-        return os.environ["FFMPEG_PATH"]
-
-    os_name = get_os_name()
-    if os_name == "linux":
-        base_path = ""
+        ffmpeg_path = os.environ["FFMPEG_PATH"]
     else:
-        if getattr(sys, 'frozen', False):
-            # If running in a PyInstaller bundle
-            base_path = Path(sys._MEIPASS)
+        os_name = get_os_name()
+
+        # Set base path based on environment
+        if os_name == "linux":
+            base_path = Path("")
         else:
-            # If running in a regular Python environment
-            base_path = Path(__file__).parents[2]
+            if getattr(sys, 'frozen', False):
+                # If running in a PyInstaller bundle
+                base_path = Path(sys._MEIPASS)
+            else:
+                # If running in a regular Python environment
+                base_path = Path(__file__).parents[2]
 
-    if os_name == "windows":
-        ffmpeg_binary_name = "ffmpeg.exe"
-    else:
-        ffmpeg_binary_name = "ffmpeg"
+        # Set binary name based on OS
+        ffmpeg_binary_name = "ffmpeg.exe" if os_name == "windows" else "ffmpeg"
 
-    return os.path.join(base_path, ffmpeg_binary_name)
+        # Construct full path
+        ffmpeg_path = str(base_path / ffmpeg_binary_name)
+
+    # Wrap path in quotes if it contains spaces
+    if " " in ffmpeg_path:
+        if os_name == "windows":
+            # Windows prefers double quotes
+            if not ffmpeg_path.startswith('"'):
+                ffmpeg_path = f'"{ffmpeg_path}"'
+        else:
+            # Unix-like systems use single quotes
+            if not ffmpeg_path.startswith("'"):
+                ffmpeg_path = f"'{ffmpeg_path}'"
+
+    return ffmpeg_path
 
 def generate_temp_file(extension):
     return tempfile.mktemp(suffix=extension)
