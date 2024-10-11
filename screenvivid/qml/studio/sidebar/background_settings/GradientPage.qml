@@ -31,6 +31,7 @@ Item {
                 Label {
                     text: "Start Color:"
                     color: "#AAAAAA"
+                    Layout.minimumWidth: 80
                 }
                 Rectangle {
                     width: 50
@@ -48,6 +49,7 @@ Item {
                 Label {
                     text: "End Color:"
                     color: "#AAAAAA"
+                    Layout.minimumWidth: 80
                 }
                 Rectangle {
                     width: 50
@@ -65,6 +67,7 @@ Item {
                 Label {
                     text: "Angle: " + gradientAngle.toFixed(0) + "°"
                     color: "#AAAAAA"
+                    Layout.minimumWidth: 80
                 }
                 Slider {
                     id: angleSlider

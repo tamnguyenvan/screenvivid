@@ -19,6 +19,23 @@ Rectangle {
         contentHeight: contentColumn.height
         clip: true
 
+        ScrollBar.vertical: ScrollBar {
+            id: hScrollBar
+            background: Rectangle {
+                color: "transparent"
+            }
+            contentItem: Rectangle {
+                implicitHeight: 100
+                implicitWidth: 10
+                radius: height / 2
+                color: {
+                    if (hScrollBar.pressed) return "#81848c"  // Pressed state
+                    if (hScrollBar.hovered) return "#6e7177"  // Hover state
+                    return "#5d6067"  // Normal state
+                }
+            }
+        }
+
         ColumnLayout {
             id: contentColumn
             width: parent.width

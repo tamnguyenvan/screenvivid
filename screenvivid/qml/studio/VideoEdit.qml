@@ -15,6 +15,23 @@ Rectangle {
         contentHeight: parent.height
         property real currentScrollX: 0
 
+        ScrollBar.horizontal: ScrollBar {
+            id: hScrollBar
+            background: Rectangle {
+                color: "transparent"
+            }
+            contentItem: Rectangle {
+                implicitWidth: 100
+                implicitHeight: 10
+                radius: height / 2
+                color: {
+                    if (hScrollBar.pressed) return "#81848c"  // Pressed state
+                    if (hScrollBar.hovered) return "#6e7177"  // Hover state
+                    return "#5d6067"  // Normal state
+                }
+            }
+        }
+
         Behavior on contentX {
             enabled: !isPlaying
             NumberAnimation {
