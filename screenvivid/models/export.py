@@ -103,6 +103,8 @@ class FFmpegWriterThread(QThread):
                 '-c:v', 'libx264',
                 '-preset', 'ultrafast',
                 '-pix_fmt', 'yuv420p',
+                '-profile:v', 'high',
+                '-level', '4.1',
                 '-qp', '23',
                 '-movflags', '+faststart',
                 '-max_muxing_queue_size', '1024'
