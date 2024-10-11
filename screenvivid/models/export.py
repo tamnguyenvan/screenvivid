@@ -53,16 +53,12 @@ class VideoReaderThread(QThread):
         # Signal that the reading is done
         self.frame_queue.put(None)
 
-
 # Codec-specific configurations
 codec_params = {
     "mpeg4": {
         "codec": "mpeg4",
         "params": {
-            "q:v": "2",         # Highest quality (2-31, lower is better)
-            "trellis": "2",     # Compression quality
-            "mbd": "rd",        # macroblock decision: rate distortion
-            "flags": "+mv4",    # Enable 4MV (4 motion vectors per macroblock)
+            "q:v": "1",         # Highest quality (1-31, lower is better)
             "pix_fmt": "yuv420p",
             "movflags": "+faststart"
         }
@@ -70,9 +66,8 @@ codec_params = {
     "h264": {
         "codec": "libx264",
         "params": {
-            "preset": "ultrafast",
-            "crf": "23",        # Constant Rate Factor (18-28, lower is better)
-            "tune": "zerolatency",
+            "preset": "veryslow",  # Slowest preset for best quality
+            "crf": "18",           # Very high quality (0-51, lower is better)
             "pix_fmt": "yuv420p",
             "movflags": "+faststart"
         }
@@ -82,20 +77,10 @@ codec_params = {
 # Platform-specific overrides and additions
 platform_specific = {
     "windows": {
-        "default_codec": "mpeg4",
-        "params": {
-            "max_muxing_queue_size": "1024"  # Windows-specific buffer size
-        }
+        "default_codec": "h264"
     },
     "macos": {
-        "default_codec": "h264",
-        "h264": {
-            "codec": "h264_videotoolbox",  # Use hardware acceleration on macOS
-            "params": {
-                "allow_sw": "1",
-                "q": "23"      # Quality parameter for VideoToolbox
-            }
-        }
+        "default_codec": "h264"
     },
     "linux": {
         "default_codec": "h264"
@@ -108,7 +93,7 @@ def get_codec_config(os_name, requested_codec=None):
 
     Args:
         os_name (str): Operating system name ('windows', 'macos', 'linux')
-        requested_codec (str, optional): Specific codec to use. If None, uses platform default.
+        requested_codec (str, optional): Specific codec to use. If None, uses h264.
 
     Returns:
         dict: Combined codec configuration
@@ -116,13 +101,10 @@ def get_codec_config(os_name, requested_codec=None):
     # Get platform settings
     platform = platform_specific.get(os_name, {})
 
-    # Determine which codec to use
-    codec_name = requested_codec or platform.get('default_codec', 'h264')
+    # Determine which codec to use (default to h264 if not specified)
+    codec_name = requested_codec if requested_codec in codec_params else "h264"
 
     # Start with base codec configuration
-    if codec_name not in codec_params:
-        raise ValueError(f"Unsupported codec: {codec_name}")
-
     config = {
         "codec": codec_params[codec_name]["codec"],
         "params": dict(codec_params[codec_name]["params"])
@@ -140,7 +122,6 @@ def get_codec_config(os_name, requested_codec=None):
         config["params"].update(platform["params"])
 
     return config
-
 
 class FFmpegWriterThread(QThread):
     progress = Signal(float)
