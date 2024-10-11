@@ -85,6 +85,7 @@ class FFmpegWriterThread(QThread):
             # macOS specific - using VideoToolbox hardware acceleration
             output_cmd = [
                 '-c:v', 'h264_videotoolbox',
+                "-allow_sw", "1",
                 '-pix_fmt', 'yuv420p',
                 '-preset', 'fast'
             ]
