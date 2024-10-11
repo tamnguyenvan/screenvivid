@@ -53,6 +53,95 @@ class VideoReaderThread(QThread):
         # Signal that the reading is done
         self.frame_queue.put(None)
 
+
+# Codec-specific configurations
+codec_params = {
+    "mpeg4": {
+        "codec": "mpeg4",
+        "params": {
+            "q:v": "2",         # Highest quality (2-31, lower is better)
+            "trellis": "2",     # Compression quality
+            "mbd": "rd",        # macroblock decision: rate distortion
+            "flags": "+mv4",    # Enable 4MV (4 motion vectors per macroblock)
+            "pix_fmt": "yuv420p",
+            "movflags": "+faststart"
+        }
+    },
+    "h264": {
+        "codec": "libx264",
+        "params": {
+            "preset": "ultrafast",
+            "crf": "23",        # Constant Rate Factor (18-28, lower is better)
+            "tune": "zerolatency",
+            "pix_fmt": "yuv420p",
+            "movflags": "+faststart"
+        }
+    }
+}
+
+# Platform-specific overrides and additions
+platform_specific = {
+    "windows": {
+        "default_codec": "mpeg4",
+        "params": {
+            "max_muxing_queue_size": "1024"  # Windows-specific buffer size
+        }
+    },
+    "macos": {
+        "default_codec": "h264",
+        "h264": {
+            "codec": "h264_videotoolbox",  # Use hardware acceleration on macOS
+            "params": {
+                "allow_sw": "1",
+                "q": "23"      # Quality parameter for VideoToolbox
+            }
+        }
+    },
+    "linux": {
+        "default_codec": "h264"
+    }
+}
+
+def get_codec_config(os_name, requested_codec=None):
+    """
+    Get codec configuration for specified OS and codec.
+
+    Args:
+        os_name (str): Operating system name ('windows', 'macos', 'linux')
+        requested_codec (str, optional): Specific codec to use. If None, uses platform default.
+
+    Returns:
+        dict: Combined codec configuration
+    """
+    # Get platform settings
+    platform = platform_specific.get(os_name, {})
+
+    # Determine which codec to use
+    codec_name = requested_codec or platform.get('default_codec', 'h264')
+
+    # Start with base codec configuration
+    if codec_name not in codec_params:
+        raise ValueError(f"Unsupported codec: {codec_name}")
+
+    config = {
+        "codec": codec_params[codec_name]["codec"],
+        "params": dict(codec_params[codec_name]["params"])
+    }
+
+    # Apply platform-specific codec override if exists
+    if codec_name in platform:
+        if "codec" in platform[codec_name]:
+            config["codec"] = platform[codec_name]["codec"]
+        if "params" in platform[codec_name]:
+            config["params"].update(platform[codec_name]["params"])
+
+    # Apply platform-specific general params if exists
+    if "params" in platform:
+        config["params"].update(platform["params"])
+
+    return config
+
+
 class FFmpegWriterThread(QThread):
     progress = Signal(float)
     finished = Signal()
@@ -69,67 +158,30 @@ class FFmpegWriterThread(QThread):
         adjusted_width = (width + 1) & ~1
         adjusted_height = (height + 1) & ~1
 
-        # Get codec configuration from export_params
-        codec_config = self.export_params.get("codec_config", {})
+        # Get codec configuration from export_params or use default
+        requested_codec = self.export_params.get("codec")
+        codec_config = get_codec_config(os_name, requested_codec)
 
-        # Default codec configurations for different platforms
-        default_configs = {
-            "macos": {
-                "codec": "h264_videotoolbox",
-                "params": {
-                    "allow_sw": "1",  # Allow software encoding fallback
-                    "pix_fmt": "yuv420p",
-                    "movflags": "+faststart",
-                    "q": "23"  # Quality parameter (equivalent to CRF/QP in x264)
-                }
-            },
-            "linux": {
-                "codec": "libx264",
-                "params": {
-                    "preset": "ultrafast",
-                    "crf": "23",  # Constant Rate Factor for quality
-                    "pix_fmt": "yuv420p",
-                    "movflags": "+faststart",
-                    "tune": "zerolatency"  # Optimize for fast encoding
-                }
-            },
-            "windows": {
-                "codec": "mpeg4",
-                "params": {
-                    "q:v": "5",     # Quality scale for MPEG-4 (2-31, lower is better)
-                    "pix_fmt": "yuv420p",
-                    "movflags": "+faststart",
-                    "max_muxing_queue_size": "1024"  # Windows-specific buffer size
-                }
-            }
-        }
+        # Allow override of codec parameters from export_params
+        if "codec_params" in self.export_params:
+            codec_config["params"].update(self.export_params["codec_params"])
 
-        # Get platform-specific defaults
-        platform_config = default_configs.get(os_name, default_configs["windows"])
-
-        # Merge with user-provided config, prioritizing user settings
-        current_config = {
-            "codec": codec_config.get("codec", platform_config["codec"]),
-            "params": {**platform_config["params"], **(codec_config.get("params", {}))}
-        }
-
-        # Base command parameters common to all platforms
+        # Base command parameters
         base_cmd = [
             ffmpeg_path,
             '-f', 'image2pipe',
             '-framerate', str(fps),
             '-s', f"{output_size[0]}x{output_size[1]}",
-            '-vcodec', 'mjpeg',  # Using MJPEG for input pipe
+            '-vcodec', 'mjpeg',
             '-i', '-',
             '-vf', f'scale={adjusted_width}:{adjusted_height}'
         ]
 
         # Build output command from configuration
-        output_cmd = ['-c:v', current_config["codec"]]
-        for key, value in current_config["params"].items():
+        output_cmd = ['-c:v', codec_config["codec"]]
+        for key, value in codec_config["params"].items():
             output_cmd.extend([f'-{key}', str(value)])
 
-        # Combine commands and add output path
         return base_cmd + output_cmd + ['-y', output_path]
 
     def run(self):

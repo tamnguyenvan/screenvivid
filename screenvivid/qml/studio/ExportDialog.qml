@@ -236,7 +236,7 @@ Dialog {
                         ComboBox {
                             id: codecComboBox
                             model: ["H264", "MPEG4"]
-                            currentIndex: Qt.platform.os === "windows" ? 1 : 0
+                            currentIndex: 0
                             onCurrentTextChanged: codec = currentText
                             width: 120
                             height: 30
@@ -380,14 +380,12 @@ Dialog {
                                 "compression_level": exportCompression,
                                 "output_path": outputPath,
                                 "icc_profile": screenRecorder.icc_profile,
-                                "codec_config": {"codec": codec.toLowerCase()}
+                                "codec": codec.toLowerCase(),
                             }
 
                             if (sizeMap[currentSize][videoController.aspect_ratio]) {
                                 exportParams['output_size'] = sizeMap[currentSize][videoController.aspect_ratio]
                             }
-
-                            console.log("log: ", JSON.stringify(exportParams))
 
                             videoController.export_video(exportParams)
                             estimatedExportTime = 0
