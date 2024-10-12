@@ -13,14 +13,20 @@ Item {
     QtObject {
         id: shortcutManager
         function handleToggleFullScreenVideoPreview() {
-            fullScreenWindow.showFullScreen()
+            if (fullScreenWindow.visibility == Window.FullScreen) {
+                fullScreenWindow.close()
+            } else {
+                fullScreenWindow.showFullScreen()
+            }
         }
     }
 
     Shortcut {
         sequence: "F"
         context: Qt.WindowShortcut
-        onActivated: shortcutManager.handleToggleFullScreenVideoPreview()
+        onActivated: {
+            shortcutManager.handleToggleFullScreenVideoPreview()
+        }
     }
 
     Rectangle {
@@ -75,7 +81,7 @@ Item {
             id: videoPreviewShortcutManager
             readonly property bool isMac: Qt.platform.os === "osx"
             readonly property string undoModifier: isMac ? "Meta" : "Ctrl"
-            
+
             function handleUndo() {
                 clipTrackModel.undo()
                 videoController.undo()
@@ -281,8 +287,6 @@ Item {
 
             Keys.onPressed: event => {
                 if (event.key === Qt.Key_Escape) {
-                    fullScreenWindow.close()
-                } else if (event.key === Qt.Key_F) {
                     fullScreenWindow.close()
                 }
             }

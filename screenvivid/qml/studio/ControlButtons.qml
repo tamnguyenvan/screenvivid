@@ -22,24 +22,32 @@ Item {
                     Layout.fillHeight: true
                     Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                     Layout.margins: 4
-                    Layout.preferredWidth: 120
+                    Layout.preferredWidth: 150
+                    property var aspectRatioMap: {
+                                        "Auto": "auto",
+                                        "Wide 16:9": "16:9",
+                                        "Vertical 9:16": "9:16",
+                                        "Classic 4:3": "4:3",
+                                        "Tall 3:4": "3:4",
+                                        "Square 1:1": "1:1",
+                                        "Wide 16:10": "16:10",
+                                        "Tall 10:16": "10:16"
+                                    }
 
-                    currentIndex: 0
-                    model: ["Auto", "16:9", "9:16", "4:3", "3:4", "1:1", "16:10", "10:16"]
-                    onCurrentIndexChanged: {
-                        videoController.aspect_ratio = model[currentIndex].toLowerCase()
-                        videoController.get_current_frame()
-                    }
-
+                                    currentIndex: 0
+                                    model: Object.keys(aspectRatioMap)
+                                    onCurrentIndexChanged: {
+                                        videoController.aspect_ratio = aspectRatioMap[model[currentIndex]].toLowerCase()
+                                        videoController.get_current_frame()
+                                    }
                     background: Rectangle {
-                        implicitWidth: 100
+                        implicitWidth: 150
                         implicitHeight: 40
                         color: aspectRatios.pressed ? "#2c313c" : "#1e2228"
                         border.color: aspectRatios.pressed ? "#3d4450" : "#2c313c"
                         border.width: 1
                         radius: 4
                     }
-
                     contentItem: Text {
                         leftPadding: 10
                         rightPadding: aspectRatios.indicator.width + aspectRatios.spacing
@@ -47,45 +55,48 @@ Item {
                         font: aspectRatios.font
                         color: "#e8eaed"
                         verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideNone
+                        elide: Text.ElideRight
                         width: aspectRatios.width - leftPadding - rightPadding
-                        clip: true
                     }
-
                     delegate: ItemDelegate {
-                        width: aspectRatios.width
+                        width: aspectRatios.popup.width
+                        height: 40
                         contentItem: Text {
                             text: modelData
                             color: "#e8eaed"
                             font: aspectRatios.font
-                            elide: Text.ElideNone
+                            elide: Text.ElideRight
                             verticalAlignment: Text.AlignVCenter
-                            width: parent.width
-                            clip: true
+                            leftPadding: 10
                         }
                         highlighted: aspectRatios.highlightedIndex === index
                         background: Rectangle {
-                            color: highlighted ? "#3d4450" : "#1e2228"
+                            color: highlighted ? "#3d4450" : "transparent"
                         }
                     }
-
                     popup: Popup {
-                        y: aspectRatios.height - 1
-                        width: aspectRatios.width
+                        y: aspectRatios.height + 4
+                        x: -(width - aspectRatios.width) / 2
+                        width: Math.max(aspectRatios.width, 180)  // Increased minimum width
                         implicitHeight: contentItem.implicitHeight
                         padding: 1
-
                         contentItem: ListView {
                             clip: true
                             implicitHeight: contentHeight
                             model: aspectRatios.popup.visible ? aspectRatios.delegateModel : null
                             currentIndex: aspectRatios.highlightedIndex
+                            ScrollIndicator.vertical: ScrollIndicator {}
                         }
-
                         background: Rectangle {
                             border.color: "#3d4450"
                             color: "#1e2228"
                             radius: 4
+                        }
+                        enter: Transition {
+                            NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: 100 }
+                        }
+                        exit: Transition {
+                            NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: 100 }
                         }
                     }
                 }
