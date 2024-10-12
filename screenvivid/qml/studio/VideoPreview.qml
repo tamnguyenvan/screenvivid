@@ -53,13 +53,8 @@ Item {
         anchors.bottom: parent.bottom
         anchors.margins: 0
         icon.source: "qrc:/resources/icons/full_screen.svg"
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            hoverEnabled: true
-            onPressed: {
-                fullScreenWindow.showFullScreen()
-            }
+        onClicked: {
+            fullScreenWindow.showFullScreen()
         }
     }
 
@@ -116,8 +111,19 @@ Item {
         }
 
         Shortcut {
-            sequence: videoPreviewShortcutManager.undoModifier + "+Z"
-            onActivated: videoPreviewShortcutManager.handleUndo()
+            sequences: [StandardKey.Cancel]
+            onActivated: fullScreenWindow.close()
+        }
+
+        Shortcut {
+            sequence: "F"
+            onActivated: {
+                if (fullScreenWindow.visibility == Window.FullScreen) {
+                    fullScreenWindow.close()
+                } else {
+                    fullScreenWindow.showFullScreen()
+                }
+            }
         }
 
         Rectangle {
@@ -283,12 +289,6 @@ Item {
                 interval: 2000
                 repeat: false
                 onTriggered: controlBar.visible = false
-            }
-
-            Keys.onPressed: event => {
-                if (event.key === Qt.Key_Escape) {
-                    fullScreenWindow.close()
-                }
             }
         }
 
