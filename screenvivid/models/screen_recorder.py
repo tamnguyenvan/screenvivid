@@ -82,7 +82,7 @@ class ScreenRecorderModel(QObject):
     def cancel_recording(self):
         self.stop_recording()
         if os.path.exists(self._output_path):
-            os.remove(self._output_path)
+            self._screen_recording_thread.clean()
 
 class ScreenRecordingThread:
     def __init__(self, output_path: str = None, start_delay: float = 0.5):
@@ -151,7 +151,7 @@ class ScreenRecordingThread:
 
         # Start FFmpeg process
         cmd = self._get_ffmpeg_command()
-        logger.debug(f"FFmpeg command: {cmd}")
+        logger.info(f"FFmpeg command: {cmd}")
         if self._os_name == "windows":
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -219,11 +219,18 @@ class ScreenRecordingThread:
             self._ffmpeg_process.communicate(b"q")
             self._ffmpeg_process.wait()
 
-        logger.debug(f"Stopped recording")
+        logger.info(f"Stopped recording")
+
+    def clean(self):
+        if os.path.exists(self._output_path):
+            try:
+                os.remove(self._output_path)
+            except:
+                logger.warning(f"Failed to remove {self._output_path}")
 
     def _capture_screen(self):
         """Thread 1: Capture screen and put data into queues"""
-        logger.debug("Started capturing")
+        logger.info("Started capturing")
         target_interval = 1.0 / self._fps
         next_frame_time = time.time() + target_interval
 
@@ -280,7 +287,7 @@ class ScreenRecordingThread:
 
     def _write_frames(self):
         """Thread 3: Write image bytes to FFmpeg stdin with precise timing"""
-        logger.debug("Started ffmpeg writer")
+        logger.info("Started ffmpeg writer")
         target_interval = 1.0 / self._fps
 
         # Initialize timing variables
@@ -333,7 +340,7 @@ class ScreenRecordingThread:
 
     def _process_mouse_events(self):
         """Thread 2: Process mouse events using frame_index"""
-        logger.debug("Started mouse tracking thread")
+        logger.info("Started mouse tracking thread")
         try:
             last_frame = -1
             while not self._is_stopped.is_set():
