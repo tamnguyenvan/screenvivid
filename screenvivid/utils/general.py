@@ -92,17 +92,6 @@ def get_ffmpeg_path():
         # Construct full path
         ffmpeg_path = str(base_path / ffmpeg_binary_name)
 
-    # Wrap path in quotes if it contains spaces
-    if " " in ffmpeg_path:
-        if os_name == "windows":
-            # Windows prefers double quotes
-            if not ffmpeg_path.startswith('"'):
-                ffmpeg_path = f'"{ffmpeg_path}"'
-        else:
-            # Unix-like systems use single quotes
-            if not ffmpeg_path.startswith("'"):
-                ffmpeg_path = f"'{ffmpeg_path}'"
-
     return ffmpeg_path
 
 def generate_temp_file(extension):
