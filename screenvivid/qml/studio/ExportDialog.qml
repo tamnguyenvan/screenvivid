@@ -415,7 +415,12 @@ Dialog {
 
                 Text {
                     id: estimatedTimeText
-                    text: "Estimated export time: " + (estimatedExportTime >= 0 ? formatTime(estimatedExportTime) : "Calculating...")
+                    text: {
+                        var estimatedTimeText = ""
+                        if (estimatedExportTime < 0) estimatedTimeText = "Calculating..."
+                        else estimatedTimeText = formatTime(estimatedExportTime)
+                        "Estimated export time: " + estimatedTimeText
+                    }
                     color: "gray"
                     visible: isExporting
                 }
@@ -530,6 +535,6 @@ Dialog {
         exportProgressBar.value = 0
 
         estimatedTimeText.visible = false
-        estimatedExportTime = 0
+        estimatedExportTime = -1
     }
 }

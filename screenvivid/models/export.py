@@ -58,7 +58,7 @@ codec_params = {
     "mpeg4": {
         "codec": "mpeg4",
         "params": {
-            "q:v": "1",         # Highest quality (1-31, lower is better)
+            "q:v": "2",         # Highest quality (1-31, lower is better)
             "pix_fmt": "yuv420p",
             "movflags": "+faststart"
         }
@@ -66,7 +66,7 @@ codec_params = {
     "h264": {
         "codec": "libx264",
         "params": {
-            "preset": "veryslow",  # Slowest preset for best quality
+            "preset": "medium",  # Slowest preset for best quality
             "crf": "18",           # Very high quality (0-51, lower is better)
             "pix_fmt": "yuv420p",
             "movflags": "+faststart"
@@ -257,7 +257,7 @@ class FFmpegWriterThread(QThread):
             # Proper cleanup
             try:
                 if process.poll() is None:
-                    process.stdin.close()
+                    process.communicate(b"q")
                     process.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 process.kill()
