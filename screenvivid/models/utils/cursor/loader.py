@@ -76,7 +76,7 @@ class MacOSCursorLoader:
                 bgra = cv2.cvtColor(img_array, cv2.COLOR_RGBA2BGRA)
                 self.cursor_theme.setdefault(width, {}).setdefault(state, []).append({
                     "image": bgra,
-                    "offset": cursor.hotSpot()
+                    "offset": cursor.hotSpot()  # ignore
                 })
             except Exception as e:
                 logger.error(f"Failed to load cursor state '{state}': {e}")
