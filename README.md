@@ -5,7 +5,7 @@
 
 ## Overview
 
-[ScreenVivid](https://screenvivid.com) is a powerful and user-friendly screen recording application designed to help you capture your screen and enhance your recordings with intuitive editing features. Whether you're creating tutorials, recording meetings, or capturing gameplay, ScreenVivid is the perfect tool for you.
+[ScreenVivid](https://screenvivid.com) is a simple and user-friendly screen recording application designed to help you capture your screen and enhance your recordings with intuitive editing features. Whether you're creating tutorials, recording meetings, or capturing gameplay, ScreenVivid is the perfect tool for you.
 
 🚨 **Important Note**: ScreenVivid is intended for non-commercial use only. We encourage you to review the license for more information to ensure compliance. Your understanding and adherence to this guideline are greatly appreciated!
 
@@ -17,7 +17,7 @@
   - [Linux Installation](#linux-installation)
   - [Windows Installation](#windows-installation)
   - [MacOS Installation](#macos-installation)
-  - [Building from Source](#building-from-source)
+  - [Running from Source](#running-from-source)
 - [Advantages](#advantages)
 - [Current Limitations](#current-limitations)
 - [FAQs](#faqs)
@@ -47,12 +47,13 @@
 - **Linux**:
   - **Minimum Requirements**: Python 3.9+, glibc 2.28+, X11 (recommended: Ubuntu 21.04+ or Debian 11+), 4GB RAM (8GB recommended)
   - **Compatibility Note**: ScreenVivid only supports Python 3.9+ and is optimized for systems running glibc 2.28+. Additionally, it is designed specifically for X11 environments. While it may work on other systems, such as Wayland, its functionality is not guaranteed.
+
 ### Linux Installation
 Download the latest .deb package from our [Releases page](https://github.com/tamnguyenvan/screenvivid/releases).
 
 ```bash
 # Ubuntu/Debian (apt-get)
-sudo dpkg -i screenvivid_x.x.x_amd64.deb
+sudo dpkg -i screenvivid-x.x.x-amd64.deb
 
 # Install missing packages if needed
 sudo apt install -f
@@ -79,7 +80,7 @@ Download the latest .dmg package from our [Releases page](https://github.com/tam
 
 🚨 **Important Note:** As the app is not notarized, Gatekeeper may display a warning. To proceed, go to System `Settings > Privacy & Security > Security`, select "Open Anyway", and confirm with your login password. For more information, please refer to [this guide](https://support.apple.com/en-vn/guide/mac-help/mchleab3a043/mac).
 
-### Building from Source
+### Running from Source
 
 For systems without installation file support, ScreenVivid can be run using Python by following these steps:
 
@@ -95,6 +96,7 @@ sudo dnf groupinstall -y "Development Tools" && sudo dnf install -y python3-deve
 
 # macOS:
 brew install ffmpeg
+## or download it from https://evermeet.cx/ffmpeg/ffmpeg-7.1.zip, unzip and put ffmpeg binary file in the root of the project folder.
 
 # Windows:
 ## 1. Download the FFmpeg static binary for Windows:
@@ -136,11 +138,12 @@ python -m screenvivid.main
 - **Cross-platform**: Available on MacOS, Windows, and Ubuntu/Debian, ensuring you can record your screen regardless of your operating system.
 - **Intuitive and simple interface**: ScreenVivid's user-friendly interface makes it easy to start recording and editing your screen captures.
 - **Completely free**: ScreenVivid is completely free to use and open-source, allowing the community to contribute and improve the application.
-- **Lightweight and fast**: ScreenVivid is designed to be lightweight and fast, ensuring a smooth recording experience.
+- **High quality**: ScreenVivid is designed to provide high quality, ensuring excellent video recording quality and output video quality.
 
 ## Current Limitations
 
 - **Advanced features**: Advanced features like zoom, audio capture, and webcam integration are not yet available.
+- **Large size**: The application currently is quite heavy.
 
 ## FAQs
 
