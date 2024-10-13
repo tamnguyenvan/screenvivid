@@ -69,7 +69,7 @@ Dialog {
         if (screenWidth >= 3840 || screenHeight >= 2160) {
             return "4K"
         } else if (screenWidth >= 2560 || screenHeight >= 1440) {
-            return "2k"
+            return "2K"
         } else if (screenWidth >= 1920 || screenHeight >= 1080) {
             return "1080p"
         } else {
