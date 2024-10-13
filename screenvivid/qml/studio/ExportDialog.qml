@@ -19,42 +19,34 @@ Dialog {
     property color accentColor: "#545EEE"
     property color backgroundColor: "#808080"
     property var outputSize
-    property string currentSize: "1080p"
+    property string currentSize: determineCurrentSize()
     property var sizeMap: {
         '720p': {
-            '16:10': [1280, 800],
             '16:9': [1280, 720],
             '4:3': [960, 720],
             '1:1': [720, 720],
             '9:16': [720, 1280],
-            '10:16': [800, 1280],
             '3:4': [720, 960]
         },
         '1080p': {
-            '16:10': [1920, 1200],
             '16:9': [1920, 1080],
             '4:3': [1440, 1080],
             '1:1': [1080, 1080],
             '9:16': [1080, 1920],
-            '10:16': [1200, 1920],
             '3:4': [1080, 1440]
         },
-        '2k': {
-            '16:10': [2560, 1600],
+        '2K': {
             '16:9': [2560, 1440],
             '4:3': [1920, 1440],
             '1:1': [1440, 1440],
             '9:16': [1440, 2560],
-            '10:16': [1600, 2560],
             '3:4': [1440, 1920]
         },
         '4K': {
-            '16:10': [3840, 2400],
             '16:9': [3840, 2160],
             '4:3': [2880, 2160],
             '1:1': [2160, 2160],
             '9:16': [2160, 3840],
-            '10:16': [2400, 3840],
             '3:4': [2160, 2880]
         }
     }
@@ -69,6 +61,21 @@ Dialog {
 
     signal exportProgress(real progress)
     signal exportFinished
+
+    function determineCurrentSize() {
+        var screenWidth = Screen.width * Screen.devicePixelRatio
+        var screenHeight = Screen.height * Screen.devicePixelRatio
+
+        if (screenWidth >= 3840 || screenHeight >= 2160) {
+            return "4K"
+        } else if (screenWidth >= 2560 || screenHeight >= 1440) {
+            return "2k"
+        } else if (screenWidth >= 1920 || screenHeight >= 1080) {
+            return "1080p"
+        } else {
+            return "720p"
+        }
+    }
 
     function gcd(a, b) {
         while (b !== 0) {
@@ -306,22 +313,25 @@ Dialog {
 
                     RadioButton {
                         text: "720p"
+                        checked: currentSize == "720p"
                         onCheckedChanged: if (checked)
                                               currentSize = "720p"
                     }
                     RadioButton {
                         text: "1080p"
-                        checked: true
+                        checked: currentSize == "1080p"
                         onCheckedChanged: if (checked)
                                               currentSize = "1080p"
                     }
                     RadioButton {
-                        text: "2k"
+                        text: "2K"
+                        checked: currentSize == "2K"
                         onCheckedChanged: if (checked)
-                                              currentSize = "2k"
+                                              currentSize = "2K"
                     }
                     RadioButton {
                         text: "4K"
+                        checked: currentSize == "4K"
                         onCheckedChanged: if (checked)
                                               currentSize = "4K"
                     }

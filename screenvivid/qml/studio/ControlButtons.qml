@@ -30,8 +30,6 @@ Item {
                                         "Classic 4:3": "4:3",
                                         "Tall 3:4": "3:4",
                                         "Square 1:1": "1:1",
-                                        "Wide 16:10": "16:10",
-                                        "Tall 10:16": "10:16"
                                     }
 
                                     currentIndex: 0

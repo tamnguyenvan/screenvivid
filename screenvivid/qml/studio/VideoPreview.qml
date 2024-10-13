@@ -23,7 +23,7 @@ Item {
 
     Shortcut {
         sequence: "F"
-        context: Qt.WindowShortcut
+        context: Qt.ApplicationShortcut
         onActivated: {
             shortcutManager.handleToggleFullScreenVideoPreview()
         }
@@ -71,65 +71,20 @@ Item {
         Material.primary: accentColor
         Material.accent: accentColor
 
-        // Shortcut management
-        QtObject {
-            id: videoPreviewShortcutManager
-            readonly property bool isMac: Qt.platform.os === "osx"
-            readonly property string undoModifier: isMac ? "Meta" : "Ctrl"
-
-            function handleUndo() {
-                clipTrackModel.undo()
-                videoController.undo()
-            }
-
-            function handlePlayPause() {
-                videoController.toggle_play_pause()
-            }
-
-            function handlePrevFrame() {
-                videoController.prev_frame()
-            }
-
-            function handleNextFrame() {
-                videoController.next_frame()
-            }
-        }
-
-        Shortcut {
-            sequence: "Space"
-            onActivated: videoPreviewShortcutManager.handlePlayPause()
-        }
-
-        Shortcut {
-            sequence: "Left"
-            onActivated: videoPreviewShortcutManager.handlePrevFrame()
-        }
-
-        Shortcut {
-            sequence: "Right"
-            onActivated: videoPreviewShortcutManager.handleNextFrame()
-        }
-
-        Shortcut {
-            sequences: [StandardKey.Cancel]
-            onActivated: fullScreenWindow.close()
-        }
-
-        Shortcut {
-            sequence: "F"
-            onActivated: {
-                if (fullScreenWindow.visibility == Window.FullScreen) {
-                    fullScreenWindow.close()
-                } else {
-                    fullScreenWindow.showFullScreen()
-                }
-            }
-        }
-
         Rectangle {
             anchors.fill: parent
             focus: true
             color: "#131519"
+
+            Keys.onPressed: (event) => {
+                if (event.key === Qt.Key_F) {
+                    shortcutManager.handleToggleFullScreenVideoPreview()
+                    event.accepted = true
+                } else if (event.key === Qt.Key_Escape) {
+                    shortcutManager.handleToggleFullScreenVideoPreview()
+                    event.accepted = true
+                }
+            }
 
             MouseArea {
                 anchors.fill: parent
