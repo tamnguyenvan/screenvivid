@@ -10,6 +10,7 @@ from screenvivid.models.utils import transforms
 from screenvivid.models.utils.manager.undo_redo import UndoRedoManager
 from screenvivid.models.export import ExportThread
 from screenvivid.utils.logging import logger
+from screenvivid.utils.general import safe_delete
 
 class VideoControllerModel(QObject):
     frameReady = Signal()
@@ -44,6 +45,8 @@ class VideoControllerModel(QObject):
         self.video_processor.playingChanged.connect(self.on_playing_changed)
 
         self.undo_redo_manager = UndoRedoManager()
+        self.video_path = None
+        self.is_recording_video = True
 
     @Property(int, notify=fpsChanged)
     def fps(self):
@@ -191,6 +194,8 @@ class VideoControllerModel(QObject):
 
     @Slot(str, dict, result="bool")
     def load_video(self, path, metadata):
+        self.video_path = path
+        self.is_recording_video = metadata["recording"]
         return self.video_processor.load_video(path, metadata)
 
     @Slot()
@@ -244,6 +249,12 @@ class VideoControllerModel(QObject):
             self.export_thread.wait()
             self.is_exporting = False
             self.exportFinished.emit()
+
+    @Slot()
+    def clean(self):
+        self.video_processor.clean()
+        if self.is_recording_video:
+            safe_delete(self.video_path)
 
     def update_export_progress(self, progress):
         self.exportProgress.emit(progress)
@@ -575,6 +586,13 @@ class VideoProcessor(QObject):
         result = self._transforms(input=frame, start_frame=self.start_frame + self.current_frame)
         result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
         return result
+
+    def clean(self):
+        try:
+            if self.video:
+                self.video.release()
+        except:
+            logger.warning(f"Failed to release video capture")
 
 class VideoThread(QThread):
     def __init__(self, video_processor):

@@ -81,6 +81,7 @@ Window {
                     const metadata = {
                         'mouse_events': {'click': [], 'move': {}},
                         'region': [],
+                        'recording': false
                     }
                     var success = videoController.load_video(selectedFile,
                                             metadata)

@@ -165,5 +165,10 @@ Window {
     }
 
     // Cleanup
-    onClosing: Qt.quit()
+    onClosing: {
+        screenRecorder.clean()
+        videoController.clean()
+
+        Qt.quit()
+    }
 }

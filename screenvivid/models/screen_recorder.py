@@ -13,7 +13,8 @@ from screenvivid import config
 from screenvivid.models.utils.cursor import get_cursor_state, CursorLoaderThread
 from screenvivid.models.screen_capture import get_screen_capture_class
 from screenvivid.utils.general import (
-    generate_video_path, get_os_name, get_ffmpeg_path, generate_temp_file
+    generate_video_path, get_os_name, get_ffmpeg_path,
+    generate_temp_file, safe_delete
 )
 from screenvivid.utils.logging import logger
 
@@ -81,8 +82,11 @@ class ScreenRecorderModel(QObject):
     @Slot()
     def cancel_recording(self):
         self.stop_recording()
-        if os.path.exists(self._output_path):
-            self._screen_recording_thread.clean()
+        self.clean()
+
+    @Slot()
+    def clean(self):
+        self._screen_recording_thread.clean()
 
 class ScreenRecordingThread:
     def __init__(self, output_path: str = None, start_delay: float = 0.5):
@@ -222,11 +226,8 @@ class ScreenRecordingThread:
         logger.info(f"Stopped recording")
 
     def clean(self):
-        if os.path.exists(self._output_path):
-            try:
-                os.remove(self._output_path)
-            except:
-                logger.warning(f"Failed to remove {self._output_path}")
+        safe_delete(self._output_path)
+        safe_delete(self._icc_profile)
 
     def _capture_screen(self):
         """Thread 1: Capture screen and put data into queues"""
@@ -235,8 +236,8 @@ class ScreenRecordingThread:
         next_frame_time = time.time() + target_interval
 
         # ScreenCapture
-        icc_profile_probe_tries = 0
-        icc_profile_probe_max_tries = 3
+        icc_profile_check_tries = 0
+        icc_profile_check_max_tries = 3
         screen_capture = get_screen_capture_class()
         try:
             with screen_capture(self._region) as sct:
@@ -252,7 +253,7 @@ class ScreenRecordingThread:
                     if (
                         pixel_format in ("jpeg", "png")
                         and not self._icc_profile
-                        and icc_profile_probe_tries < icc_profile_probe_max_tries
+                        and icc_profile_check_tries < icc_profile_check_max_tries
                     ):
                         # Extract icc profile
                         image = Image.open(io.BytesIO(screenshot_bytes))
@@ -262,7 +263,7 @@ class ScreenRecordingThread:
                             with open(self._icc_profile, "wb") as f:
                                 f.write(icc_profile_data)
                             logger.debug(f"ICC profile file: {self._icc_profile}")
-                        icc_profile_probe_tries += 1
+                        icc_profile_check_tries += 1
 
                     # Lưu timestamp của frame
                     frame_time = time.time()

@@ -153,7 +153,8 @@ Window {
                             // Load and show studio here
                             var metadata = {
                                 'mouse_events': screenRecorder.mouse_events,
-                                'region': screenRecorder.region
+                                'region': screenRecorder.region,
+                                'recording': true
                             }
                             var success = videoController.load_video(screenRecorder.output_path, metadata)
                             if (success) {
@@ -209,7 +210,8 @@ Window {
                     root.hide()
                     var metadata = {
                         'mouse_events': screenRecorder.mouse_events,
-                        'region': screenRecorder.region
+                        'region': screenRecorder.region,
+                        'recording': true
                     }
                     var success = videoController.load_video(screenRecorder.output_path, metadata)
                     if (success) {

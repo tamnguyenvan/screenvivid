@@ -6,6 +6,7 @@ from pathlib import Path
 from datetime import datetime
 
 import numpy as np
+from screenvivid.utils.logging import logger
 
 def str2bool(x: str) -> bool:
     x = x.lower()
@@ -96,3 +97,10 @@ def get_ffmpeg_path():
 
 def generate_temp_file(extension):
     return tempfile.mktemp(suffix=extension)
+
+def safe_delete(file_path):
+    if file_path and os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+        except:
+            logger.warning(f"Failed to remove {file_path}")
