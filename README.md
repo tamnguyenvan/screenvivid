@@ -7,8 +7,6 @@
 
 [ScreenVivid](https://screenvivid.com) is a simple and user-friendly screen recording application designed to help you capture your screen and enhance your recordings with intuitive editing features. Whether you're creating tutorials, recording meetings, or capturing gameplay, ScreenVivid is the perfect tool for you.
 
-🚨 **Important Note**: ScreenVivid is intended for non-commercial use only. We encourage you to review the license for more information to ensure compliance. Your understanding and adherence to this guideline are greatly appreciated!
-
 ## Table of Contents
 
 - [Features](#features)
@@ -149,7 +147,7 @@ python -m screenvivid.main
 
 1. **Q: Is ScreenVivid free?**
 
-   A: Yes, ScreenVivid is completely free for personal use. However, commercial use is not permitted under our license.
+   A: Yes, ScreenVivid is completely free.
 
 2. **Q: I see a security warning when downloading and running the installer. Is it safe?**
 
@@ -173,7 +171,7 @@ We're constantly working to improve ScreenVivid. Here are some features we're pl
 
 ## License
 
-ScreenVivid is released under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License. See the LICENSE file for more details.
+ScreenVivid is released under the GNU AGPL 3.0 License. See the LICENSE file for more details.
 
 ## References
 
