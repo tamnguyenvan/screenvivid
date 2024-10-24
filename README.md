@@ -171,7 +171,7 @@ We're constantly working to improve ScreenVivid. Here are some features we're pl
 
 ## License
 
-ScreenVivid is released under the GNU AGPL 3.0 License. See the LICENSE file for more details.
+ScreenVivid is released under the MIT License. See the LICENSE file for more details.
 
 ## References
 
