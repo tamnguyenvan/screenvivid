@@ -192,3 +192,5 @@ If you encounter any issues or have questions, please:
 
 Thank you for choosing ScreenVivid for your screen recording needs! If you find our software helpful, please consider donating to support its development and help us add more amazing features! 💖
 
+# Support My Side Project
+- [IconFst](https://iconfst.com)
