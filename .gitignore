@@ -166,3 +166,4 @@ cython_debug/
 screenvivid/rc_icons.py
 screenvivid/rc_images.py
 screenvivid/rc_main.py
+ffmpeg
