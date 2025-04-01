@@ -686,38 +686,50 @@ class VideoProcessor(QObject):
             y = zoom_effect.get("y", 0.5)
             scale = zoom_effect.get("scale", 1.0)
             
-            # Calculate progress based on frame position within the effect duration
+            # Calculate frame position within the effect duration
             start_frame = zoom_effect.get("start_frame", 0)
             end_frame = zoom_effect.get("end_frame", 0)
             duration = end_frame - start_frame
+            current_position = current_absolute_frame - start_frame  # Frame position from start
             
             if duration <= 0:
                 return cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-                
-            progress = (current_absolute_frame - start_frame) / duration
             
-            # Log for debugging
-            logger.info(f"🔍 APPLYING ZOOM EFFECT: {zoom_effect}")
-            logger.info(f"Progress: {progress:.2f}, Scale: {scale}, Position: ({x:.2f}, {y:.2f})")
+            # Constants for transition durations (in frames)
+            EASE_IN_FRAMES = 3   # First 3 frames for ease-in
+            EASE_OUT_FRAMES = 2  # Last 2 frames for ease-out
             
-            # Constants for instant zoom transitions (small buffer for transitions)
-            ZOOM_IN_THRESHOLD = 0.03  # First 3% - instant zoom in
-            ZOOM_OUT_THRESHOLD = 0.97  # Last 3% - instant zoom out
+            # Ensure transitions don't overlap for very short effects
+            if duration < (EASE_IN_FRAMES + EASE_OUT_FRAMES + 1):
+                # For very short effects, use simpler transitions
+                ease_in_frames = max(1, int(duration * 0.3))
+                ease_out_frames = max(1, int(duration * 0.2))
+                middle_frames = duration - ease_in_frames - ease_out_frames
+            else:
+                ease_in_frames = EASE_IN_FRAMES
+                ease_out_frames = EASE_OUT_FRAMES
+                middle_frames = duration - ease_in_frames - ease_out_frames
             
-            # Apply zoom based on instant in/out with steady middle
+            # Apply zoom based on frame-based easing
             current_scale = 1.0
-            if progress <= ZOOM_IN_THRESHOLD:
-                # Instant zoom IN (snap to full zoom)
-                current_scale = scale
-                logger.info(f"Instant zoom IN at progress {progress:.2f} - scale: {current_scale:.2f}")
-            elif progress >= ZOOM_OUT_THRESHOLD:
-                # Instant zoom OUT (snap to no zoom)
-                current_scale = 1.0
-                logger.info(f"Instant zoom OUT at progress {progress:.2f} - scale: {current_scale:.2f}")
+            
+            if current_position < ease_in_frames:
+                # Ease IN - linear interpolation over exactly 3 frames
+                progress = current_position / ease_in_frames
+                current_scale = 1.0 + (scale - 1.0) * progress
+                logger.info(f"Ease IN frame {current_position}/{ease_in_frames} - scale: {current_scale:.2f}")
+                
+            elif current_position >= (duration - ease_out_frames):
+                # Ease OUT - linear interpolation over exactly 2 frames
+                frames_into_easeout = current_position - (duration - ease_out_frames)
+                progress = frames_into_easeout / ease_out_frames
+                current_scale = scale - (scale - 1.0) * progress
+                logger.info(f"Ease OUT frame {frames_into_easeout}/{ease_out_frames} - scale: {current_scale:.2f}")
+                
             else:
                 # Hold steady at full zoom level
                 current_scale = scale
-                logger.info(f"Holding steady zoom at progress {progress:.2f} - scale: {current_scale:.2f}")
+                logger.info(f"Holding steady zoom at frame {current_position} - scale: {current_scale:.2f}")
             
             # Only apply zoom if we're actually zooming
             if current_scale <= 1.0:

@@ -234,10 +234,10 @@ Rectangle {
                             }
                         }
                         
-                        // Zoom phase indicators - new for instant zoom
+                        // Zoom phase indicators - show precise frames for easing
                         Rectangle {
                             id: zoomInMarker
-                            width: Math.min(8, parent.width * 0.03)
+                            width: Math.min(parent.width * 0.1, 3 * studioWindow.pixelsPerFrame) // 3 frames for ease-in
                             height: parent.height
                             color: "#7BD57F" // Green for zoom in
                             anchors.left: parent.left
@@ -257,7 +257,7 @@ Rectangle {
                         
                         Rectangle {
                             id: zoomOutMarker
-                            width: Math.min(8, parent.width * 0.03)
+                            width: Math.min(parent.width * 0.1, 2 * studioWindow.pixelsPerFrame) // 2 frames for ease-out
                             height: parent.height
                             color: "#FFA071" // Orange for zoom out
                             anchors.right: parent.right
