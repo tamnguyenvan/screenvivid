@@ -237,7 +237,7 @@ Rectangle {
                         // Zoom phase indicators - show precise frames for easing
                         Rectangle {
                             id: zoomInMarker
-                            width: Math.min(parent.width * 0.1, 3 * studioWindow.pixelsPerFrame) // 3 frames for ease-in
+                            width: Math.min(parent.width * 0.15, 5 * studioWindow.pixelsPerFrame) // 5 frames for ease-in
                             height: parent.height
                             color: "#7BD57F" // Green for zoom in
                             anchors.left: parent.left
@@ -248,7 +248,7 @@ Rectangle {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.top: parent.top
                                 anchors.topMargin: -18
-                                text: "IN"
+                                text: "IN (5)"
                                 color: "#7BD57F"
                                 font.pixelSize: 10
                                 visible: parent.width >= 4 && zoomEffectRect.width > 40
@@ -257,7 +257,7 @@ Rectangle {
                         
                         Rectangle {
                             id: zoomOutMarker
-                            width: Math.min(parent.width * 0.1, 2 * studioWindow.pixelsPerFrame) // 2 frames for ease-out
+                            width: Math.min(parent.width * 0.15, 4 * studioWindow.pixelsPerFrame) // 4 frames for ease-out
                             height: parent.height
                             color: "#FFA071" // Orange for zoom out
                             anchors.right: parent.right
@@ -268,7 +268,7 @@ Rectangle {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.top: parent.top
                                 anchors.topMargin: -18
-                                text: "OUT"
+                                text: "OUT (4)"
                                 color: "#FFA071"
                                 font.pixelSize: 10
                                 visible: parent.width >= 4 && zoomEffectRect.width > 40

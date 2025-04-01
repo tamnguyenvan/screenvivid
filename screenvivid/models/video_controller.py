@@ -696,8 +696,8 @@ class VideoProcessor(QObject):
                 return cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
             
             # Constants for transition durations (in frames)
-            EASE_IN_FRAMES = 3   # First 3 frames for ease-in
-            EASE_OUT_FRAMES = 2  # Last 2 frames for ease-out
+            EASE_IN_FRAMES = 5   # First 5 frames for ease-in
+            EASE_OUT_FRAMES = 4  # Last 4 frames for ease-out
             
             # Ensure transitions don't overlap for very short effects
             if duration < (EASE_IN_FRAMES + EASE_OUT_FRAMES + 1):
