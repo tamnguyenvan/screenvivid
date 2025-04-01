@@ -319,6 +319,19 @@ class VideoControllerModel(QObject):
         # This returns the absolute frame number including the start_frame offset
         return self.video_processor.start_frame + self.video_processor.current_frame
 
+    @Slot(int, int, int, int, dict)
+    def update_zoom_effect(self, old_start_frame, old_end_frame, new_start_frame, new_end_frame, params):
+        """Update an existing zoom effect with new parameters"""
+        def do_update_zoom():
+            self.video_processor.update_zoom_effect(old_start_frame, old_end_frame, new_start_frame, new_end_frame, params)
+
+        def undo_update_zoom():
+            # Get the old effect that was replaced
+            old_params = params.copy()
+            self.video_processor.update_zoom_effect(new_start_frame, new_end_frame, old_start_frame, old_end_frame, old_params)
+
+        self.undo_redo_manager.do_action(do_update_zoom, (do_update_zoom, undo_update_zoom))
+
 class VideoLoadingError(Exception):
     pass
 
@@ -671,15 +684,25 @@ class VideoProcessor(QObject):
                 scale = float(zoom_effect['scale'])
                 progress = float(zoom_effect['progress'])
                 
-                logger.info(f"Zoom params: x={x}, y={y}, scale={scale}, progress={progress}")
+                # Get the transition point (default to 0.5 for smooth in/out)
+                transition_point = float(zoom_effect.get('transitionPoint', 0.5))
                 
-                # Apply easing function for smooth zoom
-                if progress <= 0.5:
-                    # Zoom in (ease in)
-                    current_scale = 1.0 + (scale - 1.0) * (progress * 2)
+                logger.info(f"Zoom params: x={x}, y={y}, scale={scale}, progress={progress}, transition={transition_point}")
+                
+                # Apply easing function for custom zoom transition
+                if progress <= transition_point and transition_point > 0:
+                    # Zoom in phase - scale from 1.0 to target scale
+                    # Normalize progress to 0-1 range for this phase
+                    normalized_progress = progress / transition_point
+                    current_scale = 1.0 + (scale - 1.0) * normalized_progress
+                elif progress > transition_point and transition_point < 1.0:
+                    # Zoom out phase - scale from target scale back to 1.0
+                    # Normalize progress to 0-1 range for this phase
+                    normalized_progress = (progress - transition_point) / (1.0 - transition_point)
+                    current_scale = scale - (scale - 1.0) * normalized_progress
                 else:
-                    # Zoom out (ease out)
-                    current_scale = scale - (scale - 1.0) * ((progress - 0.5) * 2)
+                    # Exactly at transition point or fallback
+                    current_scale = scale
                 
                 logger.info(f"Applied scale: {current_scale}")
                 
@@ -823,6 +846,26 @@ class VideoProcessor(QObject):
         
         logger.info(f"No active zoom effect found for frame {frame}")
         return None
+
+    def update_zoom_effect(self, old_start_frame, old_end_frame, new_start_frame, new_end_frame, params):
+        """Update an existing zoom effect with new start/end frames and parameters"""
+        # Find the existing effect
+        for i, effect in enumerate(self._zoom_effects):
+            if effect['start_frame'] == old_start_frame and effect['end_frame'] == old_end_frame:
+                # Update with new values
+                updated_effect = {
+                    'start_frame': new_start_frame,
+                    'end_frame': new_end_frame,
+                    'params': params
+                }
+                self._zoom_effects[i] = updated_effect
+                self._zoom_effects.sort(key=lambda x: x['start_frame'])
+                self.zoomEffectsChanged.emit()
+                logger.info(f"Updated zoom effect: {old_start_frame}-{old_end_frame} → {new_start_frame}-{new_end_frame}")
+                return True
+        
+        logger.warning(f"Could not find zoom effect to update: {old_start_frame}-{old_end_frame}")
+        return False
 
 class VideoThread(QThread):
     def __init__(self, video_processor):

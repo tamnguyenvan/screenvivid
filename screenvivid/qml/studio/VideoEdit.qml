@@ -97,6 +97,7 @@ Rectangle {
                     model: videoController.zoom_effects
                     
                     delegate: Rectangle {
+                        id: zoomEffectRect
                         property var effect: modelData
                         
                         // Convert from absolute to relative frame positions for display
@@ -104,6 +105,11 @@ Rectangle {
                         property int relativeStartFrame: Math.max(0, effect.start_frame - videoController.start_frame)
                         property int relativeEndFrame: Math.min(videoController.end_frame - videoController.start_frame, 
                                                              effect.end_frame - videoController.start_frame)
+                        property bool isResizing: false
+                        property bool isMoving: false
+                        property int dragStartX: 0
+                        property int originalStartFrame: 0
+                        property int originalEndFrame: 0
                         
                         x: relativeStartFrame * studioWindow.pixelsPerFrame
                         y: 2
@@ -114,6 +120,179 @@ Rectangle {
                         gradient: Gradient {
                             GradientStop { position: 0.0; color: "#2969E7" }
                             GradientStop { position: 1.0; color: "#545EEE" }
+                        }
+                        
+                        // Left resize handle
+                        Rectangle {
+                            id: leftHandle
+                            width: 8
+                            height: parent.height
+                            color: "white"
+                            opacity: handleArea.containsMouse ? 0.7 : 0.3
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                            radius: 2
+                            
+                            MouseArea {
+                                id: handleArea
+                                anchors.fill: parent
+                                anchors.margins: -4 // Larger hit area
+                                hoverEnabled: true
+                                cursorShape: Qt.SizeHorCursor
+                                
+                                onPressed: {
+                                    zoomEffectRect.isResizing = true
+                                    zoomEffectRect.originalStartFrame = effect.start_frame
+                                    zoomEffectRect.dragStartX = mouseX
+                                }
+                                
+                                onPositionChanged: {
+                                    if (zoomEffectRect.isResizing) {
+                                        // Calculate frame delta based on mouse movement
+                                        var deltaX = mouseX - zoomEffectRect.dragStartX
+                                        var frameDelta = Math.round(deltaX / studioWindow.pixelsPerFrame)
+                                        
+                                        // Calculate new start frame
+                                        var newStartFrame = zoomEffectRect.originalStartFrame + frameDelta
+                                        
+                                        // Ensure new start frame is within bounds
+                                        newStartFrame = Math.max(videoController.start_frame, newStartFrame)
+                                        newStartFrame = Math.min(effect.end_frame - 10, newStartFrame) // Keep at least 10 frames
+                                        
+                                        // Update the effect in the model
+                                        if (newStartFrame !== effect.start_frame) {
+                                            videoController.update_zoom_effect(
+                                                effect.start_frame, 
+                                                effect.end_frame, 
+                                                newStartFrame, 
+                                                effect.end_frame, 
+                                                effect.params
+                                            )
+                                        }
+                                    }
+                                }
+                                
+                                onReleased: {
+                                    zoomEffectRect.isResizing = false
+                                }
+                            }
+                        }
+                        
+                        // Right resize handle
+                        Rectangle {
+                            id: rightHandle
+                            width: 8
+                            height: parent.height
+                            color: "white"
+                            opacity: rightHandleArea.containsMouse ? 0.7 : 0.3
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            radius: 2
+                            
+                            MouseArea {
+                                id: rightHandleArea
+                                anchors.fill: parent
+                                anchors.margins: -4 // Larger hit area
+                                hoverEnabled: true
+                                cursorShape: Qt.SizeHorCursor
+                                
+                                onPressed: {
+                                    zoomEffectRect.isResizing = true
+                                    zoomEffectRect.originalEndFrame = effect.end_frame
+                                    zoomEffectRect.dragStartX = mouseX
+                                }
+                                
+                                onPositionChanged: {
+                                    if (zoomEffectRect.isResizing) {
+                                        // Calculate frame delta based on mouse movement
+                                        var deltaX = mouseX - zoomEffectRect.dragStartX
+                                        var frameDelta = Math.round(deltaX / studioWindow.pixelsPerFrame)
+                                        
+                                        // Calculate new end frame
+                                        var newEndFrame = zoomEffectRect.originalEndFrame + frameDelta
+                                        
+                                        // Ensure new end frame is within bounds
+                                        newEndFrame = Math.min(videoController.end_frame, newEndFrame)
+                                        newEndFrame = Math.max(effect.start_frame + 10, newEndFrame) // Keep at least 10 frames
+                                        
+                                        // Update the effect in the model
+                                        if (newEndFrame !== effect.end_frame) {
+                                            videoController.update_zoom_effect(
+                                                effect.start_frame, 
+                                                effect.end_frame, 
+                                                effect.start_frame, 
+                                                newEndFrame, 
+                                                effect.params
+                                            )
+                                        }
+                                    }
+                                }
+                                
+                                onReleased: {
+                                    zoomEffectRect.isResizing = false
+                                }
+                            }
+                        }
+                        
+                        // Speed control handle in the middle (vertical line)
+                        Rectangle {
+                            id: speedHandle
+                            width: 4
+                            height: parent.height * 0.8
+                            color: "white"
+                            opacity: speedHandleArea.containsMouse ? 0.9 : 0.5
+                            anchors.horizontalCenter: parent.left
+                            anchors.horizontalCenterOffset: parent.width * (effect.params.transitionPoint || 0.5)
+                            anchors.verticalCenter: parent.verticalCenter
+                            radius: 2
+                            
+                            // Pointer tip at the top
+                            Rectangle {
+                                width: 10
+                                height: 10
+                                radius: 5
+                                color: speedHandle.color
+                                opacity: speedHandle.opacity
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.top: parent.top
+                                anchors.topMargin: -5
+                            }
+                            
+                            MouseArea {
+                                id: speedHandleArea
+                                anchors.fill: parent
+                                anchors.margins: -6 // Larger hit area
+                                hoverEnabled: true
+                                cursorShape: Qt.SizeHorCursor
+                                
+                                onPressed: {
+                                    zoomEffectRect.isMoving = true
+                                }
+                                
+                                onPositionChanged: {
+                                    if (zoomEffectRect.isMoving) {
+                                        // Calculate transition point based on position within zoom effect (0-1)
+                                        var newTransitionPoint = Math.max(0.1, Math.min(0.9, 
+                                            (parent.x + mouseX - zoomEffectRect.x) / zoomEffectRect.width))
+                                        
+                                        // Update the transition point in zoom parameters
+                                        var updatedParams = effect.params
+                                        updatedParams.transitionPoint = newTransitionPoint
+                                        
+                                        videoController.update_zoom_effect(
+                                            effect.start_frame,
+                                            effect.end_frame,
+                                            effect.start_frame,
+                                            effect.end_frame,
+                                            updatedParams
+                                        )
+                                    }
+                                }
+                                
+                                onReleased: {
+                                    zoomEffectRect.isMoving = false
+                                }
+                            }
                         }
                         
                         // Zoom indicator
@@ -137,10 +316,13 @@ Rectangle {
                             }
                         }
                         
-                        // Hover state
+                        // Main drag area for the whole effect
                         MouseArea {
                             anchors.fill: parent
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
                             hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
                             
                             onEntered: {
                                 parent.opacity = 0.8
@@ -148,6 +330,54 @@ Rectangle {
                             
                             onExited: {
                                 parent.opacity = 1.0
+                            }
+                            
+                            onPressed: {
+                                zoomEffectRect.isMoving = true
+                                zoomEffectRect.originalStartFrame = effect.start_frame
+                                zoomEffectRect.originalEndFrame = effect.end_frame
+                                zoomEffectRect.dragStartX = mouseX
+                            }
+                            
+                            onPositionChanged: {
+                                if (zoomEffectRect.isMoving) {
+                                    // Calculate frame delta based on mouse movement
+                                    var deltaX = mouseX - zoomEffectRect.dragStartX
+                                    var frameDelta = Math.round(deltaX / studioWindow.pixelsPerFrame)
+                                    
+                                    if (frameDelta !== 0) {
+                                        // Calculate new start and end frames
+                                        var newStartFrame = zoomEffectRect.originalStartFrame + frameDelta
+                                        var newEndFrame = zoomEffectRect.originalEndFrame + frameDelta
+                                        var effectDuration = effect.end_frame - effect.start_frame
+                                        
+                                        // Ensure new frames are within bounds
+                                        if (newStartFrame < videoController.start_frame) {
+                                            newStartFrame = videoController.start_frame
+                                            newEndFrame = newStartFrame + effectDuration
+                                        }
+                                        
+                                        if (newEndFrame > videoController.end_frame) {
+                                            newEndFrame = videoController.end_frame
+                                            newStartFrame = newEndFrame - effectDuration
+                                        }
+                                        
+                                        // Update the effect in the model if it changed
+                                        if (newStartFrame !== effect.start_frame || newEndFrame !== effect.end_frame) {
+                                            videoController.update_zoom_effect(
+                                                effect.start_frame,
+                                                effect.end_frame,
+                                                newStartFrame,
+                                                newEndFrame,
+                                                effect.params
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            onReleased: {
+                                zoomEffectRect.isMoving = false
                             }
                             
                             onClicked: {
