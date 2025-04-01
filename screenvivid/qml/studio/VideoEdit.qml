@@ -234,132 +234,71 @@ Rectangle {
                             }
                         }
                         
-                        // Speed control handle in the middle (vertical line)
+                        // Zoom phase indicators - new for instant zoom
                         Rectangle {
-                            id: speedHandle
-                            width: 4
-                            height: parent.height * 0.8
-                            color: "white"
-                            opacity: speedHandleArea.containsMouse ? 0.9 : 0.5
-                            anchors.horizontalCenter: parent.left
-                            anchors.horizontalCenterOffset: parent.width * (effect.params.transitionPoint || 0.875)
+                            id: zoomInMarker
+                            width: Math.min(8, parent.width * 0.03)
+                            height: parent.height
+                            color: "#7BD57F" // Green for zoom in
+                            anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            radius: 2
+                            opacity: 0.8
                             
-                            // Pointer tip at the top
-                            Rectangle {
-                                width: 10
-                                height: 10
-                                radius: 5
-                                color: speedHandle.color
-                                opacity: speedHandle.opacity
+                            Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.top: parent.top
-                                anchors.topMargin: -5
-                            }
-                            
-                            // Add zoom phase indicators
-                            Rectangle {
-                                anchors.right: parent.left
-                                anchors.top: parent.top
                                 anchors.topMargin: -18
-                                color: "#131519"
-                                radius: 3
-                                width: 40
-                                height: 16
-                                opacity: 0.8
-                                visible: zoomEffectRect.width > 80
-                                
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "IN"
-                                    color: "#7BD57F"
-                                    font.pixelSize: 10
-                                }
-                            }
-                            
-                            Rectangle {
-                                anchors.left: parent.right
-                                anchors.top: parent.top
-                                anchors.topMargin: -18
-                                color: "#131519"
-                                radius: 3
-                                width: 40
-                                height: 16
-                                opacity: 0.8
-                                visible: zoomEffectRect.width > 80
-                                
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "OUT"
-                                    color: "#FFA071"
-                                    font.pixelSize: 10
-                                }
-                            }
-                            
-                            MouseArea {
-                                id: speedHandleArea
-                                anchors.fill: parent
-                                anchors.margins: -6 // Larger hit area
-                                hoverEnabled: true
-                                cursorShape: Qt.SizeHorCursor
-                                
-                                onPressed: {
-                                    zoomEffectRect.isMoving = true
-                                }
-                                
-                                onPositionChanged: {
-                                    if (zoomEffectRect.isMoving) {
-                                        // Calculate transition point based on position within zoom effect (0-1)
-                                        var newTransitionPoint = Math.max(0.1, Math.min(0.875, 
-                                            (parent.x + mouseX - zoomEffectRect.x) / zoomEffectRect.width))
-                                        
-                                        // Update the transition point in zoom parameters
-                                        var updatedParams = effect.params
-                                        updatedParams.transitionPoint = newTransitionPoint
-                                        
-                                        videoController.update_zoom_effect(
-                                            effect.start_frame,
-                                            effect.end_frame,
-                                            effect.start_frame,
-                                            effect.end_frame,
-                                            updatedParams
-                                        )
-                                    }
-                                }
-                                
-                                onReleased: {
-                                    zoomEffectRect.isMoving = false
-                                }
+                                text: "IN"
+                                color: "#7BD57F"
+                                font.pixelSize: 10
+                                visible: parent.width >= 4 && zoomEffectRect.width > 40
                             }
                         }
                         
-                        // Zoom phase background sections
                         Rectangle {
-                            anchors.left: parent.left
-                            anchors.right: speedHandle.horizontalCenter
-                            anchors.verticalCenter: parent.verticalCenter
-                            height: 8
-                            color: "#7BD57F"
-                            opacity: 0.2
-                            radius: 3
-                        }
-                        
-                        Rectangle {
-                            anchors.left: speedHandle.horizontalCenter
+                            id: zoomOutMarker
+                            width: Math.min(8, parent.width * 0.03)
+                            height: parent.height
+                            color: "#FFA071" // Orange for zoom out
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
+                            opacity: 0.8
+                            
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.top: parent.top
+                                anchors.topMargin: -18
+                                text: "OUT"
+                                color: "#FFA071"
+                                font.pixelSize: 10
+                                visible: parent.width >= 4 && zoomEffectRect.width > 40
+                            }
+                        }
+                        
+                        // Center area indicating the zoom is held steady
+                        Rectangle {
+                            anchors.left: zoomInMarker.right
+                            anchors.right: zoomOutMarker.left
                             height: 8
-                            color: "#FFA071"
-                            opacity: 0.2
-                            radius: 3
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: "#545EEE" // Same blue as the effect
+                            opacity: 0.3
+                            radius: 2
+                            
+                            Text {
+                                anchors.centerIn: parent
+                                text: "HOLD"
+                                color: "white"
+                                font.pixelSize: 9
+                                visible: parent.width > 30
+                            }
                         }
                         
                         // Zoom indicator
                         Row {
                             anchors.centerIn: parent
                             spacing: 4
-                            visible: width > 80
+                            visible: parent.width > 80
                             
                             Image {
                                 source: "qrc:/resources/icons/zoom.svg"

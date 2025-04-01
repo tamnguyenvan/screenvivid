@@ -277,8 +277,8 @@ Item {
         videoController.add_zoom_effect(startFrame, endFrame, {
             "x": zoomCenterX,
             "y": zoomCenterY,
-            "scale": zoomScale,
-            "transitionPoint": 0.875 // Set transition point at 3.5/4ths of duration
+            "scale": zoomScale
+            // No transition point needed - using instant zoom in/out with steady middle
         })
         
         // Force an update to the current frame to see the zoom immediately
