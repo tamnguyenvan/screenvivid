@@ -144,7 +144,7 @@ Item {
                 anchors.top: parent.top
                 anchors.margins: 20
                 width: 200
-                height: 180
+                height: 220
                 color: "#2A2A2A"
                 opacity: 0.8
                 radius: 10
@@ -190,28 +190,43 @@ Item {
                         }
                     }
                     
-                    // Duration slider (new)
+                    // Start frame control (new)
                     RowLayout {
                         spacing: 5
                         Layout.fillWidth: true
                         
                         Text {
-                            text: "Duration:"
+                            text: "Start:"
                             color: "white"
                         }
                         
-                        Slider {
-                            id: durationSlider
-                            from: 10
-                            to: 120
-                            value: 60
+                        SpinBox {
+                            id: startFrameSpin
+                            from: videoController.start_frame
+                            to: videoController.end_frame
+                            value: Math.max(videoController.start_frame, videoController.absolute_current_frame - 30)
                             Layout.fillWidth: true
+                            editable: true
                         }
+                    }
+                    
+                    // End frame control (new)
+                    RowLayout {
+                        spacing: 5
+                        Layout.fillWidth: true
                         
                         Text {
-                            text: (durationSlider.value / 30).toFixed(1) + "s"
+                            text: "End:"
                             color: "white"
-                            width: 30
+                        }
+                        
+                        SpinBox {
+                            id: endFrameSpin
+                            from: videoController.start_frame
+                            to: videoController.end_frame
+                            value: Math.min(videoController.end_frame, videoController.absolute_current_frame + 30)
+                            Layout.fillWidth: true
+                            editable: true
                         }
                     }
                     
@@ -244,15 +259,15 @@ Item {
     
     // Function to apply zoom
     function applyZoom() {
-        // Get current absolute frame position (including start_frame offset)
-        var currentFrame = videoController.absolute_current_frame
+        // Use the directly specified start and end frames
+        var startFrame = startFrameSpin.value
+        var endFrame = endFrameSpin.value
         
-        // Use the duration from the slider (half before, half after current frame)
-        var duration = Math.round(durationSlider.value)
-        var halfDuration = Math.round(duration / 2)
-        
-        var startFrame = Math.max(videoController.start_frame, currentFrame - halfDuration) 
-        var endFrame = Math.min(videoController.end_frame, currentFrame + halfDuration)
+        // Ensure start < end
+        if (startFrame >= endFrame) {
+            console.error("Start frame must be less than end frame")
+            return
+        }
         
         console.log("Adding zoom effect from frame", startFrame, "to", endFrame)
         console.log("Zoom parameters: center=(" + zoomCenterX.toFixed(2) + "," + zoomCenterY.toFixed(2) + 
@@ -263,7 +278,7 @@ Item {
             "x": zoomCenterX,
             "y": zoomCenterY,
             "scale": zoomScale,
-            "transitionPoint": 0.95 // Set transition point near end for sudden zoom-out
+            "transitionPoint": 0.875 // Set transition point at 3.5/4ths of duration
         })
         
         // Force an update to the current frame to see the zoom immediately
