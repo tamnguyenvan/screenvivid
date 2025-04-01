@@ -242,7 +242,7 @@ Rectangle {
                             color: "white"
                             opacity: speedHandleArea.containsMouse ? 0.9 : 0.5
                             anchors.horizontalCenter: parent.left
-                            anchors.horizontalCenterOffset: parent.width * (effect.params.transitionPoint || 0.5)
+                            anchors.horizontalCenterOffset: parent.width * (effect.params.transitionPoint || 0.95)
                             anchors.verticalCenter: parent.verticalCenter
                             radius: 2
                             
@@ -256,6 +256,45 @@ Rectangle {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.top: parent.top
                                 anchors.topMargin: -5
+                            }
+                            
+                            // Add zoom phase indicators
+                            Rectangle {
+                                anchors.right: parent.left
+                                anchors.top: parent.top
+                                anchors.topMargin: -18
+                                color: "#131519"
+                                radius: 3
+                                width: 40
+                                height: 16
+                                opacity: 0.8
+                                visible: zoomEffectRect.width > 80
+                                
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "IN"
+                                    color: "#7BD57F"
+                                    font.pixelSize: 10
+                                }
+                            }
+                            
+                            Rectangle {
+                                anchors.left: parent.right
+                                anchors.top: parent.top
+                                anchors.topMargin: -18
+                                color: "#131519"
+                                radius: 3
+                                width: 40
+                                height: 16
+                                opacity: 0.8
+                                visible: zoomEffectRect.width > 80
+                                
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "OUT"
+                                    color: "#FFA071"
+                                    font.pixelSize: 10
+                                }
                             }
                             
                             MouseArea {
@@ -272,7 +311,7 @@ Rectangle {
                                 onPositionChanged: {
                                     if (zoomEffectRect.isMoving) {
                                         // Calculate transition point based on position within zoom effect (0-1)
-                                        var newTransitionPoint = Math.max(0.1, Math.min(0.9, 
+                                        var newTransitionPoint = Math.max(0.1, Math.min(0.95, 
                                             (parent.x + mouseX - zoomEffectRect.x) / zoomEffectRect.width))
                                         
                                         // Update the transition point in zoom parameters
@@ -293,6 +332,27 @@ Rectangle {
                                     zoomEffectRect.isMoving = false
                                 }
                             }
+                        }
+                        
+                        // Zoom phase background sections
+                        Rectangle {
+                            anchors.left: parent.left
+                            anchors.right: speedHandle.horizontalCenter
+                            anchors.verticalCenter: parent.verticalCenter
+                            height: 8
+                            color: "#7BD57F"
+                            opacity: 0.2
+                            radius: 3
+                        }
+                        
+                        Rectangle {
+                            anchors.left: speedHandle.horizontalCenter
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            height: 8
+                            color: "#FFA071"
+                            opacity: 0.2
+                            radius: 3
                         }
                         
                         // Zoom indicator

@@ -144,7 +144,7 @@ Item {
                 anchors.top: parent.top
                 anchors.margins: 20
                 width: 200
-                height: 120
+                height: 180
                 color: "#2A2A2A"
                 opacity: 0.8
                 radius: 10
@@ -190,6 +190,31 @@ Item {
                         }
                     }
                     
+                    // Duration slider (new)
+                    RowLayout {
+                        spacing: 5
+                        Layout.fillWidth: true
+                        
+                        Text {
+                            text: "Duration:"
+                            color: "white"
+                        }
+                        
+                        Slider {
+                            id: durationSlider
+                            from: 10
+                            to: 120
+                            value: 60
+                            Layout.fillWidth: true
+                        }
+                        
+                        Text {
+                            text: (durationSlider.value / 30).toFixed(1) + "s"
+                            color: "white"
+                            width: 30
+                        }
+                    }
+                    
                     // Control buttons
                     RowLayout {
                         Layout.fillWidth: true
@@ -222,9 +247,12 @@ Item {
         // Get current absolute frame position (including start_frame offset)
         var currentFrame = videoController.absolute_current_frame
         
-        // Create a zoom effect of about 2 seconds (60 frames = 2s at default 30fps)
-        var startFrame = Math.max(videoController.start_frame, currentFrame - 30) 
-        var endFrame = Math.min(videoController.end_frame, currentFrame + 30)
+        // Use the duration from the slider (half before, half after current frame)
+        var duration = Math.round(durationSlider.value)
+        var halfDuration = Math.round(duration / 2)
+        
+        var startFrame = Math.max(videoController.start_frame, currentFrame - halfDuration) 
+        var endFrame = Math.min(videoController.end_frame, currentFrame + halfDuration)
         
         console.log("Adding zoom effect from frame", startFrame, "to", endFrame)
         console.log("Zoom parameters: center=(" + zoomCenterX.toFixed(2) + "," + zoomCenterY.toFixed(2) + 
@@ -235,7 +263,7 @@ Item {
             "x": zoomCenterX,
             "y": zoomCenterY,
             "scale": zoomScale,
-            "transitionPoint": 0.5 // Default to balanced zoom in/out timing
+            "transitionPoint": 0.95 // Set transition point near end for sudden zoom-out
         })
         
         // Force an update to the current frame to see the zoom immediately
