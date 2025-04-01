@@ -496,10 +496,14 @@ Rectangle {
                                     // Activate zoom control in the VideoPreview
                                     var videoPreview = studioWindow.findChild("videoPreview")
                                     if (videoPreview) {
-                                        videoPreview.zoomActive = true
+                                        // Set zoom parameters based on the effect
                                         videoPreview.zoomCenterX = effect.params.x
                                         videoPreview.zoomCenterY = effect.params.y
                                         videoPreview.zoomScale = effect.params.scale
+                                        
+                                        // Show the zoom control with the existing parameters
+                                        videoPreview.zoomActive = true
+                                        
                                         console.log("Zoom controls activated with:", 
                                                   effect.params.x, effect.params.y, effect.params.scale)
                                     } else {
