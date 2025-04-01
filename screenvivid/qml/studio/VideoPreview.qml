@@ -219,15 +219,26 @@ Item {
     
     // Function to apply zoom
     function applyZoom() {
-        var currentFrame = videoController.current_frame - videoController.start_frame
-        var startFrame = Math.max(0, currentFrame - 30)
-        var endFrame = Math.min(videoController.end_frame - videoController.start_frame, currentFrame + 30)
+        // Get current absolute frame position (including start_frame offset)
+        var currentFrame = videoController.absolute_current_frame
         
+        // Create a zoom effect of about 2 seconds (60 frames = 2s at default 30fps)
+        var startFrame = Math.max(videoController.start_frame, currentFrame - 30) 
+        var endFrame = Math.min(videoController.end_frame, currentFrame + 30)
+        
+        console.log("Adding zoom effect from frame", startFrame, "to", endFrame)
+        console.log("Zoom parameters: center=(" + zoomCenterX.toFixed(2) + "," + zoomCenterY.toFixed(2) + 
+                   "), scale=" + zoomScale.toFixed(2))
+        
+        // Apply zoom effect via controller (using absolute frame positions)
         videoController.add_zoom_effect(startFrame, endFrame, {
             "x": zoomCenterX,
             "y": zoomCenterY,
             "scale": zoomScale
         })
+        
+        // Force an update to the current frame to see the zoom immediately
+        videoController.get_current_frame()
     }
 
     // Control buttons

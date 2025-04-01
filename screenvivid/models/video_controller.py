@@ -310,6 +310,15 @@ class VideoControllerModel(QObject):
 
         self.undo_redo_manager.do_action(do_remove_zoom, (do_remove_zoom, undo_remove_zoom))
 
+    @Property(int, notify=currentFrameChanged)
+    def current_frame(self):
+        return self.video_processor.current_frame
+
+    @Property(int, notify=currentFrameChanged)
+    def absolute_current_frame(self):
+        # This returns the absolute frame number including the start_frame offset
+        return self.video_processor.start_frame + self.video_processor.current_frame
+
 class VideoLoadingError(Exception):
     pass
 
@@ -599,14 +608,29 @@ class VideoProcessor(QObject):
                 self.frameProcessed.emit(processed_frame)
 
     def jump_to_frame(self, target_frame):
-        internal_target_frame = min(self.start_frame + target_frame, self.end_frame)
-        if self.video.isOpened() and self.start_frame <= internal_target_frame <= self.end_frame:
+        logger.debug(f"Jumping to frame {target_frame} (absolute)")
+        
+        # Ensure we stay within valid frame range
+        internal_target_frame = max(self.start_frame, min(self.end_frame, target_frame))
+        logger.debug(f"Adjusted target frame: {internal_target_frame}")
+        
+        # Calculate relative frame (for internal tracking)
+        relative_frame = internal_target_frame - self.start_frame
+        logger.debug(f"Relative frame position: {relative_frame}")
+        
+        # Set video position
+        if self.video.isOpened():
             self.video.set(cv2.CAP_PROP_POS_FRAMES, internal_target_frame)
             ret, frame = self.video.read()
             if ret:
                 processed_frame = self.process_frame(frame)
-                self.current_frame = target_frame
+                self.current_frame = relative_frame
                 self.frameProcessed.emit(processed_frame)
+                logger.debug(f"Successfully jumped to frame {target_frame}, current_frame={self.current_frame}")
+            else:
+                logger.error(f"Failed to read frame at position {internal_target_frame}")
+        else:
+            logger.error("Cannot jump to frame - video is not open")
 
     def get_current_frame(self):
         if self.video is not None and self.video.isOpened():
@@ -628,61 +652,87 @@ class VideoProcessor(QObject):
         self.get_frame()
 
     def process_frame(self, frame):
-        # Apply standard transforms first
-        result = self._transforms(input=frame, start_frame=self.start_frame + self.current_frame)
+        # Get absolute frame number 
+        current_absolute_frame = self.start_frame + self.current_frame
+        logger.info(f"Processing frame {current_absolute_frame}")
+
+        # First apply standard transforms
+        result = self._transforms(input=frame, start_frame=current_absolute_frame)
         
-        # Check for active zoom effect
-        zoom_effect = self.get_active_zoom_effect(self.start_frame + self.current_frame)
+        # Then check for and apply zoom effect (BEFORE color conversion)
+        zoom_effect = self.get_active_zoom_effect(current_absolute_frame)
         if zoom_effect:
-            # Extract zoom parameters
-            x = zoom_effect['x']
-            y = zoom_effect['y']
-            scale = zoom_effect['scale']
-            progress = zoom_effect['progress']
+            logger.info(f"🔍 APPLYING ZOOM EFFECT: {zoom_effect}")
             
-            # Apply easing function for smooth zoom
-            if progress <= 0.5:
-                # Zoom in (ease in)
-                current_scale = 1.0 + (scale - 1.0) * (progress * 2)
-            else:
-                # Zoom out (ease out)
-                current_scale = scale - (scale - 1.0) * ((progress - 0.5) * 2)
-            
-            # Calculate zoom parameters
-            h, w = result.shape[:2]
-            center_x = int(w * x)
-            center_y = int(h * y)
-            
-            # Calculate the region size based on scale
-            new_w = int(w / current_scale)
-            new_h = int(h / current_scale)
-            
-            # Calculate crop coordinates
-            x1 = max(0, center_x - new_w // 2)
-            y1 = max(0, center_y - new_h // 2)
-            x2 = min(w, x1 + new_w)
-            y2 = min(h, y1 + new_h)
-            
-            # Adjust crop region if out of bounds
-            if x2 - x1 < new_w:
-                if x1 == 0:
-                    x2 = min(w, new_w)
+            try:
+                # Extract zoom parameters
+                x = float(zoom_effect['x'])
+                y = float(zoom_effect['y']) 
+                scale = float(zoom_effect['scale'])
+                progress = float(zoom_effect['progress'])
+                
+                logger.info(f"Zoom params: x={x}, y={y}, scale={scale}, progress={progress}")
+                
+                # Apply easing function for smooth zoom
+                if progress <= 0.5:
+                    # Zoom in (ease in)
+                    current_scale = 1.0 + (scale - 1.0) * (progress * 2)
                 else:
-                    x1 = max(0, x2 - new_w)
-            
-            if y2 - y1 < new_h:
-                if y1 == 0:
-                    y2 = min(h, new_h)
+                    # Zoom out (ease out)
+                    current_scale = scale - (scale - 1.0) * ((progress - 0.5) * 2)
+                
+                logger.info(f"Applied scale: {current_scale}")
+                
+                # Get frame dimensions
+                h, w = result.shape[:2]
+                
+                # CORRECTED ZOOM IMPLEMENTATION:
+                # 1. Calculate the region size based on zoom level (smaller with more zoom)
+                region_w = int(w / current_scale)
+                region_h = int(h / current_scale)
+                
+                # 2. Calculate the center point in pixels
+                center_x = int(w * x)
+                center_y = int(h * y)
+                
+                # 3. Calculate crop region centered on target point
+                x1 = max(0, center_x - region_w // 2)
+                y1 = max(0, center_y - region_h // 2)
+                
+                # 4. Make sure we don't exceed frame boundaries
+                if x1 + region_w > w:
+                    x1 = w - region_w
+                if y1 + region_h > h:
+                    y1 = h - region_h
+                
+                # 5. Ensure x1 and y1 are not negative
+                x1 = max(0, x1)
+                y1 = max(0, y1)
+                
+                # 6. Calculate the final crop coordinates
+                x2 = min(w, x1 + region_w)
+                y2 = min(h, y1 + region_h)
+                
+                logger.info(f"Crop region: ({x1},{y1}) to ({x2},{y2})")
+                
+                # 7. Safety check before cropping
+                if y2 > y1 and x2 > x1 and y1 >= 0 and y2 <= h and x1 >= 0 and x2 <= w:
+                    # 8. Extract the region
+                    crop_region = result[y1:y2, x1:x2].copy()
+                    
+                    # 9. Resize back to full frame size - this creates the zoom effect
+                    result = cv2.resize(crop_region, (w, h), interpolation=cv2.INTER_LANCZOS4)
+                    logger.info(f"✅ Zoom applied successfully!")
                 else:
-                    y1 = max(0, y2 - new_h)
+                    logger.error(f"❌ Invalid crop region: ({x1},{y1})-({x2},{y2}) for frame size {w}x{h}")
             
-            # Crop and resize
-            cropped = result[y1:y2, x1:x2]
-            result = cv2.resize(cropped, (w, h), interpolation=cv2.INTER_LANCZOS4)
+            except Exception as e:
+                logger.error(f"❌ Error applying zoom: {str(e)}")
+                import traceback
+                logger.error(traceback.format_exc())
         
-        # Convert to RGB and return
-        result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
-        return result
+        # Finally, convert to RGB and return
+        return cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
 
     def clean(self):
         try:
@@ -741,20 +791,37 @@ class VideoProcessor(QObject):
         return None
     
     def get_active_zoom_effect(self, frame):
-        """Get the active zoom effect for the current frame, if any"""
-        for effect in self._zoom_effects:
-            if effect['start_frame'] <= frame <= effect['end_frame']:
+        """
+        Get the active zoom effect for the current frame, if any.
+        
+        Args:
+            frame: Absolute frame number
+            
+        Returns:
+            Dictionary with zoom effect parameters or None if no active effect
+        """
+        # Print clear debug info about available zoom effects
+        logger.info(f"Checking for zoom effect at frame {frame}")
+        logger.info(f"Number of zoom effects: {len(self._zoom_effects)}")
+        
+        for i, effect in enumerate(self._zoom_effects):
+            start = effect['start_frame']
+            end = effect['end_frame']
+            logger.info(f"Zoom effect #{i}: frames {start}-{end}, params: {effect['params']}")
+            
+            if start <= frame <= end:
                 # Calculate how far we are through the effect (0.0 to 1.0)
-                total_frames = effect['end_frame'] - effect['start_frame']
-                if total_frames == 0:
-                    progress = 0
-                else:
-                    progress = (frame - effect['start_frame']) / total_frames
+                total_frames = end - start
+                progress = 0 if total_frames == 0 else (frame - start) / total_frames
+                
+                logger.info(f"⭐ FOUND active zoom effect #{i} with progress {progress:.2f}")
                 
                 # Add progress to the effect data for animation calculation
                 effect_data = effect['params'].copy()
                 effect_data['progress'] = progress
                 return effect_data
+        
+        logger.info(f"No active zoom effect found for frame {frame}")
         return None
 
 class VideoThread(QThread):

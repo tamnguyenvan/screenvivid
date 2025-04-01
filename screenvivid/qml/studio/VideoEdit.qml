@@ -99,9 +99,15 @@ Rectangle {
                     delegate: Rectangle {
                         property var effect: modelData
                         
-                        x: effect.start_frame * studioWindow.pixelsPerFrame
+                        // Convert from absolute to relative frame positions for display
+                        // This ensures proper positioning on the timeline
+                        property int relativeStartFrame: Math.max(0, effect.start_frame - videoController.start_frame)
+                        property int relativeEndFrame: Math.min(videoController.end_frame - videoController.start_frame, 
+                                                             effect.end_frame - videoController.start_frame)
+                        
+                        x: relativeStartFrame * studioWindow.pixelsPerFrame
                         y: 2
-                        width: (effect.end_frame - effect.start_frame) * studioWindow.pixelsPerFrame
+                        width: (relativeEndFrame - relativeStartFrame) * studioWindow.pixelsPerFrame
                         height: parent.height - 4
                         radius: 4
                         
@@ -156,6 +162,7 @@ Rectangle {
                             MenuItem {
                                 text: "Remove Zoom Effect"
                                 onTriggered: {
+                                    console.log("Removing zoom effect from frame", effect.start_frame, "to", effect.end_frame)
                                     videoController.remove_zoom_effect(effect.start_frame, effect.end_frame)
                                 }
                             }
@@ -163,9 +170,11 @@ Rectangle {
                             MenuItem {
                                 text: "Edit Zoom Effect"
                                 onTriggered: {
-                                    // Jump to middle of zoom effect
-                                    var targetFrame = effect.start_frame + Math.floor((effect.end_frame - effect.start_frame) / 2)
-                                    videoController.jump_to_frame(targetFrame)
+                                    // Jump to middle of zoom effect (using absolute frame numbers)
+                                    var middleFrame = effect.start_frame + Math.floor((effect.end_frame - effect.start_frame) / 2)
+                                    videoController.jump_to_frame(middleFrame)
+                                    
+                                    console.log("Editing zoom effect. Jumping to frame:", middleFrame)
                                     
                                     // Activate zoom control in the VideoPreview
                                     var videoPreview = studioWindow.findChild("videoPreview")
@@ -174,6 +183,10 @@ Rectangle {
                                         videoPreview.zoomCenterX = effect.params.x
                                         videoPreview.zoomCenterY = effect.params.y
                                         videoPreview.zoomScale = effect.params.scale
+                                        console.log("Zoom controls activated with:", 
+                                                  effect.params.x, effect.params.y, effect.params.scale)
+                                    } else {
+                                        console.error("Could not find videoPreview component")
                                     }
                                 }
                             }
@@ -222,6 +235,13 @@ Rectangle {
         function onZoomEffectsChanged() {
             // The Repeater should automatically update when the model changes
             // This is just to make sure it's working
+            console.log("Zoom effects changed, count:", videoController.zoom_effects.length)
+            for (var i = 0; i < videoController.zoom_effects.length; i++) {
+                var effect = videoController.zoom_effects[i]
+                console.log("  Zoom effect " + i + ":", effect.start_frame, "-", effect.end_frame,
+                           ", scale:", effect.params.scale)
+            }
+            
             zoomTrack.visible = false
             zoomTrack.visible = true
         }
