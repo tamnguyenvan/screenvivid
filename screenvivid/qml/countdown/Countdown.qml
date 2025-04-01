@@ -160,10 +160,22 @@ Window {
                             if (success) {
                                 clipTrackModel.set_fps(videoController.fps)
                                 clipTrackModel.set_video_len(0, videoController.video_len)
-                                studioLoader.source = ""
-                                studioLoader.source = "qrc:/qml/studio/Studio.qml"
-                                studioLoader.item.showMaximized()
-                                tray.hide()
+                                
+                                // Add error handling around studio loader
+                                try {
+                                    studioLoader.source = ""
+                                    studioLoader.source = "qrc:/qml/studio/Studio.qml"
+                                    
+                                    // Only call showMaximized if the component loaded successfully
+                                    if (studioLoader.status === Loader.Ready && studioLoader.item) {
+                                        studioLoader.item.showMaximized()
+                                    } else {
+                                        console.error("Failed to load studio component:", studioLoader.status)
+                                    }
+                                    tray.hide()
+                                } catch (e) {
+                                    console.error("Error loading studio:", e)
+                                }
                             } else {}
                         }
                     }
@@ -217,10 +229,22 @@ Window {
                     if (success) {
                         clipTrackModel.set_fps(videoController.fps)
                         clipTrackModel.set_video_len(0, videoController.video_len)
-                        studioLoader.source = ""
-                        studioLoader.source = "qrc:/qml/studio/Studio.qml"
-                        studioLoader.item.showMaximized()
-                        tray.hide()
+                        
+                        // Add error handling around studio loader
+                        try {
+                            studioLoader.source = ""
+                            studioLoader.source = "qrc:/qml/studio/Studio.qml"
+                            
+                            // Only call showMaximized if the component loaded successfully
+                            if (studioLoader.status === Loader.Ready && studioLoader.item) {
+                                studioLoader.item.showMaximized()
+                            } else {
+                                console.error("Failed to load studio component:", studioLoader.status)
+                            }
+                            tray.hide()
+                        } catch (e) {
+                            console.error("Error loading studio:", e)
+                        }
                     } else {}
                 }
             }

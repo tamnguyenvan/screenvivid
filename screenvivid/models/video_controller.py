@@ -32,6 +32,8 @@ class VideoControllerModel(QObject):
     canRedoChanged = Signal(bool)
     outputSizeChanged = Signal()
     fpsChanged = Signal(int)
+    zoomChanged = Signal()
+    zoomEffectsChanged = Signal()
 
     def __init__(self, frame_provider):
         super().__init__()
@@ -43,6 +45,8 @@ class VideoControllerModel(QObject):
 
         self.video_processor.frameProcessed.connect(self.on_frame_processed)
         self.video_processor.playingChanged.connect(self.on_playing_changed)
+        self.video_processor.zoomChanged.connect(self.on_zoom_changed)
+        self.video_processor.zoomEffectsChanged.connect(self.on_zoom_effects_changed)
 
         self.undo_redo_manager = UndoRedoManager()
         self.video_path = None
@@ -158,6 +162,10 @@ class VideoControllerModel(QObject):
     def output_size(self):
         return self.video_processor.output_size
 
+    @Property(list, notify=zoomEffectsChanged)
+    def zoom_effects(self):
+        return self.video_processor.zoom_effects
+
     @Slot(int)
     def trim_left(self, start_frame):
         def do_trim_left():
@@ -271,12 +279,45 @@ class VideoControllerModel(QObject):
         self.frame_provider.updateFrame(q_image)
         self.frameReady.emit()
 
+    def on_zoom_changed(self):
+        self.zoomChanged.emit()
+        
+    def on_zoom_effects_changed(self):
+        self.zoomEffectsChanged.emit()
+
+    @Slot(int, int, dict)
+    def add_zoom_effect(self, start_frame, end_frame, zoom_params):
+        """Add a zoom effect between start and end frames"""
+        def do_add_zoom():
+            self.video_processor.add_zoom_effect(start_frame, end_frame, zoom_params)
+
+        def undo_add_zoom():
+            self.video_processor.remove_zoom_effect(start_frame, end_frame)
+
+        self.undo_redo_manager.do_action(do_add_zoom, (do_add_zoom, undo_add_zoom))
+        
+    @Slot(int, int)
+    def remove_zoom_effect(self, start_frame, end_frame):
+        """Remove a zoom effect between start and end frames"""
+        def do_remove_zoom():
+            self.video_processor.remove_zoom_effect(start_frame, end_frame)
+
+        def undo_remove_zoom():
+            # Assuming we have a way to get back the zoom parameters
+            zoom_effect = self.video_processor.get_removed_zoom_effect(start_frame, end_frame)
+            if zoom_effect:
+                self.video_processor.add_zoom_effect(start_frame, end_frame, zoom_effect['params'])
+
+        self.undo_redo_manager.do_action(do_remove_zoom, (do_remove_zoom, undo_remove_zoom))
+
 class VideoLoadingError(Exception):
     pass
 
 class VideoProcessor(QObject):
     frameProcessed = Signal(np.ndarray)
     playingChanged = Signal(bool)
+    zoomChanged = Signal()
+    zoomEffectsChanged = Signal()
 
     def __init__(self):
         super().__init__()
@@ -303,6 +344,10 @@ class VideoProcessor(QObject):
         self._x_offset = None
         self._y_offset = None
         self._cursors_map = dict()
+        
+        # Zoom effects storage
+        self._zoom_effects = []
+        self._removed_zoom_effects = []
 
     @property
     def aspect_ratio(self):
@@ -583,7 +628,59 @@ class VideoProcessor(QObject):
         self.get_frame()
 
     def process_frame(self, frame):
+        # Apply standard transforms first
         result = self._transforms(input=frame, start_frame=self.start_frame + self.current_frame)
+        
+        # Check for active zoom effect
+        zoom_effect = self.get_active_zoom_effect(self.start_frame + self.current_frame)
+        if zoom_effect:
+            # Extract zoom parameters
+            x = zoom_effect['x']
+            y = zoom_effect['y']
+            scale = zoom_effect['scale']
+            progress = zoom_effect['progress']
+            
+            # Apply easing function for smooth zoom
+            if progress <= 0.5:
+                # Zoom in (ease in)
+                current_scale = 1.0 + (scale - 1.0) * (progress * 2)
+            else:
+                # Zoom out (ease out)
+                current_scale = scale - (scale - 1.0) * ((progress - 0.5) * 2)
+            
+            # Calculate zoom parameters
+            h, w = result.shape[:2]
+            center_x = int(w * x)
+            center_y = int(h * y)
+            
+            # Calculate the region size based on scale
+            new_w = int(w / current_scale)
+            new_h = int(h / current_scale)
+            
+            # Calculate crop coordinates
+            x1 = max(0, center_x - new_w // 2)
+            y1 = max(0, center_y - new_h // 2)
+            x2 = min(w, x1 + new_w)
+            y2 = min(h, y1 + new_h)
+            
+            # Adjust crop region if out of bounds
+            if x2 - x1 < new_w:
+                if x1 == 0:
+                    x2 = min(w, new_w)
+                else:
+                    x1 = max(0, x2 - new_w)
+            
+            if y2 - y1 < new_h:
+                if y1 == 0:
+                    y2 = min(h, new_h)
+                else:
+                    y1 = max(0, y2 - new_h)
+            
+            # Crop and resize
+            cropped = result[y1:y2, x1:x2]
+            result = cv2.resize(cropped, (w, h), interpolation=cv2.INTER_LANCZOS4)
+        
+        # Convert to RGB and return
         result = cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
         return result
 
@@ -593,6 +690,72 @@ class VideoProcessor(QObject):
                 self.video.release()
         except:
             logger.warning(f"Failed to release video capture")
+
+    @property
+    def zoom_effects(self):
+        return self._zoom_effects
+    
+    def add_zoom_effect(self, start_frame, end_frame, zoom_params):
+        """
+        Add a zoom effect to the video
+        
+        Parameters:
+        - start_frame: Start frame for the zoom effect
+        - end_frame: End frame for the zoom effect
+        - zoom_params: Dictionary with zoom parameters (x, y, scale, etc.)
+        """
+        zoom_effect = {
+            'start_frame': start_frame,
+            'end_frame': end_frame,
+            'params': zoom_params
+        }
+        
+        # Check if this overlaps with an existing zoom effect
+        for i, effect in enumerate(self._zoom_effects):
+            if (start_frame <= effect['end_frame'] and end_frame >= effect['start_frame']):
+                # Overlapping effect, replace it
+                self._zoom_effects[i] = zoom_effect
+                self.zoomEffectsChanged.emit()
+                return
+        
+        # Add new effect
+        self._zoom_effects.append(zoom_effect)
+        self._zoom_effects.sort(key=lambda x: x['start_frame'])
+        self.zoomEffectsChanged.emit()
+    
+    def remove_zoom_effect(self, start_frame, end_frame):
+        """Remove a zoom effect that matches the given frame range"""
+        for i, effect in enumerate(self._zoom_effects):
+            if effect['start_frame'] == start_frame and effect['end_frame'] == end_frame:
+                removed = self._zoom_effects.pop(i)
+                self._removed_zoom_effects.append(removed)
+                self.zoomEffectsChanged.emit()
+                return True
+        return False
+    
+    def get_removed_zoom_effect(self, start_frame, end_frame):
+        """Get a previously removed zoom effect for undo operations"""
+        for i, effect in enumerate(self._removed_zoom_effects):
+            if effect['start_frame'] == start_frame and effect['end_frame'] == end_frame:
+                return self._removed_zoom_effects.pop(i)
+        return None
+    
+    def get_active_zoom_effect(self, frame):
+        """Get the active zoom effect for the current frame, if any"""
+        for effect in self._zoom_effects:
+            if effect['start_frame'] <= frame <= effect['end_frame']:
+                # Calculate how far we are through the effect (0.0 to 1.0)
+                total_frames = effect['end_frame'] - effect['start_frame']
+                if total_frames == 0:
+                    progress = 0
+                else:
+                    progress = (frame - effect['start_frame']) / total_frames
+                
+                # Add progress to the effect data for animation calculation
+                effect_data = effect['params'].copy()
+                effect_data['progress'] = progress
+                return effect_data
+        return None
 
 class VideoThread(QThread):
     def __init__(self, video_processor):

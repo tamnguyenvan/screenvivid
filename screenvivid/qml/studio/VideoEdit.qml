@@ -1,5 +1,6 @@
 import QtQuick 6.7
 import QtQuick.Controls 6.7
+import "." // Import current directory components
 
 Rectangle {
     id: videoEdit
@@ -74,6 +75,112 @@ Rectangle {
                     }
                 }
             }
+            
+            // Zoom effects track - inline implementation
+            Item {
+                id: zoomTrack
+                width: parent.width
+                height: 30
+                y: 145 // Position below the clip track
+                anchors.left: parent.left
+                anchors.leftMargin: 10
+                
+                Rectangle {
+                    anchors.fill: parent
+                    color: "#282C33"
+                    opacity: 0.7
+                    radius: 4
+                }
+                
+                // Zoom effects renderer
+                Repeater {
+                    model: videoController.zoom_effects
+                    
+                    delegate: Rectangle {
+                        property var effect: modelData
+                        
+                        x: effect.start_frame * studioWindow.pixelsPerFrame
+                        y: 2
+                        width: (effect.end_frame - effect.start_frame) * studioWindow.pixelsPerFrame
+                        height: parent.height - 4
+                        radius: 4
+                        
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: "#2969E7" }
+                            GradientStop { position: 1.0; color: "#545EEE" }
+                        }
+                        
+                        // Zoom indicator
+                        Row {
+                            anchors.centerIn: parent
+                            spacing: 4
+                            visible: width > 80
+                            
+                            Image {
+                                source: "qrc:/resources/icons/zoom.svg"
+                                width: 16
+                                height: 16
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                            
+                            Text {
+                                text: (effect.params.scale).toFixed(1) + "x"
+                                color: "white"
+                                font.pixelSize: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+                        }
+                        
+                        // Hover state
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            
+                            onEntered: {
+                                parent.opacity = 0.8
+                            }
+                            
+                            onExited: {
+                                parent.opacity = 1.0
+                            }
+                            
+                            onClicked: {
+                                contextMenu.popup()
+                            }
+                        }
+                        
+                        // Context menu
+                        Menu {
+                            id: contextMenu
+                            
+                            MenuItem {
+                                text: "Remove Zoom Effect"
+                                onTriggered: {
+                                    videoController.remove_zoom_effect(effect.start_frame, effect.end_frame)
+                                }
+                            }
+                            
+                            MenuItem {
+                                text: "Edit Zoom Effect"
+                                onTriggered: {
+                                    // Jump to middle of zoom effect
+                                    var targetFrame = effect.start_frame + Math.floor((effect.end_frame - effect.start_frame) / 2)
+                                    videoController.jump_to_frame(targetFrame)
+                                    
+                                    // Activate zoom control in the VideoPreview
+                                    var videoPreview = studioWindow.findChild("videoPreview")
+                                    if (videoPreview) {
+                                        videoPreview.zoomActive = true
+                                        videoPreview.zoomCenterX = effect.params.x
+                                        videoPreview.zoomCenterY = effect.params.y
+                                        videoPreview.zoomScale = effect.params.scale
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             TimeSlider {
                 id: timeSlider
@@ -110,6 +217,13 @@ Rectangle {
             if (!playing) {
                 animationEnabled = true
             }
+        }
+        
+        function onZoomEffectsChanged() {
+            // The Repeater should automatically update when the model changes
+            // This is just to make sure it's working
+            zoomTrack.visible = false
+            zoomTrack.visible = true
         }
     }
 }

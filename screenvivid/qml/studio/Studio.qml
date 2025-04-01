@@ -4,6 +4,7 @@ import QtQuick.Layouts 6.7
 import QtQuick.Controls 6.7
 import QtQuick.Controls.Material 6.7
 import "./sidebar"
+import "." // Import local components
 
 Window {
     id: studioWindow

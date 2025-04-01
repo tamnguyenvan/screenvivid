@@ -3,11 +3,19 @@ import QtQuick.Window 6.7
 import QtQuick.Dialogs 6.7
 import QtQuick.Controls.Material 6.7
 import QtQuick.Layouts 6.7
+import "." // Import current directory components
 
 Item {
     id: root
+    objectName: "videoPreview"
     Layout.fillWidth: true
     Layout.fillHeight: true
+    
+    // Zoom control properties
+    property bool zoomActive: false
+    property real zoomCenterX: 0.5
+    property real zoomCenterY: 0.5
+    property real zoomScale: 2.0
 
     // Shortcut management
     QtObject {
@@ -44,17 +52,217 @@ Item {
                 }
             }
         }
+        
+        // Zoom control UI (simple inline implementation)
+        Item {
+            id: zoomControlUI
+            anchors.fill: parent
+            visible: zoomActive
+            
+            // Background to capture mouse events
+            Rectangle {
+                anchors.fill: parent
+                color: "transparent"
+                
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.CrossCursor
+                    
+                    onClicked: (mouse) => {
+                        if (zoomActive) {
+                            zoomCrosshair.x = mouse.x - zoomCrosshair.width / 2
+                            zoomCrosshair.y = mouse.y - zoomCrosshair.height / 2
+                            
+                            zoomCenterX = (mouse.x) / parent.width
+                            zoomCenterY = (mouse.y) / parent.height
+                        }
+                    }
+                }
+            }
+            
+            // Zoom crosshair indicator
+            Item {
+                id: zoomCrosshair
+                width: 100
+                height: 100
+                x: parent.width * zoomCenterX - width / 2
+                y: parent.height * zoomCenterY - height / 2
+                
+                // Crosshair design
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 2
+                    height: parent.height
+                    color: "#545EEE"
+                    opacity: 0.8
+                }
+                
+                Rectangle {
+                    anchors.centerIn: parent
+                    height: 2
+                    width: parent.width
+                    color: "#545EEE"
+                    opacity: 0.8
+                }
+                
+                Rectangle {
+                    anchors.centerIn: parent
+                    width: 20
+                    height: 20
+                    radius: 10
+                    color: "transparent"
+                    border.width: 2
+                    border.color: "#545EEE"
+                    opacity: 0.8
+                }
+                
+                // Make the crosshair draggable
+                MouseArea {
+                    anchors.fill: parent
+                    drag.target: parent
+                    drag.minimumX: -width/2
+                    drag.maximumX: zoomControlUI.width - width/2
+                    drag.minimumY: -height/2
+                    drag.maximumY: zoomControlUI.height - height/2
+                    
+                    onPositionChanged: {
+                        if (drag.active) {
+                            var centerPointX = parent.x + width/2
+                            var centerPointY = parent.y + height/2
+                            
+                            zoomCenterX = centerPointX / zoomControlUI.width
+                            zoomCenterY = centerPointY / zoomControlUI.height
+                        }
+                    }
+                }
+            }
+            
+            // Zoom controls panel
+            Rectangle {
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: 20
+                width: 200
+                height: 120
+                color: "#2A2A2A"
+                opacity: 0.8
+                radius: 10
+                
+                ColumnLayout {
+                    anchors.fill: parent
+                    anchors.margins: 10
+                    spacing: 8
+                    
+                    Text {
+                        text: "Zoom Control"
+                        font.bold: true
+                        color: "white"
+                        horizontalAlignment: Text.AlignHCenter
+                        Layout.fillWidth: true
+                    }
+                    
+                    // Zoom scale slider
+                    RowLayout {
+                        spacing: 5
+                        Layout.fillWidth: true
+                        
+                        Text {
+                            text: "Scale:"
+                            color: "white"
+                        }
+                        
+                        Slider {
+                            id: zoomSlider
+                            from: 1.0
+                            to: 4.0
+                            value: zoomScale
+                            Layout.fillWidth: true
+                            onValueChanged: {
+                                zoomScale = value
+                            }
+                        }
+                        
+                        Text {
+                            text: zoomSlider.value.toFixed(1) + "x"
+                            color: "white"
+                            width: 30
+                        }
+                    }
+                    
+                    // Control buttons
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignRight
+                        spacing: 10
+                        
+                        Button {
+                            text: "Cancel"
+                            onClicked: {
+                                zoomActive = false
+                            }
+                        }
+                        
+                        Button {
+                            text: "Apply Zoom"
+                            highlighted: true
+                            onClicked: {
+                                applyZoom()
+                                zoomActive = false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Function to apply zoom
+    function applyZoom() {
+        var currentFrame = videoController.current_frame - videoController.start_frame
+        var startFrame = Math.max(0, currentFrame - 30)
+        var endFrame = Math.min(videoController.end_frame - videoController.start_frame, currentFrame + 30)
+        
+        videoController.add_zoom_effect(startFrame, endFrame, {
+            "x": zoomCenterX,
+            "y": zoomCenterY,
+            "scale": zoomScale
+        })
     }
 
-    // Full screen button
-    ToolButton {
-        id: fullScreenButton
+    // Control buttons
+    Row {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
-        anchors.margins: 0
-        icon.source: "qrc:/resources/icons/full_screen.svg"
-        onClicked: {
-            fullScreenWindow.showFullScreen()
+        anchors.margins: 10
+        spacing: 10
+        
+        // Zoom button
+        ToolButton {
+            id: zoomButton
+            icon.source: "qrc:/resources/icons/zoom.svg"
+            icon.color: "#e8eaed"
+            onClicked: {
+                zoomActive = true
+            }
+            
+            ToolTip.text: "Add Zoom Effect"
+            ToolTip.visible: hovered
+            ToolTip.delay: 500
+        }
+        
+        // Full screen button
+        ToolButton {
+            id: fullScreenButton
+            icon.source: "qrc:/resources/icons/full_screen.svg"
+            icon.color: "#e8eaed"
+            onClicked: {
+                fullScreenWindow.showFullScreen()
+            }
+            
+            ToolTip.text: "Full Screen"
+            ToolTip.visible: hovered
+            ToolTip.delay: 500
         }
     }
 

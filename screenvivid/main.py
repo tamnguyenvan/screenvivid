@@ -30,6 +30,16 @@ def main():
     app.setWindowIcon(QIcon(str(icon_path)))
     engine = QQmlApplicationEngine()
     logger.debug("Created QQmlApplicationEngine")
+    
+    # Add import paths for QML components
+    qml_base_path = base_path / "qml"
+    engine.addImportPath(str(qml_base_path))
+    logger.debug(f"Added QML import path: {qml_base_path}")
+    
+    # Add specific component paths
+    studio_path = qml_base_path / "studio"
+    engine.addImportPath(str(studio_path))
+    logger.debug(f"Added QML import path: {studio_path}")
 
     # Image provider
     frame_provider = FrameImageProvider()

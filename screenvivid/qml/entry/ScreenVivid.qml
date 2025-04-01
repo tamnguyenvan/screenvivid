@@ -93,9 +93,20 @@ Window {
                             clipTrackModel.set_fps(videoController.fps)
                             clipTrackModel.set_video_len(0, videoController.video_len)
 
-                            studioLoader.source = ""
-                            studioLoader.source = "qrc:/qml/studio/Studio.qml"
-                            studioLoader.item.showMaximized()
+                            // Add error handling around studio loader
+                            try {
+                                studioLoader.source = ""
+                                studioLoader.source = "qrc:/qml/studio/Studio.qml"
+                                
+                                // Only call showMaximized if the component loaded successfully
+                                if (studioLoader.status === Loader.Ready && studioLoader.item) {
+                                    studioLoader.item.showMaximized()
+                                } else {
+                                    console.error("Failed to load studio component:", studioLoader.status)
+                                }
+                            } catch (e) {
+                                console.error("Error loading studio:", e)
+                            }
                             startupWindow.hide()
                         }
                     } else {
