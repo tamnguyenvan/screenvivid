@@ -5,7 +5,8 @@ import cv2
 import numpy as np
 import pyautogui
 from PySide6.QtCore import QObject, Property, Slot, Signal, QThread, QTimer
-from PySide6.QtGui import QImage
+from PySide6.QtGui import QImage, QGuiApplication, QCursor
+from PySide6.QtCore import QPointF
 
 from screenvivid.models.utils import transforms
 from screenvivid.models.utils.manager.undo_redo import UndoRedoManager
@@ -35,6 +36,7 @@ class VideoControllerModel(QObject):
     fpsChanged = Signal(int)
     zoomChanged = Signal()
     zoomEffectsChanged = Signal()
+    cursorPositionReady = Signal(float, float)  # Signal for cursor position (normalized x, y)
 
     def __init__(self, frame_provider):
         super().__init__()
@@ -463,6 +465,54 @@ class VideoControllerModel(QObject):
             logger.info(f"Added {len(zoom_effects)} automatic zoom effects")
         else:
             logger.info("No automatic zoom effects were created")
+
+    @Slot()
+    def get_cursor_position_for_zoom(self):
+        """
+        Get the current cursor position relative to the video preview area
+        and emit signal with normalized coordinates for the zoom crosshair
+        """
+        try:
+            # Get global cursor position using pyautogui
+            from PySide6.QtGui import QGuiApplication, QCursor
+            from PySide6.QtCore import QPointF
+            
+            # Get the cursor position in screen coordinates
+            cursor_pos = QCursor.pos()
+            
+            # Get the application window
+            window = QGuiApplication.topLevelWindows()[0]
+            
+            # Find the video preview component
+            video_preview = window.findChild(QObject, "videoPreview")
+            
+            if video_preview:
+                # Map global position to video preview local coordinates
+                local_pos = video_preview.mapFromGlobal(cursor_pos)
+                
+                # Get the size of the video preview
+                width = video_preview.width()
+                height = video_preview.height()
+                
+                # Calculate normalized coordinates (0-1)
+                normalized_x = max(0, min(1, local_pos.x() / width))
+                normalized_y = max(0, min(1, local_pos.y() / height))
+                
+                # Emit the signal with normalized coordinates
+                self.cursorPositionReady.emit(normalized_x, normalized_y)
+                
+                logger.info(f"Cursor position: ({normalized_x:.2f}, {normalized_y:.2f})")
+            else:
+                logger.error("Could not find video preview component")
+                # Use default center position
+                self.cursorPositionReady.emit(0.5, 0.5)
+                
+        except Exception as e:
+            logger.error(f"Error getting cursor position: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            # Fallback to center position
+            self.cursorPositionReady.emit(0.5, 0.5)
 
 class VideoLoadingError(Exception):
     pass

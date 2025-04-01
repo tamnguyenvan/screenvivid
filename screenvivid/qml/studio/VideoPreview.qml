@@ -37,6 +37,16 @@ Item {
         }
     }
 
+    Shortcut {
+        sequence: "Z"  // Press Z to quickly activate zoom at cursor position
+        onActivated: {
+            if (!zoomActive) {
+                showZoomControl()
+                console.log("Zoom activated via keyboard shortcut")
+            }
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
         radius: 4
@@ -637,50 +647,26 @@ Item {
         // Activate zoom mode
         zoomActive = true
         
-        // Use the last tracked mouse position if not already set
-        if (zoomCenterX === 0.5 && zoomCenterY === 0.5) {
-            // Get current mouse position (normalized 0-1 coordinates)
-            var cursorX = mouseArea.lastX
-            var cursorY = mouseArea.lastY
+        try {
+            // Use a direct call to get the current cursor position
+            videoController.get_cursor_position_for_zoom()
             
-            // Set the crosshair to current cursor position
-            zoomCenterX = cursorX
-            zoomCenterY = cursorY
-            
-            console.log("Zoom activated with crosshair at cursor position:", cursorX.toFixed(2), cursorY.toFixed(2))
-        } else {
-            console.log("Zoom activated with existing crosshair position:", zoomCenterX.toFixed(2), zoomCenterY.toFixed(2))
+            // The cursor position will be set in a callback when 
+            // videoController.cursorPositionReady is emitted
+        } catch (e) {
+            console.error("Failed to get cursor position:", e)
         }
     }
     
-    // Mouse area to track cursor position over the video
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        hoverEnabled: true
-        acceptedButtons: Qt.NoButton  // Don't consume clicks, just track position
-        
-        // Store last position in properties to access from outside
-        property real lastX: 0.5
-        property real lastY: 0.5
-        
-        onPositionChanged: {
-            // Update last position as normalized coordinates (0-1)
-            lastX = Math.max(0, Math.min(1, mouseX / width))
-            lastY = Math.max(0, Math.min(1, mouseY / height))
-        }
-    }
-    
-    // Keyboard shortcuts
-    Shortcut {
-        sequence: "Z"  // Press Z to quickly activate zoom at cursor position
-        onActivated: {
-            if (!zoomActive) {
-                // Set zoom center to last mouse position
-                zoomCenterX = mouseArea.lastX
-                zoomCenterY = mouseArea.lastY
-                showZoomControl()
-                console.log("Zoom activated via keyboard at:", zoomCenterX.toFixed(2), zoomCenterY.toFixed(2))
+    Connections {
+        target: videoController
+        function onCursorPositionReady(normalizedX, normalizedY) {
+            if (zoomActive) {
+                // Set the zoom center to the cursor position
+                zoomCenterX = normalizedX
+                zoomCenterY = normalizedY
+                console.log("Zoom crosshair positioned at cursor:", 
+                           normalizedX.toFixed(2), normalizedY.toFixed(2))
             }
         }
     }
