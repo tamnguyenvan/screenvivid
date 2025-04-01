@@ -1,4 +1,5 @@
 import time
+import os
 
 import cv2
 import numpy as np
@@ -202,9 +203,26 @@ class VideoControllerModel(QObject):
 
     @Slot(str, dict, result="bool")
     def load_video(self, path, metadata):
-        self.video_path = path
-        self.is_recording_video = metadata["recording"]
-        return self.video_processor.load_video(path, metadata)
+        try:
+            if not os.path.exists(path):
+                return False
+
+            logger.info(f"Loading video from {path} with metadata: {metadata}")
+            success = self.video_processor.load_video(path, metadata)
+            if success:
+                self.undo_redo_manager.clear()
+                self._update_undo_redo_signals()
+                
+                # If this is a recording with cursor data, create automatic zooms
+                if metadata and metadata.get("recording", False) and metadata.get("mouse_events"):
+                    self.create_automatic_zooms_from_cursor()
+
+            return success
+        except Exception as e:
+            import traceback
+            logger.error(f"Error loading video: {e}")
+            logger.error(traceback.format_exc())
+            return False
 
     @Slot()
     def toggle_play_pause(self):
@@ -331,6 +349,120 @@ class VideoControllerModel(QObject):
             self.video_processor.update_zoom_effect(new_start_frame, new_end_frame, old_start_frame, old_end_frame, old_params)
 
         self.undo_redo_manager.do_action(do_update_zoom, (do_update_zoom, undo_update_zoom))
+
+    def create_automatic_zooms_from_cursor(self):
+        """
+        Automatically create zoom effects based on cursor movements during recording.
+        This looks for:
+        1. Click events
+        2. Areas where the cursor stays in the same region for a while
+        """
+        logger.info("Creating automatic zoom effects from cursor movements")
+        
+        if not self.video_processor._mouse_events:
+            logger.warning("No cursor movement data found")
+            return
+            
+        # Parameters for automatic zoom generation
+        MIN_FRAMES_BETWEEN_ZOOMS = self.fps * 2  # At least 2 seconds between zoom effects
+        ZOOM_DURATION_FRAMES = self.fps * 4      # Each zoom lasts 4 seconds
+        DEFAULT_ZOOM_SCALE = 2.0                 # Default zoom level
+        
+        click_events = []
+        
+        # First, check if we have explicit click events recorded
+        move_data = self.video_processor._mouse_events
+        
+        if isinstance(move_data, dict) and move_data.get("click"):
+            logger.info(f"Found {len(move_data['click'])} explicit click events")
+            
+            # Process explicit click events
+            for click_data in move_data["click"]:
+                frame = click_data.get('frame')
+                x = click_data.get('x')
+                y = click_data.get('y')
+                
+                if frame is not None and x is not None and y is not None:
+                    click_events.append({
+                        'frame': int(frame),
+                        'x': float(x),
+                        'y': float(y)
+                    })
+        
+        # If no explicit clicks found, try to infer from cursor states
+        if not click_events and isinstance(move_data, dict) and move_data.get("move"):
+            logger.info("No explicit click events found, inferring from cursor states")
+            
+            # Process cursor movement data to detect potential clicks
+            for frame_idx in sorted(move_data["move"].keys()):
+                event_data = move_data["move"][frame_idx]
+                
+                # If this is a tuple, it contains (x, y, frame, cursor_state, anim_step)
+                if isinstance(event_data, tuple) and len(event_data) >= 3:
+                    x, y, _, cursor_state, *_ = event_data
+                    
+                    # Check if this cursor state represents a click (depends on system)
+                    # For most systems, cursor state changes during clicks
+                    if ('hand' in str(cursor_state).lower() or 
+                        'pointer' in str(cursor_state).lower() or 
+                        'click' in str(cursor_state).lower() or 
+                        cursor_state in [1, 2]):  # Common click cursor states
+                        
+                        click_events.append({
+                            'frame': int(frame_idx),
+                            'x': float(x),
+                            'y': float(y)
+                        })
+        
+        logger.info(f"Found {len(click_events)} potential click events for zoom creation")
+        
+        # Create zoom effects for each click, being careful not to overlap
+        zoom_effects = []
+        last_end_frame = -MIN_FRAMES_BETWEEN_ZOOMS  # Start with a negative value so first click can be processed
+        
+        for click in click_events:
+            frame = click['frame']
+            
+            # Skip if too close to previous zoom
+            if frame < last_end_frame + MIN_FRAMES_BETWEEN_ZOOMS:
+                continue
+                
+            # Calculate start/end frames, ensuring we don't exceed video length
+            start_frame = max(0, frame - int(self.fps * 0.5))  # Start 0.5 second before click
+            end_frame = min(self.total_frames, start_frame + ZOOM_DURATION_FRAMES)
+            
+            # Skip if duration is too short
+            if end_frame - start_frame < self.fps:
+                continue
+                
+            # Create zoom effect
+            zoom_effect = {
+                'start_frame': start_frame,
+                'end_frame': end_frame,
+                'params': {
+                    'x': click['x'],
+                    'y': click['y'],
+                    'scale': DEFAULT_ZOOM_SCALE,
+                    'easeInFrames': int(self.fps * 0.5),    # 0.5 second ease in
+                    'easeOutFrames': int(self.fps * 0.5),    # 0.5 second ease out
+                    'auto': True  # Mark this as an auto-generated zoom
+                }
+            }
+            
+            zoom_effects.append(zoom_effect)
+            last_end_frame = end_frame
+            
+            logger.info(f"Created auto zoom effect at frame {frame}: {start_frame}-{end_frame}")
+        
+        # Add all the zoom effects we created
+        self.video_processor._zoom_effects.extend(zoom_effects)
+        self.video_processor._zoom_effects.sort(key=lambda x: x['start_frame'])
+        
+        if zoom_effects:
+            self.zoomEffectsChanged.emit()
+            logger.info(f"Added {len(zoom_effects)} automatic zoom effects")
+        else:
+            logger.info("No automatic zoom effects were created")
 
 class VideoLoadingError(Exception):
     pass
@@ -524,7 +656,6 @@ class VideoProcessor(QObject):
             self.frame_height
         )[:2]
 
-    # @Slot(str)
     def load_video(self, path, metadata):
         try:
             self.video = cv2.VideoCapture(path)
@@ -538,8 +669,19 @@ class VideoProcessor(QObject):
             self._start_frames.append(0)
             self._end_frames.append(self.total_frames)
 
-            self._mouse_events = metadata.get("mouse_events", {}).get("move", {}) if metadata else {}
-            self._cursors_map = metadata.get("mouse_events", {}).get("cursors_map", {}) if metadata else {}
+            # Get mouse movement and click data
+            if metadata and 'mouse_events' in metadata:
+                self._mouse_events = metadata.get("mouse_events", {})
+                self._cursors_map = metadata.get("mouse_events", {}).get("cursors_map", {})
+                
+                # Log the structure of mouse_events for debugging
+                logger.info(f"Mouse events data structure: {list(self._mouse_events.keys())}")
+                logger.info(f"Number of move events: {len(self._mouse_events.get('move', {}))}")
+                logger.info(f"Number of click events: {len(self._mouse_events.get('click', []))}")
+            else:
+                self._mouse_events = {}
+                self._cursors_map = {}
+                
             self._region = metadata.get("region", []) if metadata else []
 
             if self._region:
@@ -552,7 +694,7 @@ class VideoProcessor(QObject):
             screen_size = int(screen_width * self._device_pixel_ratio), int(screen_height * self._device_pixel_ratio)
             self._transforms = transforms.Compose({
                 "aspect_ratio": transforms.AspectRatio(self._aspect_ratio, screen_size),
-                "cursor": transforms.Cursor(move_data=self._mouse_events, cursors_map=self._cursors_map, offsets=(x_offset, y_offset), scale=self._cursor_scale),
+                "cursor": transforms.Cursor(move_data=self._mouse_events.get("move", {}), cursors_map=self._cursors_map, offsets=(x_offset, y_offset), scale=self._cursor_scale),
                 "padding": transforms.Padding(padding=self.padding),
                 # "inset": transforms.Inset(inset=self.inset, color=(0, 0, 0)),
                 "border_shadow": transforms.BorderShadow(border_radius=self.border_radius),

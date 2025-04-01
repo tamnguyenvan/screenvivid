@@ -1,4 +1,3 @@
-
 class UndoRedoManager:
     def __init__(self):
         self.undo_stack = []
@@ -26,3 +25,8 @@ class UndoRedoManager:
 
     def can_redo(self):
         return len(self.redo_stack) > 0
+
+    def clear(self):
+        """Clear both undo and redo stacks"""
+        self.undo_stack.clear()
+        self.redo_stack.clear()

@@ -400,10 +400,10 @@ Item {
         // Full screen button
         ToolButton {
             id: fullScreenButton
-            icon.source: "qrc:/resources/icons/full_screen.svg"
+        icon.source: "qrc:/resources/icons/full_screen.svg"
             icon.color: "#e8eaed"
-            onClicked: {
-                fullScreenWindow.showFullScreen()
+        onClicked: {
+            fullScreenWindow.showFullScreen()
             }
             
             ToolTip.text: "Full Screen"

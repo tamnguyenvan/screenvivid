@@ -92,6 +92,74 @@ Rectangle {
                     radius: 4
                 }
                 
+                // Auto-zoom toggle control
+                Rectangle {
+                    id: autoZoomToggle
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.margins: 5
+                    width: 90
+                    height: 20
+                    radius: 10
+                    color: autoZoomEnabled ? "#545EEE" : "#444"
+                    
+                    property bool autoZoomEnabled: true
+                    
+                    Row {
+                        anchors.centerIn: parent
+                        spacing: 5
+                        
+                        Text {
+                            text: "Auto Zoom"
+                            color: "white"
+                            font.pixelSize: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                        
+                        Rectangle {
+                            width: 10
+                            height: 10
+                            radius: 5
+                            color: autoZoomToggle.autoZoomEnabled ? "#7BD57F" : "#666"
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+                    }
+                    
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            autoZoomToggle.autoZoomEnabled = !autoZoomToggle.autoZoomEnabled
+                            // Apply or remove all auto zooms
+                            if (autoZoomToggle.autoZoomEnabled) {
+                                // Re-create auto zooms
+                                videoController.create_automatic_zooms_from_cursor()
+                            } else {
+                                // Remove all auto-generated zooms
+                                for (var i = videoController.zoom_effects.length - 1; i >= 0; i--) {
+                                    var effect = videoController.zoom_effects[i]
+                                    if (effect.params.auto === true) {
+                                        videoController.remove_zoom_effect(effect.start_frame, effect.end_frame)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    ToolTip {
+                        visible: autoZoomArea.containsMouse
+                        text: autoZoomToggle.autoZoomEnabled ? 
+                            "Auto-zoom enabled: Automatically generates zooms from cursor clicks" : 
+                            "Auto-zoom disabled: Only manually placed zooms will appear"
+                    }
+                    
+                    MouseArea {
+                        id: autoZoomArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: parent.clicked()
+                    }
+                }
+                
                 // Zoom effects renderer
                 Repeater {
                     model: videoController.zoom_effects
@@ -417,14 +485,6 @@ Rectangle {
                             id: contextMenu
                             
                             MenuItem {
-                                text: "Remove Zoom Effect"
-                                onTriggered: {
-                                    console.log("Removing zoom effect from frame", effect.start_frame, "to", effect.end_frame)
-                                    videoController.remove_zoom_effect(effect.start_frame, effect.end_frame)
-                                }
-                            }
-                            
-                            MenuItem {
                                 text: "Edit Zoom Effect"
                                 onTriggered: {
                                     // Jump to middle of zoom effect (using absolute frame numbers)
@@ -446,6 +506,50 @@ Rectangle {
                                         console.error("Could not find videoPreview component")
                                     }
                                 }
+                            }
+                            
+                            MenuItem {
+                                text: "Remove Zoom Effect"
+                                onTriggered: {
+                                    console.log("Removing zoom effect from frame", effect.start_frame, "to", effect.end_frame)
+                                    videoController.remove_zoom_effect(effect.start_frame, effect.end_frame)
+                                }
+                            }
+                        }
+                        
+                        // Auto-zoom indicator (shown for automatically generated zooms)
+                        Item {
+                            visible: effect.params.auto === true
+                            anchors.right: parent.right
+                            anchors.top: parent.top
+                            anchors.margins: 4
+                            width: 16
+                            height: 16
+                            
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: width / 2
+                                color: "#282C33"
+                                opacity: 0.7
+                            }
+                            
+                            Text {
+                                anchors.centerIn: parent
+                                text: "A"
+                                color: "#7BD57F"
+                                font.pixelSize: 10
+                                font.bold: true
+                            }
+                            
+                            ToolTip {
+                                visible: autoZoomHover.containsMouse
+                                text: "Auto-generated zoom from cursor click"
+                            }
+                            
+                            MouseArea {
+                                id: autoZoomHover
+                                anchors.fill: parent
+                                hoverEnabled: true
                             }
                         }
                     }

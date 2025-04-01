@@ -344,6 +344,14 @@ class ScreenRecordingThread:
         logger.info("Started mouse tracking thread")
         try:
             last_frame = -1
+            last_cursor_state = None
+            last_position = None
+            
+            # For click detection
+            click_detection_buffer = []
+            click_threshold_frames = 5  # Number of frames to analyze for click detection
+            cursor_changed_to_hand = False
+            
             while not self._is_stopped.is_set():
                 try:
                     frame_index = self._frame_index_queue.get(timeout=0.5)
@@ -362,6 +370,25 @@ class ScreenRecordingThread:
                         relative_y = (y - self._region[1]) / self._region[3]
 
                         cursor_state, anim_step = self._get_cursor()
+                        
+                        # Store current position and cursor state
+                        current_position = (relative_x, relative_y)
+                        
+                        # Add to click detection buffer
+                        click_detection_buffer.append({
+                            'frame': frame_index,
+                            'position': current_position,
+                            'cursor_state': cursor_state
+                        })
+                        
+                        # Keep buffer at fixed size
+                        if len(click_detection_buffer) > click_threshold_frames:
+                            click_detection_buffer.pop(0)
+                        
+                        # Detect clicks by analyzing cursor state transitions and movement
+                        self._detect_clicks(click_detection_buffer, frame_index)
+                        
+                        # Store cursor movement
                         self._mouse_events["move"][frame_index] = (
                             relative_x,
                             relative_y,
@@ -369,13 +396,16 @@ class ScreenRecordingThread:
                             cursor_state,
                             anim_step,
                         )
-
+                        
+                        # Update state tracking
+                        last_cursor_state = cursor_state
+                        last_position = current_position
                         self._update_fps("mouse")
 
                     last_frame = frame_index
                     self._frame_index_queue.task_done()
 
-                    # Tính toán thời gian sleep
+                    # Slight sleep to avoid hogging CPU
                     time.sleep(0.001)
 
                 except queue.Empty:
@@ -386,6 +416,67 @@ class ScreenRecordingThread:
 
         finally:
             logger.debug("Mouse tracking thread stopped")
+            
+    def _detect_clicks(self, buffer, current_frame):
+        """
+        Detect clicks based on cursor state changes and position stability.
+        This analyzes patterns like:
+        1. Cursor changing to "hand" or "pointing" then back to "arrow"
+        2. Cursor staying in same position during state transition
+        3. Specific cursor states that typically indicate clicks
+        """
+        if len(buffer) < 3:
+            return
+        
+        # Common click-related cursor states
+        CLICK_CURSOR_STATES = ["hand", "pointer", "pointing", "grab", "grabbing"]
+        
+        # If we already recorded a click for this frame, skip
+        if current_frame in [item.get('frame') for item in self._mouse_events["click"]]:
+            return
+            
+        # Get current record
+        current = buffer[-1]
+        
+        # Look for cursor state transitions that indicate clicks
+        for i in range(len(buffer) - 2):
+            prev = buffer[i]
+            mid = buffer[i+1]
+            
+            # Pattern: arrow -> hand -> arrow within a few frames (typical click pattern)
+            cursor_click_pattern = (
+                "hand" in str(mid['cursor_state']).lower() or 
+                "pointer" in str(mid['cursor_state']).lower() or
+                mid['cursor_state'] in [1, 2]  # Common numeric states for click cursors
+            )
+            
+            # Pattern: cursor remained relatively stable (click usually involves pausing)
+            position_stable = self._positions_close(prev['position'], current['position'], threshold=0.05)
+            
+            # Pattern: direct click cursor state
+            direct_click_state = any(click_state in str(current['cursor_state']).lower() 
+                                   for click_state in CLICK_CURSOR_STATES)
+            
+            # If any click pattern is detected
+            if (cursor_click_pattern and position_stable) or direct_click_state:
+                # Record this as a click
+                x, y = current['position']
+                logger.info(f"Click detected at frame {current_frame}: position {x:.2f}, {y:.2f}")
+                self._mouse_events["click"].append({
+                    'frame': current_frame,
+                    'x': x,
+                    'y': y,
+                    'cursor_state': str(current['cursor_state'])
+                })
+                return  # Only record one click per frame
+    
+    def _positions_close(self, pos1, pos2, threshold=0.05):
+        """Check if two positions are within threshold of each other"""
+        if not pos1 or not pos2:
+            return False
+        x1, y1 = pos1
+        x2, y2 = pos2
+        return abs(x1 - x2) < threshold and abs(y1 - y2) < threshold
 
     def _get_ffmpeg_command(self):
         ffmpeg_path = get_ffmpeg_path()
