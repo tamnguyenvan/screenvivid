@@ -92,6 +92,25 @@ def get_ffmpeg_path():
 
         # Construct full path
         ffmpeg_path = str(base_path / ffmpeg_binary_name)
+        
+        # Check if ffmpeg exists at the expected path
+        if not os.path.exists(ffmpeg_path):
+            # Try to use system-installed ffmpeg
+            if os_name == "windows":
+                # Look for ffmpeg in PATH on Windows
+                for path in os.environ["PATH"].split(os.pathsep):
+                    exe_path = os.path.join(path, ffmpeg_binary_name)
+                    if os.path.isfile(exe_path):
+                        ffmpeg_path = exe_path
+                        break
+            else:
+                # On macOS/Linux, try the default location
+                if os_name == "macos" and os.path.exists("/usr/local/bin/ffmpeg"):
+                    ffmpeg_path = "/usr/local/bin/ffmpeg"
+                elif os.path.exists("/usr/bin/ffmpeg"):
+                    ffmpeg_path = "/usr/bin/ffmpeg"
+            
+            logger.info(f"Using ffmpeg at: {ffmpeg_path}")
 
     return ffmpeg_path
 
