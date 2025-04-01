@@ -10,6 +10,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
 from screenvivid.utils.general import hex_to_rgb, create_gradient_image, get_os_name
+from screenvivid.utils.logging import logger
 
 class BaseTransform:
     def __init__(self):
@@ -62,7 +63,11 @@ class AspectRatio(BaseTransform):
                 b = a % b
                 a = tmp
             return a
-
+        
+        # Handle case where width or height is zero
+        if width == 0 or height == 0:
+            return "16:9"  # Return default aspect ratio if dimensions are invalid
+            
         divisor = gcd(width, height)
         aspect_width = int(width / divisor)
         aspect_height = int(height / divisor)
@@ -70,6 +75,12 @@ class AspectRatio(BaseTransform):
 
     # @lru_cache(maxsize=32)
     def calculate_output_resolution(self, aspect_ratio, input_width, input_height):
+        # Safety check to prevent division by zero
+        if input_width <= 0 or input_height <= 0:
+            logger.warning(f"Invalid dimensions: width={input_width}, height={input_height}. Using default values.")
+            input_width = max(1, input_width)
+            input_height = max(1, input_height)
+            
         if aspect_ratio.lower() == "auto":
             aspect_ratio = self._resolution_to_aspect_ration(input_width, input_height)
 
