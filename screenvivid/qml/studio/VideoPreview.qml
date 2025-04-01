@@ -143,8 +143,8 @@ Item {
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.margins: 20
-                width: 200
-                height: 220
+                width: 240
+                height: 280
                 color: "#2A2A2A"
                 opacity: 0.8
                 radius: 10
@@ -170,6 +170,7 @@ Item {
                         Text {
                             text: "Scale:"
                             color: "white"
+                            width: 60
                         }
                         
                         Slider {
@@ -186,47 +187,127 @@ Item {
                         Text {
                             text: zoomSlider.value.toFixed(1) + "x"
                             color: "white"
-                            width: 30
+                            width: 35
                         }
                     }
                     
-                    // Start frame control (new)
+                    // Duration controls (time-based)
                     RowLayout {
                         spacing: 5
                         Layout.fillWidth: true
                         
                         Text {
-                            text: "Start:"
+                            text: "Duration:"
                             color: "white"
+                            width: 60
                         }
                         
+                        // Use seconds for duration
                         SpinBox {
-                            id: startFrameSpin
-                            from: videoController.start_frame
-                            to: videoController.end_frame
-                            value: Math.max(videoController.start_frame, videoController.absolute_current_frame - 30)
-                            Layout.fillWidth: true
+                            id: durationSeconds
+                            from: 1
+                            to: 60
+                            value: 2
+                            stepSize: 1
                             editable: true
+                            Layout.fillWidth: true
+                            
+                            textFromValue: function(value) {
+                                return value + "s"
+                            }
+                            
+                            valueFromText: function(text) {
+                                return parseInt(text.replace("s", ""))
+                            }
                         }
                     }
                     
-                    // End frame control (new)
+                    // Ease-in control (time-based)
                     RowLayout {
                         spacing: 5
                         Layout.fillWidth: true
                         
                         Text {
-                            text: "End:"
+                            text: "Ease in:"
                             color: "white"
+                            width: 60
                         }
                         
-                        SpinBox {
-                            id: endFrameSpin
-                            from: videoController.start_frame
-                            to: videoController.end_frame
-                            value: Math.min(videoController.end_frame, videoController.absolute_current_frame + 30)
+                        // Dropdown with ease-in durations
+                        ComboBox {
+                            id: easeInTimeCombo
+                            model: ["0.1s", "0.2s", "0.5s", "1.0s"]
                             Layout.fillWidth: true
-                            editable: true
+                            
+                            // Map display values to frames (assuming 30fps default)
+                            property var timeToFrames: {
+                                "0.1s": 3,     // ~3 frames
+                                "0.2s": 6,     // ~6 frames
+                                "0.5s": 15,    // ~15 frames
+                                "1.0s": 30     // ~30 frames
+                            }
+                            
+                            // Default to 0.2s (6 frames)
+                            currentIndex: 1
+                        }
+                    }
+                    
+                    // Ease-out control (time-based)
+                    RowLayout {
+                        spacing: 5
+                        Layout.fillWidth: true
+                        
+                        Text {
+                            text: "Ease out:"
+                            color: "white"
+                            width: 60
+                        }
+                        
+                        // Dropdown with ease-out durations
+                        ComboBox {
+                            id: easeOutTimeCombo
+                            model: ["0.1s", "0.2s", "0.5s", "1.0s"]
+                            Layout.fillWidth: true
+                            
+                            // Map display values to frames (same as ease-in)
+                            property var timeToFrames: {
+                                "0.1s": 3,
+                                "0.2s": 6,
+                                "0.5s": 15,
+                                "1.0s": 30
+                            }
+                            
+                            // Default to 0.1s (3 frames)
+                            currentIndex: 0
+                        }
+                    }
+                    
+                    // Start and end time display
+                    RowLayout {
+                        spacing: 5
+                        Layout.fillWidth: true
+                        
+                        Text {
+                            text: "Range:"
+                            color: "white"
+                            width: 60
+                        }
+                        
+                        Text {
+                            id: timeRangeDisplay
+                            color: "#7BD57F"
+                            Layout.fillWidth: true
+                            
+                            property int startSeconds: Math.floor(videoController.absolute_current_frame / videoController.fps)
+                            property int endSeconds: startSeconds + durationSeconds.value
+                            
+                            text: formatTime(startSeconds) + " - " + formatTime(endSeconds)
+                            
+                            function formatTime(seconds) {
+                                var mins = Math.floor(seconds / 60)
+                                var secs = seconds % 60
+                                return mins + ":" + (secs < 10 ? "0" : "") + secs
+                            }
                         }
                     }
                     
@@ -259,17 +340,26 @@ Item {
     
     // Function to apply zoom
     function applyZoom() {
-        // Use the directly specified start and end frames
-        var startFrame = startFrameSpin.value
-        var endFrame = endFrameSpin.value
+        // Get current absolute frame position
+        var currentFrame = videoController.absolute_current_frame
         
-        // Ensure start < end
-        if (startFrame >= endFrame) {
-            console.error("Start frame must be less than end frame")
-            return
-        }
+        // Convert duration from seconds to frames
+        var durationFrames = Math.round(durationSeconds.value * videoController.fps)
+        var halfDuration = Math.round(durationFrames / 2)
         
+        // Calculate start and end frames
+        var startFrame = Math.max(videoController.start_frame, currentFrame - halfDuration)
+        var endFrame = Math.min(videoController.end_frame, currentFrame + halfDuration)
+        
+        // Get ease-in and ease-out frames from the selected values
+        var easeInFrames = easeInTimeCombo.timeToFrames[easeInTimeCombo.currentText]
+        var easeOutFrames = easeOutTimeCombo.timeToFrames[easeOutTimeCombo.currentText]
+        
+        // Log actions for debugging
         console.log("Adding zoom effect from frame", startFrame, "to", endFrame)
+        console.log("Duration: " + durationFrames + " frames (" + durationSeconds.value + "s)")
+        console.log("Ease-in: " + easeInFrames + " frames (" + easeInTimeCombo.currentText + ")")
+        console.log("Ease-out: " + easeOutFrames + " frames (" + easeOutTimeCombo.currentText + ")")
         console.log("Zoom parameters: center=(" + zoomCenterX.toFixed(2) + "," + zoomCenterY.toFixed(2) + 
                    "), scale=" + zoomScale.toFixed(2))
         
@@ -277,8 +367,9 @@ Item {
         videoController.add_zoom_effect(startFrame, endFrame, {
             "x": zoomCenterX,
             "y": zoomCenterY,
-            "scale": zoomScale
-            // No transition point needed - using instant zoom in/out with steady middle
+            "scale": zoomScale,
+            "easeInFrames": easeInFrames,
+            "easeOutFrames": easeOutFrames
         })
         
         // Force an update to the current frame to see the zoom immediately

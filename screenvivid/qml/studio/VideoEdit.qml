@@ -234,21 +234,24 @@ Rectangle {
                             }
                         }
                         
-                        // Zoom phase indicators - show precise frames for easing
+                        // Zoom phase indicators - show time-based durations
                         Rectangle {
                             id: zoomInMarker
-                            width: Math.min(parent.width * 0.15, 5 * studioWindow.pixelsPerFrame) // 5 frames for ease-in
+                            width: Math.min(parent.width * 0.15, effect.params.easeInFrames * studioWindow.pixelsPerFrame) 
                             height: parent.height
                             color: "#7BD57F" // Green for zoom in
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
                             opacity: 0.8
                             
+                            // Calculate time in seconds from frames
+                            property real inSeconds: effect.params.easeInFrames / videoController.fps
+                            
                             Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.top: parent.top
                                 anchors.topMargin: -18
-                                text: "IN (5)"
+                                text: "IN (" + parent.inSeconds.toFixed(1) + "s)"
                                 color: "#7BD57F"
                                 font.pixelSize: 10
                                 visible: parent.width >= 4 && zoomEffectRect.width > 40
@@ -257,18 +260,21 @@ Rectangle {
                         
                         Rectangle {
                             id: zoomOutMarker
-                            width: Math.min(parent.width * 0.15, 4 * studioWindow.pixelsPerFrame) // 4 frames for ease-out
+                            width: Math.min(parent.width * 0.15, effect.params.easeOutFrames * studioWindow.pixelsPerFrame)
                             height: parent.height
                             color: "#FFA071" // Orange for zoom out
                             anchors.right: parent.right
                             anchors.verticalCenter: parent.verticalCenter
                             opacity: 0.8
                             
+                            // Calculate time in seconds from frames
+                            property real outSeconds: effect.params.easeOutFrames / videoController.fps
+                            
                             Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 anchors.top: parent.top
                                 anchors.topMargin: -18
-                                text: "OUT (4)"
+                                text: "OUT (" + parent.outSeconds.toFixed(1) + "s)"
                                 color: "#FFA071"
                                 font.pixelSize: 10
                                 visible: parent.width >= 4 && zoomEffectRect.width > 40
@@ -285,12 +291,34 @@ Rectangle {
                             opacity: 0.3
                             radius: 2
                             
+                            // Calculate hold duration in seconds
+                            property real holdDuration: (effect.end_frame - effect.start_frame - 
+                                (effect.params.easeInFrames || 5) - (effect.params.easeOutFrames || 4)) / videoController.fps
+                            
                             Text {
                                 anchors.centerIn: parent
-                                text: "HOLD"
+                                text: "HOLD (" + parent.holdDuration.toFixed(1) + "s)"
                                 color: "white"
                                 font.pixelSize: 9
-                                visible: parent.width > 30
+                                visible: parent.width > 40
+                            }
+                        }
+                        
+                        // Total duration display
+                        Text {
+                            anchors.top: parent.bottom
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.topMargin: 4
+                            text: formatDuration((effect.end_frame - effect.start_frame) / videoController.fps)
+                            color: "white"
+                            font.pixelSize: 10
+                            visible: zoomEffectRect.width > 60
+                            
+                            // Format duration as M:SS
+                            function formatDuration(seconds) {
+                                var mins = Math.floor(seconds / 60)
+                                var secs = Math.floor(seconds % 60)
+                                return mins + ":" + (secs < 10 ? "0" : "") + secs
                             }
                         }
                         

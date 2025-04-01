@@ -695,32 +695,37 @@ class VideoProcessor(QObject):
             if duration <= 0:
                 return cv2.cvtColor(result, cv2.COLOR_BGR2RGB)
             
-            # Constants for transition durations (in frames)
-            EASE_IN_FRAMES = 5   # First 5 frames for ease-in
-            EASE_OUT_FRAMES = 4  # Last 4 frames for ease-out
+            # Get user-defined ease frames (or use defaults if not specified)
+            ease_in_frames = zoom_effect.get("easeInFrames", 5)   # Default: 5 frames ease-in
+            ease_out_frames = zoom_effect.get("easeOutFrames", 4) # Default: 4 frames ease-out
+            
+            # Log the zoom effect parameters
+            logger.info(f"🔍 APPLYING ZOOM EFFECT: Start={start_frame}, End={end_frame}, Duration={duration} frames")
+            logger.info(f"Ease-in: {ease_in_frames} frames, Ease-out: {ease_out_frames} frames")
+            logger.info(f"Current position: Frame {current_position} of {duration}")
             
             # Ensure transitions don't overlap for very short effects
-            if duration < (EASE_IN_FRAMES + EASE_OUT_FRAMES + 1):
-                # For very short effects, use simpler transitions
-                ease_in_frames = max(1, int(duration * 0.3))
-                ease_out_frames = max(1, int(duration * 0.2))
-                middle_frames = duration - ease_in_frames - ease_out_frames
-            else:
-                ease_in_frames = EASE_IN_FRAMES
-                ease_out_frames = EASE_OUT_FRAMES
-                middle_frames = duration - ease_in_frames - ease_out_frames
+            if duration < (ease_in_frames + ease_out_frames + 1):
+                # For very short effects, scale down the transitions proportionally
+                total_ease_frames = ease_in_frames + ease_out_frames
+                ratio = duration / (total_ease_frames + 1)
+                
+                ease_in_frames = max(1, int(ease_in_frames * ratio))
+                ease_out_frames = max(1, int(ease_out_frames * ratio))
+                
+                logger.info(f"Adjusted transitions for short duration: Ease-in={ease_in_frames}, Ease-out={ease_out_frames}")
             
             # Apply zoom based on frame-based easing
             current_scale = 1.0
             
             if current_position < ease_in_frames:
-                # Ease IN - linear interpolation over exactly 3 frames
+                # Ease IN - linear interpolation over specified frames
                 progress = current_position / ease_in_frames
                 current_scale = 1.0 + (scale - 1.0) * progress
                 logger.info(f"Ease IN frame {current_position}/{ease_in_frames} - scale: {current_scale:.2f}")
                 
             elif current_position >= (duration - ease_out_frames):
-                # Ease OUT - linear interpolation over exactly 2 frames
+                # Ease OUT - linear interpolation over specified frames
                 frames_into_easeout = current_position - (duration - ease_out_frames)
                 progress = frames_into_easeout / ease_out_frames
                 current_scale = scale - (scale - 1.0) * progress
