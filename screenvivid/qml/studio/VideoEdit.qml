@@ -242,7 +242,7 @@ Rectangle {
                             color: "white"
                             opacity: speedHandleArea.containsMouse ? 0.9 : 0.5
                             anchors.horizontalCenter: parent.left
-                            anchors.horizontalCenterOffset: parent.width * (effect.params.transitionPoint || 0.95)
+                            anchors.horizontalCenterOffset: parent.width * (effect.params.transitionPoint || 0.875)
                             anchors.verticalCenter: parent.verticalCenter
                             radius: 2
                             
@@ -311,7 +311,7 @@ Rectangle {
                                 onPositionChanged: {
                                     if (zoomEffectRect.isMoving) {
                                         // Calculate transition point based on position within zoom effect (0-1)
-                                        var newTransitionPoint = Math.max(0.1, Math.min(0.95, 
+                                        var newTransitionPoint = Math.max(0.1, Math.min(0.875, 
                                             (parent.x + mouseX - zoomEffectRect.x) / zoomEffectRect.width))
                                         
                                         // Update the transition point in zoom parameters
