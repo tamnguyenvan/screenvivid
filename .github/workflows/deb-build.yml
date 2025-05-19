@@ -1,0 +1,70 @@
+name: Build and Package for Debian
+on:
+  push:
+    tags:
+      - '*.*.*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history and tags
+      - name: Read Changelog
+        id: changelog
+        run: |
+          CHANGELOG=$(cat CHANGELOG.md)
+          echo "changelog<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Get Previous Tag
+        id: get_previous_tag
+        run: |
+          # Get the current tag
+          CURRENT_TAG="${{ github.ref_name }}"
+          # Get all tags sorted by version number
+          PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -A 1 "^${CURRENT_TAG}$" | tail -n 1 || echo "none")
+          echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_ENV
+      - name: Get Commit Messages
+        id: commits
+        run: |
+          if [[ "${{ env.previous_tag }}" == "none" ]]; then
+            echo "commits=No previous tags found." >> $GITHUB_ENV
+          else
+            COMMIT_MESSAGES=$(git log --pretty=format:"- %s (#%b)" "${{ env.previous_tag }}"..HEAD)
+            echo "commits<<EOF" >> $GITHUB_ENV
+            echo "$COMMIT_MESSAGES" >> $GITHUB_ENV
+            echo "EOF" >> $GITHUB_ENV
+          fi
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build Docker image
+        run: docker build -t screenvivid-deb-build -f dockerfiles/Dockerfile.deb .
+      - name: Package as .deb
+        run: |
+          docker run --rm -v ${PWD}:/app screenvivid-deb-build bash -c "
+          cd screenvivid && python3 compile_resources.py && cd .. &&
+          cd packaging/linux &&
+          chmod +x build-deb.sh &&
+          ./build-deb.sh '${GITHUB_REF_NAME}' &&
+          mv screenvivid*.deb /app/
+          "
+      - name: Upload Debian package as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: screenvivid-${{ github.ref_name }}.deb
+          path: ./screenvivid*.deb
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: |
+            # ScreenVivid ${{ github.ref_name }} is out! 🎉
+            ${{ env.changelog }}
+            # What's Changed
+            ${{ env.commits }}
+
+            Full Changelog: [${{ env.previous_tag }}...${{ github.ref_name }}](https://github.com/tamnguyenvan/screenvivid/compare/${{ env.previous_tag }}...${{ github.ref_name }})
+          files: screenvivid*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

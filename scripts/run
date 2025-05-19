@@ -1,0 +1,5 @@
+#!/bin/sh
+
+. /opt/screenvivid/venv/bin/activate
+
+cd /opt/screenvivid && python -m screenvivid.main

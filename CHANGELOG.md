@@ -1,0 +1,3 @@
+- **Screen Recording Feature**: Allows users to capture high-quality recordings of their screen. 📹
+- **Basic Video Editing Tools**: Provides basic tools for editing recorded videos. 🎞️
+- **Video Export Functionality**: Supports exporting videos in popular formats such as MP4. 💾

@@ -1,0 +1,36 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../qml/entry/main.qml</file>
+        <file>../qml/entry/ScreenVivid.qml</file>
+        <file>../qml/entry/ControlPanel.qml</file>
+        <file>../qml/entry/CustomSelector.qml</file>
+
+        <file>../qml/components/ModeButton.qml</file>
+        <file>../qml/components/CustomButton.qml</file>
+        <file>../qml/components/RecordButton.qml</file>
+        <file>../qml/components/AnchorButton.qml</file>
+
+        <file>../qml/countdown/Countdown.qml</file>
+
+        <file>../qml/studio/ExportDialog.qml</file>
+        <file>../qml/studio/MainContent.qml</file>
+
+        <file>../qml/studio/sidebar/SideBar.qml</file>
+        <file>../qml/studio/sidebar/background_settings/BackgroundSettings.qml</file>
+        <file>../qml/studio/sidebar/background_settings/WallpaperPage.qml</file>
+        <file>../qml/studio/sidebar/background_settings/GradientPage.qml</file>
+        <file>../qml/studio/sidebar/background_settings/ColorPage.qml</file>
+        <file>../qml/studio/sidebar/background_settings/ImagePage.qml</file>
+        <file>../qml/studio/sidebar/shape_settings/ShapeSettings.qml</file>
+        <file>../qml/studio/sidebar/cursor_settings/CursorSettings.qml</file>
+
+        <file>../qml/studio/Studio.qml</file>
+        <file>../qml/studio/TopBar.qml</file>
+        <file>../qml/studio/ControlButtons.qml</file>
+        <file>../qml/studio/VideoPreview.qml</file>
+        <file>../qml/studio/VideoEdit.qml</file>
+        <file>../qml/studio/ClipTrack.qml</file>
+        <file>../qml/studio/Timeline.qml</file>
+        <file>../qml/studio/TimeSlider.qml</file>
+    </qresource>
+</RCC>

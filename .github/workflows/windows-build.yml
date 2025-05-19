@@ -1,0 +1,79 @@
+name: Build and Package for Windows
+on:
+  push:
+    tags:
+      - '*.*.*'
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Download FFmpeg
+        run: |
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest -Uri "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-win64-gpl-7.1.zip" -OutFile "ffmpeg.zip"
+          Expand-Archive -Path "ffmpeg.zip" -DestinationPath "ffmpeg_temp"
+          Copy-Item "ffmpeg_temp\ffmpeg-n7.1-latest-win64-gpl-7.1\bin\ffmpeg.exe" -Destination "packaging\windows\"
+          Remove-Item -Path "ffmpeg_temp" -Recurse -Force
+          Remove-Item -Path "ffmpeg.zip"
+        shell: pwsh
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          venv\Scripts\activate
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pip install "pywin32>=306,<308"
+          pip install -r requirements.txt
+        shell: pwsh
+
+      - name: Compile resources
+        run: |
+          venv\Scripts\activate
+          cd screenvivid
+          python compile_resources.py
+
+      - name: Build with PyInstaller
+        run: |
+          venv\Scripts\activate
+          cd packaging/windows
+          pyinstaller --clean --noconfirm screenvivid.spec
+        shell: pwsh
+
+      - name: Update version in Inno Setup script
+        run: |
+          $version = "${{ github.ref_name }}"
+          $content = Get-Content -Path packaging/windows/screenvivid.iss -Raw
+          $newContent = $content -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$version`""
+          $newContent | Set-Content -Path packaging/windows/screenvivid.iss
+        shell: pwsh
+
+      - name: Build installer with Inno Setup
+        uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+        with:
+          path: packaging/windows/screenvivid.iss
+          options: /O+ /F"ScreenVivid-${{ github.ref_name }}-Setup"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ScreenVivid-${{ github.ref_name }}-Setup.exe
+          path: D:\a\screenvivid\screenvivid\packaging\windows\Output\ScreenVivid-${{ github.ref_name }}-Setup.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "**/Output/ScreenVivid-${{ github.ref_name }}-Setup.exe"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

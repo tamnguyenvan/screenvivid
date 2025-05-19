@@ -1,0 +1,37 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../resources/icons/add.svg</file>
+        <file>../resources/icons/back.svg</file>
+        <file>../resources/icons/background.svg</file>
+        <file>../resources/icons/border.svg</file>
+        <file>../resources/icons/clip.svg</file>
+        <file>../resources/icons/clock.svg</file>
+        <file>../resources/icons/close.svg</file>
+        <file>../resources/icons/cursor.svg</file>
+        <file>../resources/icons/custom.svg</file>
+        <file>../resources/icons/cut.svg</file>
+        <file>../resources/icons/export.svg</file>
+        <file>../resources/icons/folder.svg</file>
+        <file>../resources/icons/mouse.svg</file>
+        <file>../resources/icons/next.svg</file>
+        <file>../resources/icons/shape.svg</file>
+        <file>../resources/icons/padding.svg</file>
+        <file>../resources/icons/inset.svg</file>
+        <file>../resources/icons/pause.svg</file>
+        <file>../resources/icons/stop.svg</file>
+        <file>../resources/icons/play.svg</file>
+        <file>../resources/icons/prev.svg</file>
+        <file>../resources/icons/record.svg</file>
+        <file>../resources/icons/scale.svg</file>
+        <file>../resources/icons/screen.svg</file>
+        <file>../resources/icons/drag_indicator.svg</file>
+        <file>../resources/icons/monitor.svg</file>
+        <file>../resources/icons/trash.svg</file>
+        <file>../resources/icons/upload.svg</file>
+        <file>../resources/icons/safe_area.svg</file>
+        <file>../resources/icons/zoom.svg</file>
+        <file>../resources/icons/full_screen.svg</file>
+        <file>../resources/icons/exit_full_screen.svg</file>
+        <file>../resources/icons/screenvivid.svg</file>
+    </qresource>
+</RCC>

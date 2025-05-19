@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0001.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0002.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0003.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0004.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0005.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0006.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0007.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0008.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0009.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0010.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0011.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0012.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0013.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0014.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0015.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0016.jpg</file>
+        <file>../resources/images/wallpapers/thumbnails/gradient-wallpaper-0017.jpg</file>
+    </qresource>
+</RCC>
