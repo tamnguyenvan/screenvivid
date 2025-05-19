@@ -63,7 +63,7 @@ jobs:
           options: /O+ /F"ScreenVivid-${{ github.ref_name }}-Setup"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ScreenVivid-${{ github.ref_name }}-Setup.exe
           path: D:\a\screenvivid\screenvivid\packaging\windows\Output\ScreenVivid-${{ github.ref_name }}-Setup.exe

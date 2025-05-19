@@ -51,7 +51,7 @@ jobs:
           mv screenvivid*.deb /app/
           "
       - name: Upload Debian package as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: screenvivid-${{ github.ref_name }}.deb
           path: ./screenvivid*.deb
