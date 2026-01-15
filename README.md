@@ -1,5 +1,3 @@
-> **🔥 Need background removal for your app? Try my API — RemovebgAPI (https://removebgapi.com).  
-Same quality as premium services, but ~20x cheaper — only $0.001/image!**
 
 <div align="center">
   <img src="./assets/banner.svg" alt="ScreenVivid Banner" width="600">
